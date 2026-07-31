@@ -1,0 +1,376 @@
+---
+/**
+ * Apertura — der Auftritt der Startseite.
+ *
+ * Die Marke zeichnet sich selbst und wächst dann zur Seite auf:
+ *
+ *   0,15–1,00 s  der Goldring schreibt sich in einem Zug
+ *   0,95–1,73 s  Lavendel, Olivenzweig, Blüte und Stock wachsen hinein
+ *   1,30–2,05 s  die Biene kommt zuletzt, auf einer gepunkteten Bahn
+ *                durch die Ringlücke — dieselbe Bahn wie im Hero
+ *   2,05–2,60 s  die Marke fliegt auf ihren Platz in der Kopfleiste,
+ *                das Papier blendet ab und gibt den Hero frei
+ *
+ * Danach übernimmt der bestehende `data-reveal`-Aufbau aus scroll-story.ts.
+ * Die Apertura ersetzt den Einstieg nicht, sie reicht ihn weiter.
+ *
+ * Drei Dinge, die hier tragend sind und nicht wegoptimiert werden dürfen:
+ *
+ * · **Der Hero liegt die ganze Zeit fertig darunter.** Nichts wird
+ *   nachgeladen, nichts ist `display:none`. Die Auflage verdeckt nur.
+ *   Fällt das Modulskript aus, räumt die reine CSS-Animation sie am Ende
+ *   selbst ab (`forwards`, danach `visibility:hidden`, `pointer-events:none`)
+ *   — die Seite kann nicht hängen bleiben.
+ * · **Ohne JavaScript läuft sie gar nicht.** `Base.astro` setzt `no-js` auf
+ *   <html> und tauscht es sofort gegen `js`. Bleibt `no-js` stehen, ist die
+ *   Auflage von vornherein weg.
+ * · **Kein `filter` in irgendeinem Keyframe.** Eine Animation mit
+ *   `fill-mode: both`, die `filter` setzt, gewinnt dauerhaft gegen normale
+ *   Deklarationen und hat hier schon einmal die Bildfilter der Spiele
+ *   ausgehebelt. Siehe HANDOFF.md, Abschnitt 4.
+ */
+import Logo from './Logo.astro';
+
+interface Props {
+  /** Beschriftung des Überspringen-Knopfes. */
+  saltar: string;
+}
+
+const { saltar } = Astro.props;
+---
+
+{/* Läuft, bevor die Auflage überhaupt geparst ist: wer sie in dieser
+    Sitzung schon gesehen hat, sieht sie nicht noch einmal. Ohne diesen
+    Vorgriff blitzte das Papier beim Zurückkommen aus dem Buch kurz auf.
+
+    Stellschraube: `sessionStorage` zeigt den Auftritt einmal je Besuch.
+    Wer ihn nur beim allerersten Besuch überhaupt zeigen will, tauscht
+    beide Vorkommen gegen `localStorage` — dann zahlt den Aufschlag auf
+    das LCP der Startseite nur, wer ihn einmal zahlt. */}
+<script is:inline>
+  try {
+    if (sessionStorage.getItem('re:apertura') === 'vista') {
+      document.documentElement.classList.add('apertura-aus');
+    } else {
+      sessionStorage.setItem('re:apertura', 'vista');
+    }
+  } catch {
+    /* Privater Modus ohne Speicher: dann eben jedes Mal. Kein Grund,
+       die Seite deshalb anzuhalten. */
+  }
+</script>
+
+<div class="apertura" id="apertura" aria-hidden="true">
+  <div class="apertura-marca">
+    {/* Die Bahn liegt deckungsgleich über der Marke (beide viewBox 200×200)
+        und führt von links oben über den Ring hinweg bis kurz vor die
+        Biene. Sie bleibt bewusst **über** dem Ring: durch die Ringlücke
+        wächst der Lavendel, dort gezogen kreuzte sie ihn und sah aus wie
+        ein verirrter Strich.
+
+        Hier steht absichtlich **kein** `pathLength`: das würde die
+        Pfadlänge auf 1 normieren, und `stroke-dasharray: 1.6 7` wäre dann
+        ein einziger Strich statt einer Punktreihe. Die Bahn blendet
+        deshalb ein, statt sich zu zeichnen — Punkte lassen sich über
+        `stroke-dashoffset` ohnehin nicht fortschreitend aufdecken, das
+        verschöbe nur die Punkte.
+
+        `non-scaling-stroke` hält die Punkte rund, egal wie groß die Marke
+        gerade steht; ohne das wurden sie an anderer Stelle im Projekt
+        schon einmal zu Strichen gezogen. */}
+    <svg class="apertura-senda" viewBox="0 0 200 200" fill="none" aria-hidden="true">
+      <path
+        d="M24 -16 C 44 -10, 66 12, 84 36"
+        stroke="var(--miel-700)"
+        stroke-width="2.2"
+        stroke-linecap="round"
+        stroke-dasharray="1.6 7"
+        vector-effect="non-scaling-stroke"
+      />
+    </svg>
+
+    <Logo width="100%" decorative />
+  </div>
+
+  <button class="apertura-saltar" type="button">{saltar}</button>
+</div>
+
+<style>
+  .apertura {
+    position: fixed;
+    inset: 0;
+    z-index: 9000;
+    display: grid;
+    place-items: center;
+    background: var(--papel);
+    /* Der Auftritt endet auch ohne Skript: das Papier blendet ab und legt
+       sich still, statt die Seite zu sperren. */
+    animation: apertura-papel 400ms var(--ease-out) 2200ms both;
+  }
+
+  /* Schon gesehen, oder gar kein JavaScript: nie zeigen. */
+  :global(html.apertura-aus) .apertura,
+  :global(html.no-js) .apertura {
+    display: none;
+  }
+
+  @keyframes apertura-papel {
+    to {
+      opacity: 0;
+      visibility: hidden;
+      pointer-events: none;
+    }
+  }
+
+  .apertura-marca {
+    position: relative;
+    width: clamp(140px, 26vmin, 240px);
+    aspect-ratio: 1;
+    /* Zum Schluss fliegt die Marke auf ihren Platz in der Kopfleiste. Die
+       drei Werte sind Notnägel für den Fall, dass das Modulskript nicht
+       dazu kommt, die Leiste auszumessen — die Richtung stimmt dann, nur
+       nicht der Punkt. */
+    --ap-dx: -38vw;
+    --ap-dy: -40vh;
+    --ap-escala: 0.18;
+    animation: apertura-vuela 500ms var(--ease-in-out) 2050ms both;
+  }
+
+  @keyframes apertura-vuela {
+    to {
+      translate: var(--ap-dx) var(--ap-dy);
+      scale: var(--ap-escala);
+    }
+  }
+
+  .apertura-senda {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    overflow: visible;
+    animation: apertura-traza 300ms var(--ease-out) 1300ms both;
+  }
+
+  @keyframes apertura-traza {
+    from {
+      opacity: 0;
+      translate: -6px -4px;
+    }
+    to {
+      opacity: 0.55;
+      translate: 0 0;
+    }
+  }
+
+  /* Der Ring schreibt sich in einem Zug. `pathLength="1"` in Logo.astro
+     macht die echte Bogenlänge unerheblich. */
+  .apertura-marca :global(.marca-anillo) {
+    stroke-dasharray: 1;
+    animation: apertura-anillo 850ms var(--ease-in-out) 150ms both;
+  }
+
+  @keyframes apertura-anillo {
+    from {
+      stroke-dashoffset: 1;
+    }
+    to {
+      stroke-dashoffset: 0;
+    }
+  }
+
+  /* Die Zeichen der Chacra setzen sich in der Reihenfolge, in der sie
+     wachsen: erst was aus dem Boden kommt, dann was gebaut ist, zuletzt
+     das, was fliegt. Jedes steigt aus seiner eigenen Richtung an. */
+  .apertura-marca :global(.marca-lavanda),
+  .apertura-marca :global(.marca-rama),
+  .apertura-marca :global(.marca-flor),
+  .apertura-marca :global(.marca-colmena) {
+    animation: apertura-crece 480ms var(--ease-out) both;
+    transform-box: fill-box;
+  }
+
+  .apertura-marca :global(.marca-lavanda) {
+    transform-origin: 50% 100%;
+    animation-delay: 950ms;
+  }
+  .apertura-marca :global(.marca-rama) {
+    transform-origin: 50% 100%;
+    animation-delay: 1050ms;
+  }
+  .apertura-marca :global(.marca-flor) {
+    transform-origin: 50% 100%;
+    animation-delay: 1150ms;
+  }
+  .apertura-marca :global(.marca-colmena) {
+    transform-origin: 50% 100%;
+    animation-delay: 1250ms;
+  }
+
+  @keyframes apertura-crece {
+    from {
+      opacity: 0;
+      scale: 1 0.55;
+    }
+    to {
+      opacity: 1;
+      scale: 1 1;
+    }
+  }
+
+  /* Die Biene kommt zuletzt und mit Melis eigener Kurve — `--ease-bounce`
+     ist im Projekt ihr Token, nicht bloß ein Effekt. */
+  .apertura-marca :global(.marca-abeja) {
+    transform-box: fill-box;
+    transform-origin: 50% 50%;
+    animation: apertura-abeja 500ms var(--ease-bounce) 1550ms both;
+  }
+
+  /* Sie kommt vom Ende der Bahn (84, 36) auf ihren Platz (102, 54). Die
+     Werte sind viewBox-Einheiten, nicht Gerätepixel — `translate` rechnet
+     auf SVG-Elementen im lokalen Koordinatensystem. */
+  @keyframes apertura-abeja {
+    from {
+      opacity: 0;
+      translate: -18px -18px;
+      scale: 0.72;
+    }
+    to {
+      opacity: 1;
+      translate: 0 0;
+      scale: 1;
+    }
+  }
+
+  .apertura-saltar {
+    position: absolute;
+    right: max(var(--sp-3), env(safe-area-inset-right));
+    bottom: max(var(--sp-3), env(safe-area-inset-bottom));
+    border: 0;
+    border-radius: 999px;
+    padding: 0.5rem 1rem;
+    background: transparent;
+    color: var(--miel-800);
+    font: inherit;
+    font-size: var(--fs-300, 0.85rem);
+    cursor: pointer;
+    animation: apertura-saltar-auf 300ms var(--ease-out) 800ms both;
+  }
+
+  .apertura-saltar:hover,
+  .apertura-saltar:focus-visible {
+    background: var(--papel-warm);
+  }
+
+  @keyframes apertura-saltar-auf {
+    from {
+      opacity: 0;
+    }
+    to {
+      opacity: 0.75;
+    }
+  }
+
+  /* Abbruch: nicht hart schneiden, sondern vorspulen. */
+  .apertura.esta-cerrando {
+    animation: none;
+    opacity: 0;
+    visibility: hidden;
+    pointer-events: none;
+    transition:
+      opacity 250ms var(--ease-out),
+      visibility 0s 250ms;
+  }
+
+  /* Ruhige Fassung — nicht abgeschaltete Animation, sondern eine kürzere.
+     Die Marke steht fertig auf dem Papier und blendet ab: derselbe
+     Gedanke, nur ohne Bewegung im Bild. Zusammen rund 0,95 s.
+
+     Die Standzeit ist bewusst nicht kürzer. Bei 250 ms war die Marke ein
+     Aufblitzen, und ein Aufblitzen ist für jemanden, der wenig Bewegung
+     will, unruhiger als gar keine Auflage. Eine halbe Sekunde liest sich
+     als Titelbild; `linear` blendet danach gleichmäßig ab, statt wie
+     `--ease-out` gleich zu Anfang wegzuspringen. */
+  @media (prefers-reduced-motion: reduce) {
+    .apertura {
+      animation: apertura-papel 450ms linear 500ms both;
+    }
+
+    .apertura-marca,
+    .apertura-senda,
+    .apertura-marca :global(.marca-anillo),
+    .apertura-marca :global(.marca-lavanda),
+    .apertura-marca :global(.marca-rama),
+    .apertura-marca :global(.marca-flor),
+    .apertura-marca :global(.marca-colmena),
+    .apertura-marca :global(.marca-abeja) {
+      animation: none;
+    }
+
+    .apertura-senda {
+      opacity: 0.55;
+    }
+
+    .apertura-saltar {
+      display: none;
+    }
+  }
+</style>
+
+<script>
+  const capa = document.getElementById('apertura');
+
+  if (capa) {
+    const marca = capa.querySelector<HTMLElement>('.apertura-marca');
+    const tranquilo = matchMedia('(prefers-reduced-motion: reduce)').matches;
+    /* Muss zur längsten Animation im Stil passen: 2050 + 500 = 2550 ms,
+       das Papier ist bei 2600 ms durch. Ruhig: 500 + 450. */
+    const duracion = tranquilo ? 1000 : 2650;
+
+    /* Wohin die Marke fliegt: dorthin, wo sie danach wirklich steht. Das
+       Ausmessen passiert lange vor Beginn des Fluges (2,05 s), die
+       Notnägel im Stil greifen also nur, wenn es die Leiste nicht gibt. */
+    const situarDestino = () => {
+      const destino = document.querySelector('.site-nav .marca');
+      if (!destino || !marca) return;
+
+      const a = marca.getBoundingClientRect();
+      const b = destino.getBoundingClientRect();
+      if (!a.width || !b.width) return;
+
+      marca.style.setProperty('--ap-dx', `${b.left + b.width / 2 - (a.left + a.width / 2)}px`);
+      marca.style.setProperty('--ap-dy', `${b.top + b.height / 2 - (a.top + a.height / 2)}px`);
+      marca.style.setProperty('--ap-escala', `${b.width / a.width}`);
+    };
+
+    requestAnimationFrame(situarDestino);
+
+    let cerrado = false;
+    const cerrar = () => {
+      if (cerrado) return;
+      cerrado = true;
+      capa.classList.add('esta-cerrando');
+      /* Erst wenn das Vorspulen durch ist, aus dem DOM nehmen — sonst
+         springt das Papier weg statt abzublenden. */
+      setTimeout(() => capa.remove(), 300);
+    };
+
+    /* Der Auftritt räumt sich selbst ab. Der Zeitgeber ist die Regel,
+       nicht die Ausnahme: `animationend` allein trüge nicht, wenn ein
+       Fenster im Hintergrund liegt und der Browser die Bilder anhält. */
+    const reloj = setTimeout(cerrar, duracion);
+
+    const saltar = () => {
+      clearTimeout(reloj);
+      cerrar();
+    };
+
+    capa.querySelector('.apertura-saltar')?.addEventListener('click', saltar);
+
+    /* Jede Regung überspringt. `once` und `passive`, damit nichts hängen
+       bleibt und das Scrollen nicht blockiert wird. */
+    for (const evento of ['pointerdown', 'keydown', 'wheel', 'touchstart'] as const) {
+      addEventListener(evento, saltar, { once: true, passive: true });
+    }
+  }
+</script>

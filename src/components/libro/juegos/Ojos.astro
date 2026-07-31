@@ -1,0 +1,262 @@
+---
+/**
+ * Seite 2 — „Los ojos de Meli"
+ *
+ * Kein Spiel neben dem Bild, sondern eine andere Art, dasselbe Bild zu
+ * sehen: Ein Druck auf das Auge kippt die Illustration per SVG-Kanaltausch
+ * in Bienensicht. Das Rot der Mohnblumen erlischt, die Blüten bekommen ihre
+ * ultravioletten Nektarmale.
+ *
+ * Erklärt wird es danach in Melis Szene, an einer gezeichneten Blüte, die
+ * man zwischen beiden Sehweisen hin- und herschalten kann. Die frühere
+ * Fassung hatte stattdessen Fadenkreuze und „X" im Bild — die sahen aus wie
+ * Schließen-Knöpfe und erklärten nichts.
+ */
+import BeeMeli from '../../BeeMeli.astro';
+import { libroUI } from '../../../data/libro';
+import type { Lang } from '../../../i18n';
+
+interface Props {
+  lang: Lang;
+  parte: 'lamina' | 'mando' | 'escena';
+}
+
+const { lang, parte } = Astro.props;
+const j = libroUI[lang].juegos.ojos;
+
+/* Blütenmitten im Bildraster 300 x 200 (die Illustration ist 3:2).
+   Kein Fadenkreuz mehr: ein weicher Lichthof mit Blütenblatt-Bögen, wie
+   auf einer echten UV-Aufnahme. */
+const flores = [
+  { x: 63, y: 86, r: 26 },
+  { x: 33, y: 128, r: 13 },
+  { x: 104, y: 176, r: 11 },
+  { x: 152, y: 152, r: 10 },
+  { x: 240, y: 118, r: 10 },
+];
+
+function petalos(cx: number, cy: number, r: number) {
+  return Array.from({ length: 8 }, (_, i) => {
+    const a = (i / 8) * Math.PI * 2;
+    const b = a + Math.PI / 8;
+    const r1 = r * 0.42;
+    return (
+      `M${(cx + Math.cos(a) * r1).toFixed(1)} ${(cy + Math.sin(a) * r1).toFixed(1)} ` +
+      `Q${(cx + Math.cos(b) * r * 0.9).toFixed(1)} ${(cy + Math.sin(b) * r * 0.9).toFixed(1)} ` +
+      `${(cx + Math.cos(a) * r).toFixed(1)} ${(cy + Math.sin(a) * r).toFixed(1)}`
+    );
+  }).join(' ');
+}
+---
+
+{parte === 'lamina' && (
+  <div class="ojos-capa" data-ojos-capa aria-hidden="true">
+    <svg viewBox="0 0 300 200" preserveAspectRatio="none">
+      {flores.map((f, i) => (
+        <g class="ojos-flor" style={`--i:${i}`}>
+          <circle cx={f.x} cy={f.y} r={f.r * 1.5} fill="url(#uv-halo)" />
+          <path d={petalos(f.x, f.y, f.r)} fill="none" stroke="#bff4ff" stroke-width="1.5"
+            stroke-linecap="round" opacity="0.9" />
+          <circle cx={f.x} cy={f.y} r={f.r * 0.34} fill="#f0e6ff" opacity="0.95" />
+        </g>
+      ))}
+    </svg>
+  </div>
+)}
+
+{parte === 'mando' && (
+  <button
+    class="boton ojos-btn"
+    data-ojos-btn
+    aria-pressed="false"
+    data-on={j.active}
+    data-off={j.button}
+    data-meli={j.meli}
+    data-logro={j.logro}
+  >
+    <span class="ojos-icono" aria-hidden="true">
+      <svg viewBox="0 0 40 28">
+        <path d="M2 14 C 10 3, 30 3, 38 14 C 30 25, 10 25, 2 14 Z" fill="#fffdf8"
+          stroke="currentColor" stroke-width="2.2" filter="url(#ink)" />
+        <circle cx="20" cy="14" r="7" fill="currentColor" />
+        <circle cx="22.5" cy="11.5" r="2.2" fill="#fffdf8" />
+      </svg>
+    </span>
+    <span data-ojos-label>{j.button}</span>
+  </button>
+)}
+
+{parte === 'escena' && (
+  <div class="escena" data-ojos-escena>
+    <h3 class="escena-titulo">{j.title}</h3>
+    <p class="escena-pista">{j.compareHint}</p>
+
+    <!-- Dieselbe Blüte, zweimal: so wie du sie siehst, so wie Meli sie sieht -->
+    <div class="mesa ojos-mesa">
+      <svg viewBox="0 0 300 172" role="img" aria-label={j.compareHint}>
+        <!-- links: menschliche Sicht -->
+        <g class="ojos-mitad">
+          <ellipse cx="76" cy="150" rx="52" ry="9" fill="#c9b48c" opacity="0.25"
+            filter="url(#wc-wash)" />
+          <path d="M76 148 C 74 118, 75 100, 76 84" stroke="#5b6c42" stroke-width="4"
+            stroke-linecap="round" fill="none" filter="url(#ink)" />
+          <g filter="url(#wc-rough)">
+            <g fill="#f2c53a">
+              <ellipse cx="76" cy="40" rx="13" ry="21" />
+              <ellipse cx="76" cy="86" rx="13" ry="21" />
+              <ellipse cx="45" cy="63" rx="21" ry="13" />
+              <ellipse cx="107" cy="63" rx="21" ry="13" />
+              <ellipse cx="54" cy="41" rx="15" ry="15" />
+              <ellipse cx="98" cy="41" rx="15" ry="15" />
+              <ellipse cx="54" cy="85" rx="15" ry="15" />
+              <ellipse cx="98" cy="85" rx="15" ry="15" />
+            </g>
+            <circle cx="76" cy="63" r="16" fill="#c98a1e" />
+          </g>
+          <text x="76" y="168" text-anchor="middle" font-size="11" font-weight="700"
+            fill="#8a7b68">{j.eyesYou}</text>
+        </g>
+
+        <!-- rechts: Bienensicht -->
+        <g class="ojos-mitad ojos-mitad--uv">
+          <rect x="152" y="6" width="142" height="140" rx="14" fill="#231a3c" opacity="0.92" />
+          <path d="M224 146 C 222 118, 223 100, 224 84" stroke="#3c6f5a" stroke-width="4"
+            stroke-linecap="round" fill="none" />
+          <g>
+            <g fill="#4a6f8f">
+              <ellipse cx="224" cy="40" rx="13" ry="21" />
+              <ellipse cx="224" cy="86" rx="13" ry="21" />
+              <ellipse cx="193" cy="63" rx="21" ry="13" />
+              <ellipse cx="255" cy="63" rx="21" ry="13" />
+              <ellipse cx="202" cy="41" rx="15" ry="15" />
+              <ellipse cx="246" cy="41" rx="15" ry="15" />
+              <ellipse cx="202" cy="85" rx="15" ry="15" />
+              <ellipse cx="246" cy="85" rx="15" ry="15" />
+            </g>
+            <circle cx="224" cy="63" r="34" fill="url(#uv-halo)" />
+            <path class="ojos-marcas" d={petalos(224, 63, 30)} fill="none" stroke="#bff4ff"
+              stroke-width="2" stroke-linecap="round" />
+            <circle cx="224" cy="63" r="12" fill="#f0e6ff" />
+          </g>
+          <text x="224" y="168" text-anchor="middle" font-size="11" font-weight="700"
+            fill="#8a7b68">{j.eyesMe}</text>
+        </g>
+      </svg>
+    </div>
+
+    <div class="dice">
+      <span class="dice-meli bee-float" aria-hidden="true"><BeeMeli width="100%" /></span>
+      <p class="dice-texto" data-ojos-dice aria-live="polite">{j.fact}</p>
+    </div>
+  </div>
+)}
+
+<script>
+  import { decir, logro, tin } from '../../../scripts/juego';
+
+  const btn = document.querySelector<HTMLButtonElement>('[data-ojos-btn]');
+  const capa = document.querySelector<HTMLElement>('[data-ojos-capa]');
+
+  if (btn && capa) {
+    const label = btn.querySelector<HTMLElement>('[data-ojos-label]')!;
+    const lamina = capa.closest('.lamina');
+    const dice = document.querySelector<HTMLElement>('[data-ojos-dice]');
+    const d = btn.dataset;
+    const original = dice?.textContent ?? '';
+
+    let on = false;
+    let contado = false;
+
+    btn.addEventListener('click', () => {
+      on = !on;
+      btn.setAttribute('aria-pressed', String(on));
+      lamina?.classList.toggle('is-uv', on);
+      capa.classList.toggle('is-on', on);
+      label.textContent = on ? d.on ?? '' : d.off ?? '';
+      decir(dice, on ? d.meli ?? '' : original);
+
+      if (on && !contado) {
+        contado = true;
+        tin(1.2);
+        logro('ojos', d.logro ?? '');
+      }
+    });
+  }
+</script>
+
+<style>
+  /* Die Leuchtspur liegt deckungsgleich über der Illustration. */
+  .ojos-capa {
+    position: absolute;
+    inset: 0;
+    z-index: 2;
+    pointer-events: none;
+    opacity: 0;
+    transition: opacity 620ms var(--ease-out);
+  }
+
+  .ojos-capa.is-on {
+    opacity: 1;
+  }
+
+  .ojos-capa svg {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+  }
+
+  .ojos-flor {
+    opacity: 0;
+    transform-box: fill-box;
+    transform-origin: 50% 50%;
+    transform: scale(0.5);
+    transition:
+      opacity 460ms var(--ease-out) calc(var(--i) * 120ms + 260ms),
+      transform 560ms var(--ease-bounce) calc(var(--i) * 120ms + 260ms);
+  }
+
+  .ojos-capa.is-on .ojos-flor {
+    opacity: 1;
+    transform: scale(1);
+  }
+
+  .ojos-icono {
+    width: 28px;
+    display: block;
+  }
+
+  .ojos-icono svg {
+    width: 100%;
+    overflow: visible;
+  }
+
+  /* Der Vergleich in Melis Szene */
+  .ojos-mesa {
+    max-width: 32rem;
+  }
+
+  .ojos-marcas {
+    animation: ojos-pulso 3.4s ease-in-out infinite;
+  }
+
+  @keyframes ojos-pulso {
+    0%,
+    100% {
+      opacity: 0.55;
+    }
+    50% {
+      opacity: 1;
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .ojos-capa,
+    .ojos-flor {
+      transition: none;
+    }
+    .ojos-marcas {
+      animation: none;
+    }
+  }
+</style>

@@ -1,0 +1,92 @@
+---
+/**
+ * Meli — die Erzählerin. Aquarell-Körper + Tuschelinien.
+ * Blickrichtung: rechts. `flip` spiegelt sie nach links.
+ * Flügelanimation kommt aus global.css (.bee .wing-*).
+ */
+interface Props {
+  class?: string;
+  width?: string;
+  flip?: boolean;
+  id?: string;
+}
+
+const { class: className = '', width = '150px', flip = false, id } = Astro.props;
+---
+
+<svg
+  id={id}
+  class={`bee ${className}`}
+  style={`width:${width}; ${flip ? 'transform:scaleX(-1);' : ''}`}
+  viewBox="0 0 230 180"
+  fill="none"
+  xmlns="http://www.w3.org/2000/svg"
+  role="img"
+  aria-label="Meli, la abeja"
+>
+  <!-- feuchter Farb-Hof unter dem Körper -->
+  <ellipse cx="112" cy="108" rx="66" ry="46" fill="#f3c87f" opacity="0.28" filter="url(#wc-wash)" />
+
+  <!-- Hinterflügel -->
+  <g class="wing-back">
+    <ellipse cx="88" cy="52" rx="40" ry="20" transform="rotate(-38 88 52)"
+      fill="#d9eaf2" opacity="0.55" filter="url(#wc-soft)" />
+    <ellipse cx="88" cy="52" rx="40" ry="20" transform="rotate(-38 88 52)"
+      stroke="#33291f" stroke-width="1.4" opacity="0.5" filter="url(#ink)" />
+  </g>
+
+  <!-- Körper -->
+  <ellipse cx="108" cy="104" rx="54" ry="40" fill="url(#pg-miel)" filter="url(#wc-soft)" />
+
+  <!-- Streifen (Pigment, multipliziert) -->
+  <g filter="url(#wc-rough)" style="mix-blend-mode:multiply">
+    <path d="M78 70 C 88 64, 96 64, 102 68 L 96 140 C 88 138, 80 132, 74 124 Z" fill="#6b4a1f" opacity="0.82" />
+    <path d="M116 66 C 124 66, 130 68, 136 72 L 128 142 C 120 144, 112 144, 106 142 Z" fill="#6b4a1f" opacity="0.82" />
+    <path d="M150 78 C 156 84, 160 92, 161 100 L 158 120 C 152 130, 146 136, 140 139 L 146 84 Z" fill="#6b4a1f" opacity="0.75" />
+  </g>
+
+  <!-- Stachel -->
+  <path d="M56 104 C 48 102, 42 102, 36 106 C 44 110, 50 110, 57 110 Z"
+    fill="#6b4a1f" opacity="0.85" filter="url(#wc-rough)" />
+
+  <!-- Kopf -->
+  <circle cx="172" cy="86" r="27" fill="#a06a2c" filter="url(#wc-soft)" />
+  <circle cx="172" cy="86" r="27" fill="url(#pg-miel)" opacity="0.35" filter="url(#wc-soft)" />
+
+  <!-- Antennen -->
+  <g stroke="#33291f" stroke-width="2" stroke-linecap="round" filter="url(#ink)" opacity="0.85">
+    <path d="M180 62 C 184 50, 192 44, 202 44" />
+    <path d="M168 60 C 168 48, 174 40, 183 35" />
+  </g>
+  <circle cx="204" cy="44" r="3.2" fill="#33291f" opacity="0.85" />
+  <circle cx="184" cy="34" r="3.2" fill="#33291f" opacity="0.85" />
+
+  <!-- Gesicht -->
+  <circle cx="181" cy="82" r="5" fill="#33291f" />
+  <circle cx="183" cy="80" r="1.6" fill="#fffdf8" />
+  <path d="M176 97 C 180 101, 186 101, 190 97" stroke="#33291f" stroke-width="2"
+    stroke-linecap="round" fill="none" filter="url(#ink)" opacity="0.8" />
+
+  <!-- Vorderflügel -->
+  <g class="wing-front">
+    <ellipse cx="104" cy="46" rx="46" ry="23" transform="rotate(-24 104 46)"
+      fill="#eef5f8" opacity="0.72" filter="url(#wc-soft)" />
+    <ellipse cx="104" cy="46" rx="46" ry="23" transform="rotate(-24 104 46)"
+      stroke="#33291f" stroke-width="1.6" opacity="0.6" filter="url(#ink)" />
+    <path d="M76 56 C 92 48, 116 42, 140 40" stroke="#33291f" stroke-width="1"
+      opacity="0.35" filter="url(#ink)" />
+  </g>
+
+  <!-- Beine -->
+  <g stroke="#33291f" stroke-width="2.2" stroke-linecap="round" filter="url(#ink)" opacity="0.8">
+    <path d="M92 140 C 90 148, 86 154, 80 158" />
+    <path d="M116 144 C 116 152, 113 158, 108 163" />
+    <path d="M140 138 C 142 146, 140 153, 136 158" />
+  </g>
+
+  <!-- Tusche-Kontur über dem Körper -->
+  <ellipse cx="108" cy="104" rx="54" ry="40" stroke="#33291f" stroke-width="2.2"
+    opacity="0.7" filter="url(#ink)" />
+  <circle cx="172" cy="86" r="27" stroke="#33291f" stroke-width="2"
+    opacity="0.65" filter="url(#ink)" />
+</svg>

@@ -1,0 +1,343 @@
+---
+import type { Dict } from '../i18n';
+
+interface Props {
+  t: Dict;
+}
+
+const { t } = Astro.props;
+const h = t.herbario;
+
+/* Papierton je Karte, leicht variierend wie echte Herbariumsbögen */
+const papers = ['#fffdf8', '#fdfaf1', '#fefbf4', '#fcf8ee'];
+---
+
+<section id="herbario" class="herbario" data-chapter data-meli-zone>
+  <div class="wrap">
+    <header class="section-head" data-reveal>
+      <h2>
+        <span class="swash">{h.title}</span>
+        <span class="meli-perch" data-meli-perch aria-hidden="true"></span>
+      </h2>
+      <p class="lead">{h.intro}</p>
+    </header>
+
+    <ul class="specimens" data-reveal>
+      {h.plants.map((plant, i) => (
+        <li>
+          <button
+            class="specimen"
+            aria-expanded="false"
+            style={`--paper:${papers[i % papers.length]}; --tilt:${((i * 7) % 5) - 2}deg;`}
+          >
+            <span class="specimen-inner">
+              <span class="specimen-front">
+                <span class="tape" aria-hidden="true"></span>
+                <span class="specimen-art" aria-hidden="true">
+                  {i === 0 && (
+                    <svg viewBox="0 0 90 110">
+                      <path d="M45 104 C 45 82, 44 66, 45 46 M 45 70 C 34 62, 28 54, 26 44 M 45 62 C 56 56, 62 48, 64 38"
+                        stroke="#6e5638" stroke-width="3.4" stroke-linecap="round" fill="none" filter="url(#ink)" />
+                      <g fill="url(#pg-pistacho)" filter="url(#wc-rough)">
+                        <ellipse cx="24" cy="52" rx="10" ry="6" transform="rotate(-36 24 52)" />
+                        <ellipse cx="66" cy="46" rx="10" ry="6" transform="rotate(30 66 46)" />
+                        <ellipse cx="36" cy="78" rx="9" ry="5.5" transform="rotate(-24 36 78)" />
+                        <ellipse cx="56" cy="74" rx="9" ry="5.5" transform="rotate(20 56 74)" />
+                      </g>
+                      <g fill="#fffdf8" stroke="#d9d2c2" stroke-width="0.6" filter="url(#wc-rough)">
+                        <circle cx="38" cy="26" r="3.2" /><circle cx="46" cy="20" r="3.2" />
+                        <circle cx="54" cy="26" r="3.2" /><circle cx="42" cy="32" r="3" />
+                        <circle cx="51" cy="33" r="3" /><circle cx="46" cy="27" r="3.4" />
+                      </g>
+                      <g fill="#e8d59a">
+                        <circle cx="38" cy="26" r="1" /><circle cx="46" cy="20" r="1" />
+                        <circle cx="54" cy="26" r="1" /><circle cx="46" cy="27" r="1" />
+                      </g>
+                    </svg>
+                  )}
+                  {i === 1 && (
+                    <svg viewBox="0 0 90 110">
+                      <path d="M45 104 C 44 90, 44 80, 45 66" stroke="#8f4c31" stroke-width="5"
+                        stroke-linecap="round" filter="url(#wc-rough)" fill="none" />
+                      <circle cx="45" cy="46" r="27" fill="url(#pg-pistacho)" filter="url(#wc-soft)" />
+                      <circle cx="34" cy="38" r="10" fill="url(#pg-pistacho-light)" opacity="0.6" filter="url(#wc-rough)" />
+                      <g filter="url(#wc-rough)">
+                        <circle cx="34" cy="52" r="5" fill="#c14b3a" />
+                        <circle cx="52" cy="58" r="5" fill="#e8892d" />
+                        <circle cx="56" cy="36" r="5" fill="#c14b3a" />
+                      </g>
+                    </svg>
+                  )}
+                  {i === 2 && (
+                    <svg viewBox="0 0 90 110">
+                      <path d="M45 104 C 45 96, 44 90, 45 82" stroke="#8a7b68" stroke-width="4"
+                        stroke-linecap="round" filter="url(#ink)" fill="none" />
+                      <ellipse cx="45" cy="48" rx="14" ry="38" fill="url(#pg-pistacho-light)" filter="url(#wc-soft)" />
+                      <ellipse cx="45" cy="44" rx="8" ry="28" fill="url(#pg-pistacho)" opacity="0.5" filter="url(#wc-rough)" />
+                      <path d="M45 82 C 45 60, 45 36, 45 16" stroke="#5b6c42" stroke-width="1.6"
+                        opacity="0.5" filter="url(#ink)" fill="none" />
+                    </svg>
+                  )}
+                  {i === 3 && (
+                    <svg viewBox="0 0 90 110">
+                      <path d="M46 104 C 44 84, 44 56, 48 28" stroke="#a9885a" stroke-width="4.5"
+                        stroke-linecap="round" filter="url(#wc-rough)" fill="none" />
+                      <g fill="#8aa694" filter="url(#wc-rough)">
+                        <ellipse cx="36" cy="36" rx="3.6" ry="12" transform="rotate(26 36 36)" />
+                        <ellipse cx="58" cy="30" rx="3.6" ry="12" transform="rotate(-20 58 30)" />
+                        <ellipse cx="32" cy="56" rx="3.4" ry="11" transform="rotate(30 32 56)" />
+                        <ellipse cx="60" cy="52" rx="3.4" ry="11" transform="rotate(-26 60 52)" />
+                        <ellipse cx="48" cy="16" rx="3.4" ry="11" transform="rotate(6 48 16)" />
+                        <ellipse cx="38" cy="74" rx="3.2" ry="10" transform="rotate(34 38 74)" />
+                      </g>
+                    </svg>
+                  )}
+                  {i === 4 && (
+                    <svg viewBox="0 0 90 110">
+                      <path d="M45 104 C 44 92, 44 84, 45 72" stroke="#6e5638" stroke-width="4.5"
+                        stroke-linecap="round" filter="url(#wc-rough)" fill="none" />
+                      <circle cx="45" cy="46" r="28" fill="#c99a5b" filter="url(#wc-soft)" />
+                      <circle cx="45" cy="46" r="28" fill="#a9885a" opacity="0.45" filter="url(#wc-rough)" />
+                      <circle cx="35" cy="38" r="9" fill="#e0b97f" opacity="0.7" filter="url(#wc-rough)" />
+                    </svg>
+                  )}
+                  {i === 5 && (
+                    <svg viewBox="0 0 90 110">
+                      <g stroke="#c1714f" stroke-width="3.4" stroke-linecap="round" filter="url(#ink)" fill="none">
+                        <path d="M38 104 C 36 88, 34 76, 34 62" />
+                        <path d="M52 104 C 54 88, 56 76, 55 64" />
+                        <path d="M45 104 C 45 90, 45 80, 45 58" />
+                      </g>
+                      <ellipse cx="45" cy="44" rx="26" ry="22" fill="url(#pg-pistacho)" filter="url(#wc-soft)" />
+                      <g fill="#fffdf8" filter="url(#wc-rough)">
+                        <circle cx="34" cy="36" r="3" /><circle cx="52" cy="30" r="3" />
+                        <circle cx="58" cy="46" r="3" /><circle cx="40" cy="52" r="2.6" />
+                      </g>
+                    </svg>
+                  )}
+                  {i === 6 && (
+                    <svg viewBox="0 0 90 110">
+                      <path d="M45 104 C 46 86, 44 72, 45 56" stroke="#5b6c42" stroke-width="3.4"
+                        stroke-linecap="round" filter="url(#ink)" fill="none" />
+                      <ellipse cx="58" cy="80" rx="9" ry="5" transform="rotate(-20 58 80)" fill="url(#pg-pistacho)" filter="url(#wc-rough)" />
+                      <g fill="#e8892d" filter="url(#wc-rough)">
+                        {Array.from({ length: 12 }, (_, k) => {
+                          const ang = (k / 12) * Math.PI * 2;
+                          return (
+                            <ellipse
+                              cx={45 + Math.cos(ang) * 15}
+                              cy={36 + Math.sin(ang) * 15}
+                              rx="5.5"
+                              ry="3.4"
+                              transform={`rotate(${(ang * 180) / Math.PI} ${45 + Math.cos(ang) * 15} ${36 + Math.sin(ang) * 15})`}
+                            />
+                          );
+                        })}
+                      </g>
+                      <circle cx="45" cy="36" r="7.5" fill="#b3761c" filter="url(#wc-rough)" />
+                    </svg>
+                  )}
+                  {i === 7 && (
+                    <svg viewBox="0 0 90 110">
+                      <path d="M28 104 C 27 88, 27 74, 28 58 M 62 104 C 63 90, 63 78, 62 62"
+                        stroke="#5b6c42" stroke-width="3.2" stroke-linecap="round" filter="url(#ink)" fill="none" />
+                      <g filter="url(#wc-rough)">
+                        <circle cx="28" cy="44" r="13" fill="#d98a9e" />
+                        <circle cx="28" cy="44" r="8" fill="#c76a84" opacity="0.75" />
+                        <circle cx="28" cy="44" r="3.6" fill="#a94b66" />
+                      </g>
+                      <g filter="url(#wc-rough)">
+                        <ellipse cx="62" cy="46" rx="6" ry="13" fill="#8f7bc9" />
+                        <ellipse cx="54" cy="56" rx="5" ry="9" transform="rotate(38 54 56)" fill="#7a66b5" />
+                        <ellipse cx="70" cy="56" rx="5" ry="9" transform="rotate(-38 70 56)" fill="#7a66b5" />
+                      </g>
+                    </svg>
+                  )}
+                  {i === 8 && (
+                    <svg viewBox="0 0 90 110">
+                      <g stroke="#7a8b5a" stroke-width="2.6" stroke-linecap="round" filter="url(#ink)" fill="none">
+                        <path d="M38 104 C 36 86, 34 72, 33 56" />
+                        <path d="M52 104 C 55 88, 57 74, 58 60" />
+                        <path d="M45 104 C 45 88, 45 76, 45 62" />
+                      </g>
+                      <g filter="url(#wc-rough)">
+                        <path d="M45 58 C 36 50, 34 38, 39 30 C 42 26, 48 26, 51 30 C 56 38, 54 50, 45 58 Z" fill="#9b8ec4" />
+                        <path d="M38 52 C 32 46, 30 38, 33 32" stroke="#7a66b5" stroke-width="3" stroke-linecap="round" fill="none" />
+                        <path d="M52 52 C 58 46, 60 38, 57 32" stroke="#7a66b5" stroke-width="3" stroke-linecap="round" fill="none" />
+                      </g>
+                      <g stroke="#c14b3a" stroke-width="2.2" stroke-linecap="round" filter="url(#ink)">
+                        <path d="M43 40 C 41 32, 42 26, 40 20" fill="none" />
+                        <path d="M45 40 C 45 30, 46 24, 45 17" fill="none" />
+                        <path d="M47 40 C 49 32, 48 26, 50 19" fill="none" />
+                      </g>
+                    </svg>
+                  )}
+                  {i === 9 && (
+                    <svg viewBox="0 0 90 110">
+                      <path d="M30 104 C 29 84, 29 68, 30 48 M 60 104 C 61 88, 61 76, 60 58"
+                        stroke="#5b6c42" stroke-width="3" stroke-linecap="round" filter="url(#ink)" fill="none" />
+                      <g fill="#7fa0c9" filter="url(#wc-rough)">
+                        <ellipse cx="30" cy="36" rx="7" ry="16" />
+                        <ellipse cx="30" cy="22" rx="4.5" ry="8" opacity="0.8" />
+                      </g>
+                      <g filter="url(#wc-rough)">
+                        {Array.from({ length: 8 }, (_, k) => {
+                          const ang = (k / 8) * Math.PI * 2;
+                          return (
+                            <path
+                              d={`M${60 + Math.cos(ang) * 6} ${48 + Math.sin(ang) * 6} L ${60 + Math.cos(ang) * 15} ${48 + Math.sin(ang) * 15}`}
+                              stroke="#4a6db5"
+                              stroke-width="4.5"
+                              stroke-linecap="round"
+                            />
+                          );
+                        })}
+                        <circle cx="60" cy="48" r="5" fill="#2f4a86" />
+                      </g>
+                    </svg>
+                  )}
+                </span>
+                <span class="specimen-name">{plant.n}</span>
+              </span>
+
+              <span class="specimen-back">
+                <span class="specimen-name">{plant.n}</span>
+                <span class="specimen-desc">{plant.d}</span>
+              </span>
+            </span>
+          </button>
+        </li>
+      ))}
+    </ul>
+  </div>
+</section>
+
+<script>
+  const section = document.getElementById('herbario')!;
+  section.querySelectorAll<HTMLButtonElement>('.specimen').forEach((card) => {
+    card.addEventListener('click', () => {
+      card.setAttribute(
+        'aria-expanded',
+        card.getAttribute('aria-expanded') === 'true' ? 'false' : 'true'
+      );
+    });
+  });
+</script>
+
+<style>
+  .herbario {
+    background: var(--papel-warm);
+  }
+
+  .specimens {
+    list-style: none;
+    padding: 0;
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(min(46vw, 10.5rem), 1fr));
+    gap: var(--sp-4);
+  }
+
+  .specimen {
+    width: 100%;
+    background: none;
+    border: none;
+    padding: 0;
+    cursor: pointer;
+    perspective: 900px;
+    rotate: var(--tilt);
+  }
+
+  .specimen-inner {
+    position: relative;
+    display: block;
+    width: 100%;
+    min-height: 13.5rem;
+    transform-style: preserve-3d;
+    transition: transform 520ms var(--ease-in-out);
+  }
+
+  .specimen[aria-expanded='true'] .specimen-inner {
+    transform: rotateY(180deg);
+  }
+
+  @media (hover: hover) and (pointer: fine) {
+    .specimen:hover .specimen-inner {
+      translate: 0 -4px;
+    }
+  }
+
+  .specimen:active {
+    scale: 0.97;
+  }
+
+  .specimen-front,
+  .specimen-back {
+    position: absolute;
+    inset: 0;
+    display: grid;
+    align-content: start;
+    justify-items: center;
+    backface-visibility: hidden;
+    -webkit-backface-visibility: hidden;
+    border-radius: var(--r-md);
+    box-shadow: var(--shadow-soft);
+    padding: var(--sp-4) var(--sp-3) var(--sp-3);
+  }
+
+  .specimen-front {
+    background: var(--paper);
+  }
+
+  /* Klebeband oben, wie auf echten Herbariumsbögen */
+  .tape {
+    position: absolute;
+    top: -7px;
+    left: 50%;
+    translate: -50%;
+    width: 54px;
+    height: 16px;
+    background: color-mix(in srgb, var(--miel-200) 75%, transparent);
+    rotate: -2deg;
+    border-radius: 2px;
+    box-shadow: 0 1px 2px rgba(51, 41, 31, 0.08);
+  }
+
+  .specimen-art {
+    width: 100%;
+    max-width: 7rem;
+  }
+
+  .specimen-art svg {
+    width: 100%;
+    height: auto;
+  }
+
+  .specimen-name {
+    font-family: var(--font-display);
+    font-variation-settings: 'SOFT' 80, 'WONK' 1;
+    font-style: italic;
+    font-size: var(--fs-400);
+    color: var(--tinta);
+    margin-top: var(--sp-1);
+  }
+
+  .specimen-back {
+    background: var(--pistacho-100);
+    transform: rotateY(180deg);
+    align-content: center;
+    gap: var(--sp-2);
+    text-align: center;
+  }
+
+  .specimen-desc {
+    font-size: 0.78rem;
+    line-height: 1.45;
+    color: var(--tinta-suave);
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .specimen-inner {
+      transition: none;
+    }
+  }
+</style>

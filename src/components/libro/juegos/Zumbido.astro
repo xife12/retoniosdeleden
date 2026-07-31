@@ -1,0 +1,503 @@
+---
+/**
+ * Seite 3 — „¿De dónde sale el Bzzz?"
+ *
+ * Fünf Sekunden so schnell tippen wie möglich. Melis Flügel schlagen im
+ * gemessenen Takt mit, ein erzeugter Ton steigt in der Tonhöhe, und am Ende
+ * steht der eigene Balken winzig neben ihrem.
+ *
+ * Drei Dinge sind gegenüber der ersten Fassung anders:
+ *  · Der eigene Balken liegt jetzt auf DERSELBEN Skala wie Melis, mit einer
+ *    Marke bei 230 — vorher war der Vergleich nur eine Zahl, die man leicht
+ *    übersah, und es sah aus, als sei nichts passiert.
+ *  · Weitertippen nach Ablauf der Zeit startet nicht mehr versehentlich neu;
+ *    dafür gibt es einen eigenen Knopf.
+ *  · Die Tippfläche ist eine große gezeichnete Blüte statt eines Flecks im
+ *    Buchbild, wo man ständig die Wissenslichter erwischt hat.
+ */
+import BeeMeli from '../../BeeMeli.astro';
+import { libroUI } from '../../../data/libro';
+import type { Lang } from '../../../i18n';
+
+interface Props {
+  lang: Lang;
+}
+
+const { lang } = Astro.props;
+const j = libroUI[lang].juegos.zumbido;
+const ui = libroUI[lang];
+---
+
+<div class="escena" data-zum-escena data-textos={JSON.stringify(j)}>
+  <h3 class="escena-titulo">{j.title}</h3>
+  <p class="escena-pista">{j.hint}</p>
+
+  <div class="mesa zum-mesa" data-zum-mesa>
+    <svg viewBox="0 0 300 190" aria-hidden="true">
+      <!-- Schallwellen -->
+      <g class="zum-ondas" transform="translate(196 88)">
+        <circle class="zum-onda" r="30" fill="none" stroke="#e8a13d" stroke-width="2.4" />
+        <circle class="zum-onda zum-onda-2" r="30" fill="none" stroke="#e8a13d" stroke-width="2" />
+        <circle class="zum-onda zum-onda-3" r="30" fill="none" stroke="#e8a13d" stroke-width="1.6" />
+      </g>
+
+      <!-- Meli, deren Flügel im gemessenen Takt schlagen -->
+      <g class="zum-meli" transform="translate(196 88)">
+        <g class="zum-alas">
+          <ellipse class="zum-ala zum-ala-1" cx="-6" cy="-26" rx="40" ry="15"
+            transform="rotate(-24 -6 -26)" fill="#eef5f8" opacity="0.75" stroke="#33291f"
+            stroke-width="1.2" />
+          <ellipse class="zum-ala zum-ala-2" cx="-16" cy="-18" rx="32" ry="12"
+            transform="rotate(-40 -16 -18)" fill="#d9eaf2" opacity="0.6" stroke="#33291f"
+            stroke-width="1" />
+        </g>
+        <ellipse rx="34" ry="25" fill="url(#pg-miel)" filter="url(#wc-soft)" />
+        <g filter="url(#wc-rough)" style="mix-blend-mode:multiply">
+          <path d="M-16 -22 C -10 -25, -5 -25, -1 -23 L -5 22 C -11 20, -16 16, -20 11 Z"
+            fill="#6b4a1f" opacity="0.8" />
+          <path d="M8 -24 C 13 -24, 17 -22, 21 -20 L 16 24 C 11 25, 6 25, 2 24 Z"
+            fill="#6b4a1f" opacity="0.8" />
+        </g>
+        <ellipse rx="34" ry="25" fill="none" stroke="#33291f" stroke-width="2" opacity="0.7"
+          filter="url(#ink)" />
+        <circle cx="38" cy="-8" r="17" fill="#a06a2c" filter="url(#wc-soft)" />
+        <circle cx="43" cy="-13" r="3.4" fill="#33291f" />
+      </g>
+
+      <!-- Die Blüte, auf die getippt wird -->
+      <g class="zum-flor" transform="translate(88 108)">
+        <path d="M0 66 C -2 40, 0 24, 0 8" stroke="#5b6c42" stroke-width="5"
+          stroke-linecap="round" fill="none" filter="url(#ink)" />
+        <g class="zum-petalos" filter="url(#wc-rough)" fill="#e8892d">
+          <ellipse cy="-34" rx="15" ry="24" />
+          <ellipse cy="34" rx="15" ry="24" />
+          <ellipse cx="-34" rx="24" ry="15" />
+          <ellipse cx="34" rx="24" ry="15" />
+          <ellipse cx="-24" cy="-24" rx="17" ry="17" />
+          <ellipse cx="24" cy="-24" rx="17" ry="17" />
+          <ellipse cx="-24" cy="24" rx="17" ry="17" />
+          <ellipse cx="24" cy="24" rx="17" ry="17" />
+        </g>
+        <circle r="20" fill="#b3761c" filter="url(#wc-rough)" />
+        <circle class="zum-halo" r="26" fill="none" stroke="#fff3d0" stroke-width="3"
+          stroke-dasharray="4 6" opacity="0" />
+      </g>
+    </svg>
+
+    <button class="zum-toca" data-zum-toca aria-label={j.button}>
+      <span class="zum-reloj" data-zum-reloj hidden></span>
+    </button>
+  </div>
+
+  <div class="escena-mandos">
+    <button class="boton boton--grande" data-zum-go>{j.button}</button>
+    <button class="boton boton--fantasma zum-mute" data-zum-mute aria-pressed="true">
+      <svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true">
+        <path d="M4 9.5 L8 9.5 L13 5 L13 19 L8 14.5 L4 14.5 Z" fill="currentColor" />
+        <path class="zum-mute-on" d="M16.5 8.5 C 19 11, 19 13, 16.5 15.5" fill="none"
+          stroke="currentColor" stroke-width="2" stroke-linecap="round" />
+        <path class="zum-mute-off" d="M16.5 9 L 21 15 M 21 9 L 16.5 15" fill="none"
+          stroke="currentColor" stroke-width="2" stroke-linecap="round" />
+      </svg>
+      <span>{j.sound}</span>
+    </button>
+  </div>
+
+  <!-- Beide auf derselben Skala: darum geht es. -->
+  <div class="zum-barras" data-zum-barras hidden>
+    <div class="zum-fila">
+      <span class="zum-quien">{j.you}</span>
+      <span class="zum-pista">
+        <i class="zum-relleno zum-relleno--tu" data-zum-tu></i>
+      </span>
+      <b data-zum-tu-n>0</b>
+    </div>
+    <div class="zum-fila">
+      <span class="zum-quien">{j.me}</span>
+      <span class="zum-pista">
+        <i class="zum-relleno zum-relleno--meli" data-zum-meli></i>
+        <!-- Marke auf Melis Skala: „so weit bist du gekommen" -->
+        <i class="zum-marca" data-zum-marca hidden></i>
+      </span>
+      <b>230</b>
+    </div>
+    <p class="zum-unidad">{j.unit}</p>
+  </div>
+
+  <div class="escena-mandos">
+    <button class="boton boton--fantasma" data-zum-otra hidden>{ui.againLabel}</button>
+  </div>
+
+  <div class="dice">
+    <span class="dice-meli" aria-hidden="true"><BeeMeli width="100%" /></span>
+    <p class="dice-texto" data-zum-dice aria-live="polite"></p>
+  </div>
+</div>
+
+<script>
+  import { crearZumbido, datos, decir, logro, quieto, tin } from '../../../scripts/juego';
+
+  const escena = document.querySelector<HTMLElement>('[data-zum-escena]');
+
+  if (escena) {
+    const t = datos(escena, 'textos', {} as Record<string, string>);
+    const mesa = escena.querySelector<HTMLElement>('[data-zum-mesa]')!;
+    const go = escena.querySelector<HTMLButtonElement>('[data-zum-go]')!;
+    const otra = escena.querySelector<HTMLButtonElement>('[data-zum-otra]')!;
+    const mute = escena.querySelector<HTMLButtonElement>('[data-zum-mute]')!;
+    const reloj = escena.querySelector<HTMLElement>('[data-zum-reloj]')!;
+    const barras = escena.querySelector<HTMLElement>('[data-zum-barras]')!;
+    const barraTu = escena.querySelector<HTMLElement>('[data-zum-tu]')!;
+    const barraMeli = escena.querySelector<HTMLElement>('[data-zum-meli]')!;
+    const marca = escena.querySelector<HTMLElement>('[data-zum-marca]')!;
+    const numTu = escena.querySelector<HTMLElement>('[data-zum-tu-n]')!;
+    const dice = escena.querySelector<HTMLElement>('[data-zum-dice]');
+    const toca = escena.querySelector<HTMLButtonElement>('[data-zum-toca]')!;
+    const alas = escena.querySelector<SVGGElement>('.zum-alas')!;
+
+    const DURACION = 5000;
+    const MELI = 230;
+
+    let jugando = false;
+    let terminado = false;
+    let golpes = 0;
+    let t0 = 0;
+    let fin = 0;
+    let sonido = true;
+    let buzz: ReturnType<typeof crearZumbido> = null;
+    let raf = 0;
+    let cronometro = 0;
+
+    mute.addEventListener('click', () => {
+      sonido = !sonido;
+      mute.setAttribute('aria-pressed', String(sonido));
+      if (!sonido) buzz?.parar();
+    });
+
+    const pintar = () => {
+      if (!jugando) return;
+      const s = Math.max(0.35, (performance.now() - t0) / 1000);
+      const r = golpes / s;
+      alas.style.setProperty('--vel', `${Math.max(55, 900 / Math.max(1, r))}ms`);
+      buzz?.frecuencia(28 + r * 14);
+      reloj.textContent = (Math.max(0, fin - performance.now()) / 1000).toFixed(1);
+      raf = requestAnimationFrame(pintar);
+    };
+
+    const golpe = () => {
+      if (!jugando) return;
+      golpes += 1;
+      toca.classList.remove('is-hit');
+      void toca.offsetWidth;
+      toca.classList.add('is-hit');
+      if (sonido && !buzz) {
+        buzz = crearZumbido();
+        buzz?.empezar();
+      }
+    };
+
+    function terminar() {
+      jugando = false;
+      terminado = true;
+      cancelAnimationFrame(raf);
+      window.clearTimeout(cronometro);
+      buzz?.parar();
+      buzz = null;
+      mesa.classList.remove('is-jugando');
+      reloj.hidden = true;
+      alas.style.removeProperty('--vel');
+      go.hidden = true;
+      otra.hidden = false;
+
+      const r = Math.max(1, Math.round((golpes / (DURACION / 1000)) * 10) / 10);
+      numTu.textContent = String(r);
+      barras.hidden = false;
+      marca.hidden = false;
+      // Beide Balken auf derselben Skala — genau das ist die Pointe. Damit
+      // der eigene Streifen nicht bloß als „nichts passiert" gelesen wird,
+      // steht dieselbe Stelle zusätzlich als Marke auf Melis Balken.
+      const parte = Math.min(1, r / MELI);
+      marca.style.left = `${Math.max(1.5, parte * 100)}%`;
+      requestAnimationFrame(() => {
+        barraTu.style.transform = `scaleX(${Math.max(0.02, parte)})`;
+        barraMeli.style.transform = 'scaleX(1)';
+      });
+
+      decir(dice, `${(t.result ?? '').replace('{n}', String(r))} ${t.fact ?? ''}`);
+      tin(0.8);
+      logro('zumbido', t.logro ?? '');
+    }
+
+    const empezar = () => {
+      if (jugando) return;
+      jugando = true;
+      terminado = false;
+      golpes = 0;
+      t0 = performance.now();
+      fin = t0 + DURACION;
+      barras.hidden = true;
+      otra.hidden = true;
+      marca.hidden = true;
+      go.hidden = false;
+      go.textContent = t.go ?? '';
+      barraTu.style.transform = 'scaleX(0)';
+      barraMeli.style.transform = 'scaleX(0)';
+      mesa.classList.add('is-jugando');
+      reloj.hidden = false;
+      decir(dice, t.go ?? '');
+      // Die Uhr läuft über setTimeout und nicht über die Bildrate: so endet
+      // die Runde auch dann zuverlässig, wenn der Tab kurz stockt.
+      cronometro = window.setTimeout(terminar, DURACION);
+      if (!quieto()) raf = requestAnimationFrame(pintar);
+      golpe();
+    };
+
+    // Während des Spiels zählt der Knopf mit (auch für die Tastatur),
+    // startet aber nie versehentlich eine neue Runde.
+    go.addEventListener('click', () => {
+      if (jugando) golpe();
+      else if (!terminado) empezar();
+    });
+
+    otra.addEventListener('click', () => {
+      go.textContent = t.button ?? '';
+      terminado = false;
+      empezar();
+    });
+
+    toca.addEventListener('pointerdown', (e) => {
+      e.preventDefault();
+      if (jugando) golpe();
+      else if (!terminado) empezar();
+    });
+  }
+</script>
+
+<style>
+  .zum-mesa {
+    position: relative;
+    max-width: 32rem;
+  }
+
+  /* Die Tippfläche liegt genau auf der gezeichneten Blüte. */
+  .zum-toca {
+    position: absolute;
+    left: 29.3%;
+    top: 56.8%;
+    translate: -50% -50%;
+    width: 34%;
+    aspect-ratio: 1;
+    border: none;
+    border-radius: 50%;
+    background: none;
+    padding: 0;
+    cursor: pointer;
+    display: grid;
+    place-items: center;
+    -webkit-tap-highlight-color: transparent;
+    touch-action: manipulation;
+  }
+
+  .zum-reloj {
+    font-family: var(--font-display);
+    font-size: clamp(1.3rem, 5vw, 2rem);
+    font-weight: 700;
+    color: #fffdf8;
+    text-shadow: 0 2px 6px rgba(74, 51, 8, 0.7);
+    font-variant-numeric: tabular-nums;
+    pointer-events: none;
+  }
+
+  .zum-mesa.is-jugando .zum-halo {
+    opacity: 1;
+    animation: zum-gira 6s linear infinite;
+    transform-box: fill-box;
+    transform-origin: 50% 50%;
+  }
+
+  @keyframes zum-gira {
+    to {
+      transform: rotate(360deg);
+    }
+  }
+
+  .zum-petalos {
+    transform-box: fill-box;
+    transform-origin: 50% 50%;
+    transition: scale 180ms var(--ease-out);
+  }
+
+  .zum-toca.is-hit ~ * .zum-petalos,
+  .zum-mesa.is-jugando .zum-toca.is-hit + .zum-petalos {
+    scale: 1;
+  }
+
+  .zum-mesa.is-jugando .zum-petalos {
+    animation: zum-respira 0.9s ease-in-out infinite alternate;
+  }
+
+  @keyframes zum-respira {
+    from {
+      scale: 1;
+    }
+    to {
+      scale: 1.05;
+    }
+  }
+
+  .zum-ala {
+    transform-box: fill-box;
+    transform-origin: 88% 70%;
+  }
+
+  .zum-mesa.is-jugando .zum-ala-1 {
+    animation: zum-bate var(--vel, 220ms) ease-in-out infinite alternate;
+  }
+
+  .zum-mesa.is-jugando .zum-ala-2 {
+    animation: zum-bate-2 var(--vel, 220ms) ease-in-out infinite alternate;
+  }
+
+  @keyframes zum-bate {
+    from {
+      transform: rotate(-20deg);
+    }
+    to {
+      transform: rotate(14deg);
+    }
+  }
+
+  @keyframes zum-bate-2 {
+    from {
+      transform: rotate(16deg);
+    }
+    to {
+      transform: rotate(-12deg);
+    }
+  }
+
+  .zum-ondas {
+    opacity: 0;
+    transition: opacity 320ms ease;
+  }
+
+  .zum-mesa.is-jugando .zum-ondas {
+    opacity: 0.85;
+  }
+
+  .zum-mesa.is-jugando .zum-onda {
+    animation: zum-onda 1.5s ease-out infinite;
+    transform-box: fill-box;
+    transform-origin: 50% 50%;
+  }
+
+  .zum-mesa.is-jugando .zum-onda-2 {
+    animation-delay: 0.5s;
+  }
+
+  .zum-mesa.is-jugando .zum-onda-3 {
+    animation-delay: 1s;
+  }
+
+  @keyframes zum-onda {
+    0% {
+      scale: 0.5;
+      opacity: 0.9;
+    }
+    100% {
+      scale: 2.2;
+      opacity: 0;
+    }
+  }
+
+  .zum-mute[aria-pressed='true'] .zum-mute-off,
+  .zum-mute[aria-pressed='false'] .zum-mute-on {
+    display: none;
+  }
+
+  /* Der Vergleich */
+  .zum-barras {
+    display: grid;
+    gap: var(--sp-2);
+    width: min(100%, 32rem);
+    padding: var(--sp-3) var(--sp-4);
+    border-radius: 4px 18px 18px 18px;
+    background: rgba(232, 161, 61, 0.16);
+  }
+
+  .zum-fila {
+    display: grid;
+    grid-template-columns: 3.6rem minmax(0, 1fr) 3.4rem;
+    align-items: center;
+    gap: var(--sp-2);
+    font-size: var(--fs-300);
+  }
+
+  .zum-quien {
+    font-weight: 700;
+    color: var(--tinta-suave-papel);
+    text-align: left;
+  }
+
+  .zum-fila b {
+    text-align: right;
+    color: var(--miel-800);
+    font-variant-numeric: tabular-nums;
+  }
+
+  .zum-pista {
+    position: relative;
+    height: 18px;
+    border-radius: 999px;
+    background: rgba(179, 118, 28, 0.16);
+    overflow: hidden;
+  }
+
+  /* Über transform statt width: das flackert nicht und wirft kein Layout um.
+     Die runden Enden kommen von der Spur, nicht von der Füllung. */
+  .zum-relleno {
+    display: block;
+    height: 100%;
+    width: 100%;
+    transform: scaleX(0);
+    transform-origin: left center;
+    transition: transform 900ms var(--ease-out) 150ms;
+  }
+
+  .zum-relleno--tu {
+    background: var(--pistacho-500);
+  }
+
+  .zum-relleno--meli {
+    background: linear-gradient(90deg, var(--miel-300), var(--miel-700));
+  }
+
+  /* Dieselbe Stelle noch einmal auf Melis Balken — dort ist sofort zu
+     sehen, wie weit „vos" auf ihrer Skala kommt. */
+  .zum-marca {
+    position: absolute;
+    top: -3px;
+    bottom: -3px;
+    width: 3px;
+    border-radius: 2px;
+    background: var(--pistacho-700);
+    box-shadow: 0 0 0 2px rgba(255, 253, 248, 0.9);
+    transform: translateX(-50%);
+  }
+
+  .zum-unidad {
+    font-size: var(--fs-200);
+    color: var(--tinta-tenue);
+    text-align: right;
+    font-style: italic;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .zum-halo,
+    .zum-ala,
+    .zum-onda,
+    .zum-petalos {
+      animation: none !important;
+    }
+  }
+</style>

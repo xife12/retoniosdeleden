@@ -1,0 +1,116 @@
+/* ============================================================
+   Sistema Edén — Design Tokens
+   Aquarell-Pigmentpalette, Typografie, Raum, Form, Bewegung
+   ============================================================ */
+
+:root {
+  /* ---------- Pigmentos (Aquarell-Waschungen: 100 hell → 700 satt) ---------- */
+  /* Miel — Honig, Sonne, Meli */
+  --miel-100: #fdf3e0;
+  --miel-200: #f9e3bb;
+  --miel-300: #f3c87f;
+  --miel-500: #e8a13d;
+  --miel-700: #b3761c;
+  /* Honig dunkel genug für Text: #b3761c erreicht auf warmem Papier nur
+     3,5:1, das reicht für Beschriftungen nicht. Dieser Ton kommt auf 5:1
+     und bleibt derselbe Bernstein. Nur für Schrift, nicht für Flächen. */
+  --miel-800: #8f5c14;
+
+  /* Pistacho — Felder, Blätter, Hoffnung */
+  --pistacho-100: #eef1e2;
+  --pistacho-200: #dde4c8;
+  --pistacho-300: #aebd8a;
+  --pistacho-500: #7a8b5a;
+  --pistacho-700: #3f4f30;
+
+  /* Lavanda — Lavendelreihen, Abendlicht */
+  --lavanda-100: #f1eef8;
+  --lavanda-200: #e0dbf0;
+  --lavanda-300: #c3b9e0;
+  --lavanda-500: #9b8ec4;
+  --lavanda-700: #675a96;
+
+  /* Barro — Lehm, Häuser, Erde */
+  --barro-100: #f8e9e0;
+  --barro-200: #f0d4c4;
+  --barro-300: #dfa98c;
+  --barro-500: #c1714f;
+  --barro-700: #8f4c31;
+
+  /* Cielo — Himmel, Wasser */
+  --cielo-100: #eef5f8;
+  --cielo-200: #d9eaf2;
+  --cielo-300: #b1d3e3;
+  --cielo-500: #7fb0c9;
+
+  /* Papel & Tinta — Aquarellpapier und Tuschelinie */
+  --papel: #fbf6ec;
+  --papel-warm: #f7efdd;
+  --tinta: #33291f;
+  --tinta-suave: #5c4f40;
+  --tinta-tenue: #8a7b68;
+
+  /* ---------- Semantik ---------- */
+  --c-bg: var(--papel);
+  --c-text: var(--tinta);
+  --c-text-soft: var(--tinta-suave);
+  --c-accent: var(--miel-500);
+  --c-accent-deep: var(--miel-700);
+  --c-link: var(--barro-700);
+
+  /* ---------- Typografie ---------- */
+  --font-display: 'Fraunces Variable', 'Georgia', serif;
+  --font-body: 'Outfit Variable', 'Segoe UI', sans-serif;
+
+  /* Fluide Skala (Faktor ~1.25, mobil → desktop) */
+  --fs-hero:  clamp(2.75rem, 4.5vw + 1.9rem, 5.25rem);
+  --fs-900:   clamp(2.1rem, 2.6vw + 1.4rem, 3.4rem);
+  --fs-800:   clamp(1.7rem, 1.6vw + 1.25rem, 2.5rem);
+  --fs-700:   clamp(1.35rem, 1vw + 1.1rem, 1.85rem);
+  --fs-600:   clamp(1.15rem, 0.5vw + 1.02rem, 1.4rem);
+  --fs-500:   1.125rem;
+  --fs-400:   1rem;
+  --fs-300:   0.875rem;
+  --fs-200:   0.78rem;
+
+  --lh-tight: 1.08;
+  --lh-snug: 1.3;
+  --lh-body: 1.65;
+
+  /* ---------- Raum (4-px-Basis) ---------- */
+  --sp-1: 0.25rem;
+  --sp-2: 0.5rem;
+  --sp-3: 0.75rem;
+  --sp-4: 1rem;
+  --sp-5: 1.5rem;
+  --sp-6: 2rem;
+  --sp-7: 3rem;
+  --sp-8: 4rem;
+  --sp-9: 6rem;
+  --sp-10: 8rem;
+
+  --section-pad: clamp(4rem, 10vw, 8rem);
+  --content-w: 68rem;
+  --text-w: 42rem;
+
+  /* ---------- Form ---------- */
+  --r-sm: 10px;
+  --r-md: 18px;
+  --r-lg: 28px;
+  --r-full: 999px;
+  /* organischer "Farbfleck"-Radius */
+  --r-blob: 58% 42% 55% 45% / 52% 58% 42% 48%;
+
+  /* ---------- Schatten (warm, weich) ---------- */
+  --shadow-soft: 0 6px 20px rgba(122, 90, 30, 0.12);
+  --shadow-lift: 0 14px 36px rgba(122, 90, 30, 0.18);
+  --shadow-modal: 0 24px 70px rgba(51, 41, 31, 0.28);
+
+  /* ---------- Bewegung ---------- */
+  --dur-1: 140ms;   /* Mikrofeedback */
+  --dur-2: 240ms;   /* UI-Übergänge */
+  --dur-3: 480ms;   /* Szenenwechsel */
+  --ease-out: cubic-bezier(0.23, 1, 0.32, 1);
+  --ease-in-out: cubic-bezier(0.77, 0, 0.175, 1);
+  --ease-bounce: cubic-bezier(0.34, 1.56, 0.64, 1); /* Meli */
+}

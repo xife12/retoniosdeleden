@@ -1,0 +1,225 @@
+---
+/**
+ * Die Bildmarke von Retoños del Edén — ohne Wortmarke.
+ *
+ * Nachgezeichnet nach der Logovorlage: ein offener Goldring, darin und
+ * darum die Zeichen der Chacra —
+ *   · links  Lavendelrispen, die durch die Ringlücke hinauswachsen
+ *   · oben   eine fliegende Biene (dieselbe Gestalt wie Meli, nur flach)
+ *   · rechts ein Olivenzweig mit zwei bernsteinfarbenen Blättern
+ *   · unten  die runde Blüte und der Bienenstock mit Flugloch
+ *
+ * Flache Vektorform, keine Aquarellfilter: Das Logo ist die Signatur der
+ * Marke und muss auch bei 16 px sauber stehen. `simple` lässt Lavendel,
+ * Zweig und Blüte weg und verdoppelt die Strichstärke — diese Fassung ist
+ * für Favicon, App-Icons und alles unter etwa 40 px. Sie deckt sich mit
+ * `public/favicon.svg`; wer hier etwas ändert, muss es dort nachziehen.
+ *
+ * Geometrie: alles liegt innerhalb von viewBox 0 0 200 200 und ist um
+ * (100, 100) zentriert — der Ring (r 84) ist das äußerste Element. Dadurch
+ * sitzt die Marke im Kasten optisch mittig und lässt sich neben Schrift
+ * über die Kastenmitte ausrichten. Nichts ragt heraus; `overflow: visible`
+ * ist nur noch Sicherheitsnetz.
+ */
+interface Props {
+  class?: string;
+  width?: string;
+  /** Reduzierte Fassung für kleine Größen (Ring, Stock, Biene). */
+  simple?: boolean;
+  /** Bei rein dekorativer Verwendung neben dem Schriftzug. */
+  decorative?: boolean;
+}
+
+const {
+  class: className = '',
+  width = '40px',
+  simple = false,
+  decorative = false,
+} = Astro.props;
+
+const oro = '#9d7b2e';
+const oroTief = '#8f5c14'; /* --miel-800 */
+const miel = '#e8a13d'; /* --miel-500 */
+const verde = '#8fa257';
+const verdeOsc = '#7b8c48';
+const ambar = '#dfa03a';
+const ambarOsc = '#c98a26';
+const lila = '#b07fd4';
+const lilaOsc = '#9b6ac6';
+const ala = '#eef5f8'; /* --cielo-100, Flügelton wie bei Meli */
+const alaOsc = '#d9eaf2'; /* --cielo-200, Hinterflügel — sonst verschmelzen beide */
+
+/* Bei `simple` trägt die Marke nur drei Zeichen — dafür fast doppelt so
+   kräftig. Ein 6,5er-Strich auf viewBox 200 ist bei 16 px ein halbes
+   Gerätepixel breit und verschwindet im Antialiasing; in der gerasterten
+   Fassung war der Ring dort nur noch ein heller Schleier. Bei 12 steht er.
+   Die Standlinie des Stocks endet deshalb schon bei x 64/136: mit
+   Strichstärke 12 kämen ihre runden Enden sonst dem Ring zu nahe. */
+const grFuerte = simple ? 12 : 6.5;
+const grAla = simple ? 3 : 2.2;
+---
+
+<svg
+  class={`marca ${className}`}
+  style={`width:${width}`}
+  viewBox="0 0 200 200"
+  fill="none"
+  xmlns="http://www.w3.org/2000/svg"
+  role={decorative ? 'presentation' : 'img'}
+  aria-label={decorative ? undefined : 'Retoños del Edén'}
+  aria-hidden={decorative ? 'true' : undefined}
+>
+  <!-- Der offene Ring. Die Lücke oben links ist die Stelle, an der der
+       Lavendel hineinwächst.
+
+       `pathLength="1"` normiert die Pfadlänge auf 1. Dadurch kann die
+       Apertura den Ring mit `stroke-dashoffset: 1 → 0` schreiben lassen,
+       ohne die echte Bogenlänge zu kennen. Ohne `stroke-dasharray` — also
+       überall sonst — ändert das Attribut nichts. -->
+  <path
+    class="marca-anillo"
+    pathLength="1"
+    d="M78.3 18.9 A84 84 0 1 1 17.3 85.4"
+    stroke={oro}
+    stroke-width={grFuerte}
+    stroke-linecap="round"
+  />
+
+  {!simple && (
+    <>
+      <!-- Lavendel, links: zwei hohe Rispen wachsen durch die Ringlücke
+           hinaus, eine dritte bleibt kurz und dunkler dahinter. -->
+      <g class="marca-lavanda">
+        <path d="M62 158 C 54 134, 46 106, 42 84" stroke={verdeOsc} stroke-width="3.4"
+          stroke-linecap="round" />
+        <path d="M74 158 C 70 132, 64 106, 60 78" stroke={verdeOsc} stroke-width="3"
+          stroke-linecap="round" />
+        <path d="M84 158 C 86 138, 84 122, 81 106" stroke={verdeOsc} stroke-width="2.6"
+          stroke-linecap="round" />
+
+        <g fill={lila}>
+          <!-- Rispe 1, die hohe -->
+          <ellipse cx="38" cy="80" rx="5.4" ry="7.4" transform="rotate(-14 38 80)" />
+          <ellipse cx="47" cy="74" rx="5.4" ry="7.4" transform="rotate(12 47 74)" />
+          <ellipse cx="38" cy="66" rx="5.2" ry="7.2" transform="rotate(-12 38 66)" />
+          <ellipse cx="47" cy="59" rx="5" ry="7" transform="rotate(12 47 59)" />
+          <ellipse cx="39" cy="52" rx="4.7" ry="6.6" transform="rotate(-10 39 52)" />
+          <ellipse cx="46" cy="45" rx="4.4" ry="6.2" transform="rotate(10 46 45)" />
+          <ellipse cx="40" cy="38" rx="4" ry="5.6" transform="rotate(-8 40 38)" />
+          <ellipse cx="45" cy="31" rx="3.5" ry="5" transform="rotate(8 45 31)" />
+          <ellipse cx="41" cy="24" rx="2.9" ry="4.2" />
+          <!-- Rispe 2 -->
+          <ellipse cx="55" cy="74" rx="5" ry="6.8" transform="rotate(-14 55 74)" />
+          <ellipse cx="64" cy="68" rx="5" ry="6.8" transform="rotate(12 64 68)" />
+          <ellipse cx="55" cy="61" rx="4.8" ry="6.5" transform="rotate(-12 55 61)" />
+          <ellipse cx="64" cy="54" rx="4.6" ry="6.2" transform="rotate(12 64 54)" />
+          <ellipse cx="56" cy="47" rx="4.2" ry="5.8" transform="rotate(-10 56 47)" />
+          <ellipse cx="63" cy="40" rx="3.8" ry="5.2" transform="rotate(10 63 40)" />
+          <ellipse cx="58" cy="33" rx="3.2" ry="4.4" />
+        </g>
+        <g fill={lilaOsc} opacity="0.85">
+          <!-- Rispe 3, kürzer, hinten -->
+          <ellipse cx="76" cy="102" rx="4.4" ry="6.2" transform="rotate(-14 76 102)" />
+          <ellipse cx="85" cy="97" rx="4.4" ry="6.2" transform="rotate(12 85 97)" />
+          <ellipse cx="77" cy="90" rx="4.2" ry="5.8" transform="rotate(-12 77 90)" />
+          <ellipse cx="85" cy="84" rx="4" ry="5.4" transform="rotate(10 85 84)" />
+          <ellipse cx="79" cy="77" rx="3.5" ry="4.8" />
+        </g>
+      </g>
+
+      <!-- Olivenzweig, rechts. Die Blätter sitzen am Stiel statt frei zu
+           schweben; die beiden bernsteinfarbenen bilden eine warme
+           Diagonale zum Bienenstock hin. -->
+      <g class="marca-rama">
+        <path d="M152 158 C 152 138, 150 110, 149 78" stroke={verdeOsc} stroke-width="3.2"
+          stroke-linecap="round" />
+        <g fill={verde} stroke={verdeOsc} stroke-width="1.6">
+          <ellipse cx="150" cy="66" rx="8.5" ry="15" transform="rotate(10 150 66)" />
+          <ellipse cx="162" cy="84" rx="13.5" ry="7.5" transform="rotate(22 162 84)" />
+          <ellipse cx="137" cy="84" rx="13.5" ry="7.5" transform="rotate(-22 137 84)" />
+          <ellipse cx="161" cy="108" rx="13" ry="7.2" transform="rotate(20 161 108)" />
+          <ellipse cx="161" cy="132" rx="12.5" ry="7" transform="rotate(20 161 132)" />
+        </g>
+        <g fill={ambar} stroke={ambarOsc} stroke-width="1.6">
+          <ellipse cx="138" cy="108" rx="13" ry="7.2" transform="rotate(-20 138 108)" />
+          <ellipse cx="139" cy="132" rx="12.5" ry="7" transform="rotate(-20 139 132)" />
+        </g>
+      </g>
+
+      <!-- Runde Blüte unten links. Sechs Blätter um eine bernsteinfarbene
+           Mitte — dadurch liest sie sich als Blüte und nicht als Busch. -->
+      <g class="marca-flor">
+        <path d="M44 146 C 46 152, 48 156, 50 158" stroke={verdeOsc} stroke-width="2.6"
+          stroke-linecap="round" />
+        <g fill={verde} stroke={verdeOsc} stroke-width="1.6">
+          <circle cx="44" cy="121" r="7" />
+          <circle cx="53.5" cy="126.5" r="7" />
+          <circle cx="53.5" cy="137.5" r="7" />
+          <circle cx="44" cy="143" r="7" />
+          <circle cx="34.5" cy="137.5" r="7" />
+          <circle cx="34.5" cy="126.5" r="7" />
+        </g>
+        <circle cx="44" cy="132" r="6.4" fill={ambar} stroke={ambarOsc} stroke-width="1.6" />
+      </g>
+    </>
+  )}
+
+  <!-- Der Bienenstock mit Flugloch. Steht frei auf seiner Standlinie; die
+       Linie endet innerhalb des Rings, statt ihn zu durchschneiden. -->
+  <g class="marca-colmena">
+    <path d="M68 160 C 70 134, 86 120, 100 120 C 114 120, 130 134, 132 160"
+      stroke={oro} stroke-width={grFuerte} stroke-linecap="round" />
+    <path d="M64 160 L 136 160" stroke={oro} stroke-width={grFuerte} stroke-linecap="round" />
+    <path d="M93 160 L 93 146 C 93 140, 107 140, 107 146 L 107 160 Z" fill={oro} />
+  </g>
+
+  <!-- Die Biene. Haltung wie bei Meli (BeeMeli.astro): Kopf nach rechts,
+       Flügel schräg nach oben hinten, Stachel links — nur flach und ohne
+       Aquarellfilter, damit sie klein nicht zerfällt. -->
+  <g class="marca-abeja">
+    {!simple && (
+      <>
+        <ellipse cx="86" cy="44" rx="10" ry="5" transform="rotate(-46 86 44)"
+          fill={alaOsc} stroke={oro} stroke-width={grAla} />
+        <path d="M89 55 L 77 61 L 89 60 Z" fill={oro} />
+      </>
+    )}
+
+    <g transform="rotate(-10 102 54)">
+      <ellipse cx="102" cy="54" rx="15" ry="10.5" fill={simple ? oro : miel} />
+      {!simple && (
+        <>
+          <path d="M98.5 44.5 L 98.5 63.5 M 106 45 L 106 63" stroke={oroTief}
+            stroke-width="3.4" />
+          <ellipse cx="102" cy="54" rx="15" ry="10.5" fill="none" stroke={oro}
+            stroke-width="2.2" />
+        </>
+      )}
+    </g>
+
+    <circle cx="121" cy="49" r="7.5" fill={simple ? oro : ambarOsc} />
+    {!simple && (
+      <>
+        <circle cx="121" cy="49" r="7.5" fill="none" stroke={oro} stroke-width="2.2" />
+        <circle cx="124.5" cy="47" r="1.9" fill={oroTief} />
+        <path d="M125 42 C 128 37, 131 34, 133 32.5" stroke={oro} stroke-width="2"
+          stroke-linecap="round" />
+        <path d="M118 42 C 118 36, 120 32, 122.5 29.5" stroke={oro} stroke-width="2"
+          stroke-linecap="round" />
+        <circle cx="133" cy="31.5" r="2" fill={oro} />
+        <circle cx="122.5" cy="28.5" r="2" fill={oro} />
+      </>
+    )}
+
+    <ellipse cx="98" cy="38" rx="13" ry="6.4" transform="rotate(-24 98 38)"
+      fill={ala} stroke={oro} stroke-width={grAla} />
+  </g>
+</svg>
+
+<style>
+  .marca {
+    display: block;
+    height: auto;
+    overflow: visible;
+  }
+</style>

@@ -1,0 +1,640 @@
+---
+/**
+ * Seite 5 — „Armá tu cuerpo de abeja" (der WOW-Moment)
+ *
+ * Hier wird nicht irgendeine Biene gebaut, sondern Meli — dieselbe Figur,
+ * die das Kind seit der Startseite begleitet. Ihre Formen, Farben und
+ * Tuschekonturen stammen 1:1 aus `BeeMeli.astro`; sie werden nur in ihre
+ * Einzelteile zerlegt und nacheinander wieder angesetzt.
+ *
+ * Man hält den Knopf, Pollenlicht sammelt sich, und nacheinander wachsen
+ * vier Flügel, fünf Augen, zwei Fühler und sechs Beine. Danach kennt das
+ * Kind die Anatomie, ohne je einen Faktenkasten gelesen zu haben.
+ *
+ * Zerlegung (Meli bleibt im Profil, Blick nach rechts):
+ *   Rumpf   — Farbhof, Körper, drei Streifen, Stachel, Kopf, Konturen.
+ *             Steht von Anfang an, damit man sofort eine Biene erkennt.
+ *   1 Alas  — Melis Vorder- und Hinterflügel plus das Paar der Gegenseite,
+ *             nach oben-rechts versetzt und blasser: vier zählbare Flügel.
+ *   2 Ojos  — Melis Auge, das zweite grosse an der Kopfkante (Gegenseite)
+ *             und die drei Ocellen oben auf dem Kopf.
+ *   3 Antenas — Melis zwei Fühler samt Endknoten.
+ *   4 Patas — Melis drei Beine plus das zweite Trio dahinter, dazu die
+ *             Pollenkörbchen an beiden Hinterbeinen.
+ */
+import BeeMeli from '../../BeeMeli.astro';
+import { libroUI } from '../../../data/libro';
+import type { Lang } from '../../../i18n';
+
+interface Props {
+  lang: Lang;
+}
+
+const { lang } = Astro.props;
+const j = libroUI[lang].juegos.transformacion;
+
+/**
+ * Meli lebt in einem viewBox von `0 0 230 180`. Damit ihre Formen hier ohne
+ * Umrechnen übernommen werden können, wird ihr ganzer Koordinatenraum in die
+ * Bühne (300x230) geschoben und leicht vergrössert. Jede Gruppe, die Meli
+ * zitiert, hängt an diesem Transform.
+ */
+const meli = 'translate(25 27) scale(1.02)';
+---
+
+<div
+  class="escena"
+  data-tr-escena
+  data-textos={JSON.stringify({
+    more: j.more,
+    done: j.done,
+    count: j.count,
+    logro: j.logro,
+    parts: j.parts,
+    hint: j.hint,
+  })}
+>
+  <h3 class="escena-titulo">{j.title}</h3>
+  <p class="escena-pista">{j.hint}</p>
+
+  <div class="mesa tr-mesa" data-tr-mesa>
+    <svg viewBox="0 0 300 230" fill="none" role="img" aria-label={j.title}>
+      <!-- Pollenlicht: Hof und Fortschrittsring rund um die ganze Biene -->
+      <g class="tr-luz" transform="translate(150 114)">
+        <circle class="tr-aura" r="96" fill="url(#pg-sol)" opacity="0.5" />
+        <circle class="tr-anillo" r="88" fill="none" stroke="#e8a13d" stroke-width="5"
+          stroke-linecap="round" stroke-dasharray="553" stroke-dashoffset="553"
+          transform="rotate(-90)" />
+      </g>
+
+      <!-- Die Biene selbst. Leuchtet am Ende als Ganzes auf. -->
+      <g class="tr-abeja">
+        <!-- 1a · Flügel hinter dem Körper: Fernpaar + Melis Hinterflügel -->
+        <g class="tr-parte" data-tr-p="0">
+          <g class="tr-dib">
+            <g transform={meli}>
+              <g class="tr-aleteo">
+                <!-- Paar der Gegenseite: gleiche Formen, versetzt und blasser -->
+                <ellipse cx="124" cy="28" rx="41" ry="20" transform="rotate(-24 124 28)"
+                  fill="#eef5f8" opacity="0.5" filter="url(#wc-soft)" />
+                <ellipse cx="124" cy="28" rx="41" ry="20" transform="rotate(-24 124 28)"
+                  fill="none" stroke="#33291f" stroke-width="1.3" opacity="0.42"
+                  filter="url(#ink)" />
+                <ellipse cx="108" cy="34" rx="36" ry="18" transform="rotate(-38 108 34)"
+                  fill="#d9eaf2" opacity="0.42" filter="url(#wc-soft)" />
+                <ellipse cx="108" cy="34" rx="36" ry="18" transform="rotate(-38 108 34)"
+                  fill="none" stroke="#33291f" stroke-width="1.2" opacity="0.36"
+                  filter="url(#ink)" />
+
+                <!-- Melis Hinterflügel -->
+                <ellipse cx="88" cy="52" rx="40" ry="20" transform="rotate(-38 88 52)"
+                  fill="#d9eaf2" opacity="0.55" filter="url(#wc-soft)" />
+                <ellipse cx="88" cy="52" rx="40" ry="20" transform="rotate(-38 88 52)"
+                  fill="none" stroke="#33291f" stroke-width="1.4" opacity="0.5"
+                  filter="url(#ink)" />
+              </g>
+            </g>
+          </g>
+        </g>
+
+        <!-- Rumpf: immer da, damit man von Anfang an eine Biene sieht -->
+        <g class="tr-cuerpo">
+          <g transform={meli}>
+            <!-- feuchter Farbhof unter dem Körper -->
+            <ellipse cx="112" cy="108" rx="66" ry="46" fill="#f3c87f" opacity="0.28"
+              filter="url(#wc-wash)" />
+
+            <!-- Körper -->
+            <ellipse cx="108" cy="104" rx="54" ry="40" fill="url(#pg-miel)"
+              filter="url(#wc-soft)" />
+
+            <!-- Streifen (Pigment, multipliziert) -->
+            <g filter="url(#wc-rough)" style="mix-blend-mode:multiply">
+              <path d="M78 70 C 88 64, 96 64, 102 68 L 96 140 C 88 138, 80 132, 74 124 Z"
+                fill="#6b4a1f" opacity="0.82" />
+              <path d="M116 66 C 124 66, 130 68, 136 72 L 128 142 C 120 144, 112 144, 106 142 Z"
+                fill="#6b4a1f" opacity="0.82" />
+              <path d="M150 78 C 156 84, 160 92, 161 100 L 158 120 C 152 130, 146 136, 140 139 L 146 84 Z"
+                fill="#6b4a1f" opacity="0.75" />
+            </g>
+
+            <!-- Stachel -->
+            <path d="M56 104 C 48 102, 42 102, 36 106 C 44 110, 50 110, 57 110 Z"
+              fill="#6b4a1f" opacity="0.85" filter="url(#wc-rough)" />
+
+            <!-- Kopf -->
+            <circle cx="172" cy="86" r="27" fill="#a06a2c" filter="url(#wc-soft)" />
+            <circle cx="172" cy="86" r="27" fill="url(#pg-miel)" opacity="0.35"
+              filter="url(#wc-soft)" />
+
+            <!-- Tuschekonturen über Körper und Kopf -->
+            <ellipse cx="108" cy="104" rx="54" ry="40" fill="none" stroke="#33291f"
+              stroke-width="2.2" opacity="0.7" filter="url(#ink)" />
+            <circle cx="172" cy="86" r="27" fill="none" stroke="#33291f" stroke-width="2"
+              opacity="0.65" filter="url(#ink)" />
+
+            <!-- Melis Mund: kommt erst, wenn die Biene fertig ist -->
+            <path class="tr-sonrisa" d="M176 97 C 180 101, 186 101, 190 97" fill="none"
+              stroke="#33291f" stroke-width="2" stroke-linecap="round" filter="url(#ink)"
+              opacity="0" />
+          </g>
+        </g>
+
+        <!-- 4 · Sechs Beine, die hinteren mit Pollenkörbchen -->
+        <g class="tr-parte" data-tr-p="3">
+          <g class="tr-dib">
+            <g transform={meli}>
+              <!-- Trio der Gegenseite: leicht versetzt, damit man sechs zählt -->
+              <g transform="translate(11 -6)">
+                <g stroke="#33291f" stroke-width="1.9" stroke-linecap="round" fill="none"
+                  filter="url(#ink)" opacity="0.5">
+                  <path d="M92 140 C 90 148, 86 154, 80 158" />
+                  <path d="M116 144 C 116 152, 113 158, 108 163" />
+                  <path d="M140 138 C 142 146, 140 153, 136 158" />
+                </g>
+                <ellipse cx="86" cy="152" rx="5" ry="6.8" transform="rotate(34 86 152)"
+                  fill="#e8a13d" opacity="0.7" filter="url(#wc-rough)" />
+              </g>
+
+              <!-- Melis drei Beine -->
+              <g stroke="#33291f" stroke-width="2.2" stroke-linecap="round" fill="none"
+                filter="url(#ink)" opacity="0.8">
+                <path d="M92 140 C 90 148, 86 154, 80 158" />
+                <path d="M116 144 C 116 152, 113 158, 108 163" />
+                <path d="M140 138 C 142 146, 140 153, 136 158" />
+              </g>
+
+              <!-- Pollenkörbchen am nahen Hinterbein -->
+              <ellipse cx="86" cy="152" rx="6.4" ry="8.6" transform="rotate(34 86 152)"
+                fill="#e8a13d" filter="url(#wc-rough)" />
+              <ellipse cx="86" cy="152" rx="6.4" ry="8.6" transform="rotate(34 86 152)"
+                fill="none" stroke="#33291f" stroke-width="1.2" opacity="0.45"
+                filter="url(#ink)" />
+            </g>
+          </g>
+        </g>
+
+        <!-- 1b · Melis Vorderflügel, über dem Körper -->
+        <g class="tr-parte" data-tr-p="0">
+          <g class="tr-dib">
+            <g transform={meli}>
+              <g class="tr-aleteo">
+                <ellipse cx="104" cy="46" rx="46" ry="23" transform="rotate(-24 104 46)"
+                  fill="#eef5f8" opacity="0.72" filter="url(#wc-soft)" />
+                <ellipse cx="104" cy="46" rx="46" ry="23" transform="rotate(-24 104 46)"
+                  fill="none" stroke="#33291f" stroke-width="1.6" opacity="0.6"
+                  filter="url(#ink)" />
+                <path d="M76 56 C 92 48, 116 42, 140 40" fill="none" stroke="#33291f"
+                  stroke-width="1" opacity="0.35" filter="url(#ink)" />
+              </g>
+            </g>
+          </g>
+        </g>
+
+        <!-- 2 · Fünf Augen: zwei grosse, drei Ocellen -->
+        <g class="tr-parte" data-tr-p="1">
+          <g class="tr-dib">
+            <g transform={meli}>
+              <!-- die drei Punktaugen oben auf dem Kopf -->
+              <g fill="#33291f" opacity="0.82">
+                <circle cx="160" cy="64" r="2.9" />
+                <circle cx="166" cy="70" r="2.6" />
+                <circle cx="155" cy="71" r="2.6" />
+              </g>
+              <circle cx="160.9" cy="62.9" r="0.9" fill="#fffdf8" opacity="0.6" />
+
+              <!-- das zweite grosse Auge, das an der Kopfkante hervorschaut -->
+              <ellipse cx="192" cy="73" rx="4" ry="5.2" transform="rotate(14 192 73)"
+                fill="#33291f" opacity="0.6" />
+              <circle cx="193.2" cy="70.8" r="1.3" fill="#fffdf8" opacity="0.7" />
+
+              <!-- Melis Auge -->
+              <circle cx="181" cy="82" r="5" fill="#33291f" />
+              <circle cx="183" cy="80" r="1.6" fill="#fffdf8" />
+            </g>
+          </g>
+        </g>
+
+        <!-- 3 · Zwei Fühler -->
+        <g class="tr-parte" data-tr-p="2">
+          <g class="tr-dib">
+            <g transform={meli}>
+              <g stroke="#33291f" stroke-width="2" stroke-linecap="round" fill="none"
+                filter="url(#ink)" opacity="0.85">
+                <path d="M180 62 C 184 50, 192 44, 202 44" />
+                <path d="M168 60 C 168 48, 174 40, 183 35" />
+              </g>
+              <circle cx="204" cy="44" r="3.2" fill="#33291f" opacity="0.85" />
+              <circle cx="184" cy="34" r="3.2" fill="#33291f" opacity="0.85" />
+            </g>
+          </g>
+        </g>
+      </g>
+
+      <!--
+        Beschriftungsfahnen. Sie liegen ganz oben, damit die Zeichnung sie nie
+        überdeckt. Die Position steckt in der äusseren Gruppe, denn `.tr-fanion`
+        bekommt beim Einblenden eine CSS-Transform — die würde ein
+        transform-Attribut am selben Element überschreiben.
+      -->
+      <g class="tr-parte" data-tr-p="0">
+        <g transform="translate(12 8)">
+          <g class="tr-fanion">
+            <path d="M54 14 L 86 40" stroke="#8f5c14" stroke-width="1.6" fill="none"
+              stroke-dasharray="2 3" />
+            <rect x="0" y="0" width="54" height="21" rx="10" fill="#fffdf8" stroke="#e8a13d"
+              stroke-width="1.6" />
+            <text x="27" y="15" text-anchor="middle" font-size="11" font-weight="700"
+              fill="#8f5c14">
+              {j.parts[0].name}
+            </text>
+          </g>
+        </g>
+      </g>
+
+      <g class="tr-parte" data-tr-p="1">
+        <g transform="translate(246 104)">
+          <g class="tr-fanion">
+            <path d="M0 10 L -20 0" stroke="#8f5c14" stroke-width="1.6" fill="none"
+              stroke-dasharray="2 3" />
+            <rect x="0" y="0" width="50" height="21" rx="10" fill="#fffdf8" stroke="#e8a13d"
+              stroke-width="1.6" />
+            <text x="25" y="15" text-anchor="middle" font-size="11" font-weight="700"
+              fill="#8f5c14">
+              {j.parts[1].name}
+            </text>
+          </g>
+        </g>
+      </g>
+
+      <g class="tr-parte" data-tr-p="2">
+        <g transform="translate(226 10)">
+          <g class="tr-fanion">
+            <path d="M10 21 L 6 52" stroke="#8f5c14" stroke-width="1.6" fill="none"
+              stroke-dasharray="2 3" />
+            <rect x="0" y="0" width="70" height="21" rx="10" fill="#fffdf8" stroke="#e8a13d"
+              stroke-width="1.6" />
+            <text x="35" y="15" text-anchor="middle" font-size="11" font-weight="700"
+              fill="#8f5c14">
+              {j.parts[2].name}
+            </text>
+          </g>
+        </g>
+      </g>
+
+      <g class="tr-parte" data-tr-p="3">
+        <g transform="translate(6 200)">
+          <g class="tr-fanion">
+            <path d="M106 0 L 104 -15" stroke="#8f5c14" stroke-width="1.6" fill="none"
+              stroke-dasharray="2 3" />
+            <rect x="0" y="0" width="120" height="21" rx="10" fill="#fffdf8" stroke="#e8a13d"
+              stroke-width="1.6" />
+            <text x="60" y="15" text-anchor="middle" font-size="11" font-weight="700"
+              fill="#8f5c14">
+              {j.parts[3].name}
+            </text>
+          </g>
+        </g>
+      </g>
+    </svg>
+  </div>
+
+  <div class="escena-mandos">
+    <button class="boton boton--grande tr-hold" data-tr-hold>
+      <span class="tr-punto" aria-hidden="true"></span>
+      <span data-tr-label>{j.holdCta}</span>
+    </button>
+    <ol class="tr-pasos" data-tr-pasos aria-hidden="true">
+      {j.parts.map(() => (
+        <li></li>
+      ))}
+    </ol>
+  </div>
+
+  <div class="dice">
+    <span class="dice-meli" aria-hidden="true"><BeeMeli width="100%" /></span>
+    <p class="dice-texto" data-tr-dice aria-live="polite"></p>
+  </div>
+</div>
+
+<script>
+  import { datos, decir, logro, tin } from '../../../scripts/juego';
+
+  interface T {
+    more: string;
+    done: string;
+    count: string;
+    logro: string;
+    hint: string;
+    parts: { name: string; meli: string }[];
+  }
+
+  const escena = document.querySelector<HTMLElement>('[data-tr-escena]');
+
+  if (escena) {
+    const t = datos<T>(escena, 'textos', {
+      more: '',
+      done: '',
+      count: '',
+      logro: '',
+      hint: '',
+      parts: [],
+    });
+    const mesa = escena.querySelector<HTMLElement>('[data-tr-mesa]')!;
+    const hold = escena.querySelector<HTMLButtonElement>('[data-tr-hold]')!;
+    const label = escena.querySelector<HTMLElement>('[data-tr-label]')!;
+    const dice = escena.querySelector<HTMLElement>('[data-tr-dice]');
+    const pasos = [...escena.querySelectorAll<HTMLElement>('[data-tr-pasos] li')];
+    const anillo = escena.querySelector<SVGCircleElement>('.tr-anillo')!;
+
+    // Ein Schritt kann mehrere Gruppen anfassen: die Flügel liegen teils
+    // hinter, teils vor dem Körper, und die Fahnen liegen ganz oben.
+    const grupos = [...escena.querySelectorAll<SVGGElement>('[data-tr-p]')];
+    const indice = (g: SVGGElement) => Number(g.getAttribute('data-tr-p'));
+    const total = grupos.reduce((n, g) => Math.max(n, indice(g) + 1), 0);
+    const partes = Array.from({ length: total }, (_, i) =>
+      grupos.filter((g) => indice(g) === i)
+    );
+
+    const PASO_MS = 1150;
+    let paso = 0;
+    let sujeto = false;
+    let reloj = 0;
+
+    // Der Ring ist nur Anzeige; die Uhr läuft in JS, damit sie auch bei
+    // abgeschalteten Animationen (prefers-reduced-motion) weiterläuft.
+    const reiniciarAnillo = () => {
+      anillo.classList.remove('is-corriendo');
+      void anillo.getBoundingClientRect();
+      anillo.classList.add('is-corriendo');
+    };
+
+    const crecer = () => {
+      if (paso >= partes.length) return;
+      reiniciarAnillo();
+      partes[paso].forEach((g) => g.classList.add('is-on'));
+      pasos[paso]?.classList.add('is-on');
+      decir(dice, `${t.parts[paso]?.name ?? ''} — ${t.parts[paso]?.meli ?? ''}`);
+      tin(1 + paso * 0.18);
+      paso += 1;
+
+      if (paso >= partes.length) {
+        soltar();
+        mesa.classList.add('is-listo');
+        hold.disabled = true;
+        label.textContent = t.done;
+        window.setTimeout(() => decir(dice, `${t.count} ${t.done}`), 1500);
+        logro('transformacion', t.logro);
+      }
+    };
+
+    function sujetar() {
+      if (sujeto || paso >= partes.length) return;
+      sujeto = true;
+      mesa.classList.add('is-sujetando');
+      hold.classList.add('is-sujetando');
+      reiniciarAnillo();
+      reloj = window.setInterval(crecer, PASO_MS);
+    }
+
+    function soltar() {
+      window.clearInterval(reloj);
+      anillo.classList.remove('is-corriendo');
+      hold.classList.remove('is-sujetando');
+      if (!sujeto) return;
+      sujeto = false;
+      mesa.classList.remove('is-sujetando');
+      if (paso > 0 && paso < partes.length) {
+        label.textContent = t.more;
+        decir(dice, t.more);
+      }
+    }
+
+    hold.addEventListener('pointerdown', (e) => {
+      e.preventDefault();
+      sujetar();
+    });
+    ['pointerup', 'pointercancel', 'pointerleave'].forEach((ev) =>
+      hold.addEventListener(ev, soltar)
+    );
+    hold.addEventListener('keydown', (e) => {
+      if (e.key === ' ' || e.key === 'Enter') {
+        e.preventDefault();
+        sujetar();
+      }
+    });
+    hold.addEventListener('keyup', (e) => {
+      if (e.key === ' ' || e.key === 'Enter') soltar();
+    });
+    hold.addEventListener('blur', soltar);
+  }
+</script>
+
+<style>
+  .tr-mesa {
+    max-width: 30rem;
+  }
+
+  /* Pollenlicht */
+  .tr-luz {
+    opacity: 0;
+    transition: opacity 420ms var(--ease-out);
+  }
+
+  .tr-mesa.is-sujetando .tr-luz,
+  .tr-mesa.is-listo .tr-luz {
+    opacity: 1;
+  }
+
+  .tr-aura {
+    transform-box: fill-box;
+    transform-origin: 50% 50%;
+  }
+
+  .tr-mesa.is-sujetando .tr-aura {
+    animation: tr-late 1.4s ease-in-out infinite;
+  }
+
+  @keyframes tr-late {
+    0%,
+    100% {
+      transform: scale(0.88);
+      opacity: 0.35;
+    }
+    50% {
+      transform: scale(1.1);
+      opacity: 0.75;
+    }
+  }
+
+  .tr-anillo.is-corriendo {
+    animation: tr-anillo 1150ms linear forwards;
+  }
+
+  @keyframes tr-anillo {
+    from {
+      stroke-dashoffset: 553;
+    }
+    to {
+      stroke-dashoffset: 0;
+    }
+  }
+
+  /* Körperteile wachsen aus dem Körper heraus */
+  .tr-parte {
+    opacity: 0;
+    pointer-events: none;
+  }
+
+  .tr-parte.is-on {
+    opacity: 1;
+  }
+
+  .tr-parte .tr-dib {
+    transform-box: fill-box;
+    transform-origin: 50% 50%;
+  }
+
+  .tr-parte.is-on .tr-dib {
+    animation: tr-brota 640ms var(--ease-bounce) both;
+  }
+
+  @keyframes tr-brota {
+    0% {
+      opacity: 0;
+      scale: 0.35;
+    }
+    100% {
+      opacity: 1;
+      scale: 1;
+    }
+  }
+
+  .tr-parte .tr-fanion {
+    opacity: 0;
+  }
+
+  .tr-parte.is-on .tr-fanion {
+    animation: tr-fanion 520ms var(--ease-out) 360ms both;
+  }
+
+  @keyframes tr-fanion {
+    from {
+      opacity: 0;
+      transform: translateY(6px);
+    }
+    to {
+      opacity: 1;
+      transform: none;
+    }
+  }
+
+  /* Am Ende lächelt sie, leuchtet auf und schwirrt kurz mit den Flügeln */
+  .tr-mesa.is-listo .tr-sonrisa {
+    animation: tr-sonrisa 500ms var(--ease-out) 300ms forwards;
+  }
+
+  @keyframes tr-sonrisa {
+    to {
+      opacity: 0.85;
+    }
+  }
+
+  .tr-mesa.is-listo .tr-abeja {
+    animation: tr-brillo 1.8s ease-in-out 2;
+  }
+
+  @keyframes tr-brillo {
+    0%,
+    100% {
+      filter: none;
+    }
+    50% {
+      filter: drop-shadow(0 0 10px #ffd977);
+    }
+  }
+
+  /* Die Flügelgruppen tragen selbst kein transform-Attribut, darum darf die
+     CSS-Rotation hier gefahrlos greifen. */
+  .tr-aleteo {
+    transform-box: fill-box;
+    transform-origin: 22% 88%;
+  }
+
+  .tr-mesa.is-listo .tr-aleteo {
+    animation: tr-aleteo 0.16s ease-in-out 12 alternate;
+  }
+
+  @keyframes tr-aleteo {
+    from {
+      rotate: -7deg;
+    }
+    to {
+      rotate: 6deg;
+    }
+  }
+
+  /* Halteknopf */
+  .tr-hold {
+    touch-action: none;
+  }
+
+  .tr-punto {
+    width: 15px;
+    height: 15px;
+    flex: none;
+    border-radius: 50%;
+    background: currentColor;
+    box-shadow: 0 0 0 0 rgba(232, 161, 61, 0.6);
+  }
+
+  .tr-hold.is-sujetando .tr-punto {
+    animation: tr-pulso 1.15s ease-out infinite;
+  }
+
+  @keyframes tr-pulso {
+    from {
+      box-shadow: 0 0 0 0 rgba(232, 161, 61, 0.6);
+    }
+    to {
+      box-shadow: 0 0 0 16px transparent;
+    }
+  }
+
+  .tr-pasos {
+    display: flex;
+    gap: 6px;
+    list-style: none;
+    padding: 0;
+    margin: 0;
+  }
+
+  .tr-pasos li {
+    width: 14px;
+    height: 16px;
+    background: rgba(179, 118, 28, 0.22);
+    clip-path: polygon(50% 0, 100% 25%, 100% 75%, 50% 100%, 0 75%, 0 25%);
+    transition: background 320ms var(--ease-out);
+  }
+
+  .tr-pasos li.is-on {
+    background: var(--miel-500);
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .tr-aura,
+    .tr-parte.is-on .tr-dib,
+    .tr-parte.is-on .tr-fanion,
+    .tr-mesa.is-listo .tr-abeja,
+    .tr-mesa.is-listo .tr-aleteo,
+    .tr-punto {
+      animation: none !important;
+    }
+    .tr-parte.is-on .tr-fanion {
+      opacity: 1;
+    }
+    .tr-mesa.is-listo .tr-sonrisa {
+      opacity: 0.85;
+    }
+  }
+</style>

@@ -1,0 +1,709 @@
+---
+/**
+ * Der Bucheinstieg.
+ *
+ * Zwei Teile: die Kopfleiste, die dieselbe Leiste wie auf der Startseite ist
+ * (Nav.astro, .site-nav) — nur ohne Sektionslinks, dafür mit dem Buchtitel in
+ * der Mitte — und der Einstieg selbst.
+ *
+ * Der Einstieg hat EINEN Auftritt, keine fünf: Das Honiglicht geht auf, der
+ * Deckel schwingt auf, die Zeilen steigen nacheinander, Meli fliegt herein und
+ * geht ins Schweben über. Nach knapp anderthalb Sekunden ist die Szene ruhig.
+ * Was danach noch lebt, sind drei Dinge — Melis Flügelschlag, die Funken in der
+ * warmen Luft und die kleine Biene am unteren Rand, die den Weg nach unten
+ * zeigt. Derselbe Ton wie der Buch-Teaser auf der Startseite, nur größer.
+ */
+import { Image } from 'astro:assets';
+import Base from '../../layouts/Base.astro';
+import BeeMeli from '../BeeMeli.astro';
+import Logo from '../Logo.astro';
+import Travesia from '../Travesia.astro';
+import BookReader from './BookReader.astro';
+import { libroUI, pages, totalCards, totalJuegos } from '../../data/libro';
+import { getDict, type Lang } from '../../i18n';
+import '../../styles/libro.css';
+
+interface Props {
+  lang: Lang;
+}
+
+const { lang } = Astro.props;
+const ui = libroUI[lang];
+const t = getDict(lang);
+const cover = pages[0].img;
+
+/* Funken um das Buch — feste Werte, damit der Server dasselbe rendert.
+   Weniger und langsamer als früher: Sie sollen die warme Luft über dem
+   Honiglicht andeuten, nicht um Aufmerksamkeit konkurrieren. */
+const chispas = Array.from({ length: 9 }, (_, i) => ({
+  x: `${10 + ((i * 31) % 80)}%`,
+  y: `${22 + ((i * 43) % 58)}%`,
+  s: `${4 + ((i * 3) % 5)}px`,
+  d: `${5.2 + ((i * 7) % 24) / 10}s`,
+  delay: `${((i * 17) % 40) / 10}s`,
+}));
+---
+
+<Base lang={lang} title={`${ui.title} · Retoños del Edén`} description={ui.intro}>
+  {/* Ganz nach vorn: das Vorgriff-Skript der Travesía muss laufen, bevor
+      das erste Bild steht. Kommt man aus der Chacra, steht die Auflage
+      schon im Endbild des Hinwegs und löst sich hier auf. */}
+  <Travesia />
+
+  <a class="skip-link" href="#lectura">{t.nav.skip}</a>
+
+  <header class="libro-nav">
+    <!-- Die Marke ist zugleich der Weg zurück zur Chacra. Genau wie auf der
+         Startseite: Bildmarke, dann Schriftzug. Ein eigener, lauter
+         Zurück-Knopf wäre hier das falsche Gewicht — der Rückweg ist ein
+         Nebenweg. Der feine Haken davor sagt es leise.
+
+         Dieselbe Marke und dieselbe Größe wie in `Nav.astro` (34 px, volle
+         Fassung). Die `simple`-Fassung stand hier vorher und war ein Sprung:
+         ein nackter, oben offener Ring, in dessen Lücke kein Lavendel mehr
+         wächst — die Marke sah zwischen Startseite und Buch aus wie zwei
+         verschiedene Zeichen. `simple` gehört ans Favicon, nicht in eine
+         Kopfleiste. -->
+    <a class="libro-marca" href={`/${lang}/`} data-astro-prefetch>
+      <svg class="libro-volver" viewBox="0 0 20 20" width="13" height="13" aria-hidden="true">
+        <path d="M12.5 3.5 L 6 10 L 12.5 16.5" fill="none" stroke="currentColor"
+          stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" filter="url(#ink)" />
+      </svg>
+      <span class="libro-marca-logo"><Logo width="34px" decorative /></span>
+      <span>Retoños del Edén</span>
+    </a>
+
+    <!-- Woran man gerade liest. Auf schmalen Schirmen bleibt die Leiste
+         zweiteilig — dort steht der Titel ohnehin groß im Bild. -->
+    <p class="libro-nav-titulo">{ui.title}</p>
+
+    <div class="lang-switch" role="group" aria-label="Idioma / Language">
+      <a href="/es/libro" aria-current={lang === 'es' ? 'page' : undefined}>ES</a>
+      <span aria-hidden="true">·</span>
+      <a href="/en/book" aria-current={lang === 'en' ? 'page' : undefined}>EN</a>
+    </div>
+  </header>
+
+  <!-- Einstieg -->
+  <section class="entrada">
+    <span class="entrada-luz" aria-hidden="true"></span>
+    <span class="entrada-chispas" aria-hidden="true">
+      {chispas.map((c) => (
+        <i style={`--x:${c.x}; --y:${c.y}; --s:${c.s}; --d:${c.d}; --delay:${c.delay}`}></i>
+      ))}
+    </span>
+
+    <div class="entrada-grid">
+      <figure class="tapa">
+        <Image
+          src={cover}
+          alt={ui.title}
+          widths={[420, 700, 1024]}
+          sizes="(min-width: 800px) 32rem, 88vw"
+          loading="eager"
+          class="tapa-img"
+        />
+        <span class="tapa-canto" aria-hidden="true"></span>
+      </figure>
+
+      <div class="entrada-copy">
+        <p class="kicker entrada-l" style="--l:0">{ui.eyebrow}</p>
+        <h1 class="entrada-l" style="--l:1">{ui.title}</h1>
+        <p class="entrada-sub entrada-l" style="--l:2">{ui.subtitle}</p>
+
+        <div class="entrada-meli entrada-l" style="--l:3">
+          <span class="meli-vuela" aria-hidden="true">
+            <span class="meli-flota"><BeeMeli width="clamp(58px, 12vw, 78px)" flip /></span>
+          </span>
+          <p class="bubble entrada-burbuja">{ui.intro}</p>
+        </div>
+
+        <a class="btn entrada-cta entrada-l" style="--l:4" href="#lectura">{ui.start}</a>
+
+        <p class="entrada-promesa entrada-l" style="--l:5">
+          <span class="chip chip--miel">{totalJuegos} {ui.promesaJuegos}</span>
+          <span class="chip">{totalCards} {ui.promesaCartas}</span>
+        </p>
+      </div>
+    </div>
+
+    <!-- Derselbe Hinweis wie im Hero der Startseite (.scroll-cue): die
+         gepunktete Tusche-Fluglinie, an der eine kleine Biene herunterfliegt. -->
+    <a class="entrada-baja" href="#lectura" aria-hidden="true" tabindex="-1">
+      <svg viewBox="0 0 30 44" width="24">
+        <path d="M15 2 C 8 10, 22 18, 15 26 C 10 32, 17 38, 15 41"
+          stroke="#b3761c" stroke-width="2.2" stroke-dasharray="1 6"
+          stroke-linecap="round" fill="none" opacity="0.7" />
+        <g class="baja-abeja">
+          <ellipse cx="15" cy="36" rx="6" ry="4.2" fill="#e8a13d" />
+          <path d="M12.4 33 L 13 39.4 M 16.4 32.8 L 17 39.6" stroke="#6b4a1f" stroke-width="1.6" />
+          <ellipse cx="12.5" cy="31" rx="4.6" ry="2.2" transform="rotate(-24 12.5 31)"
+            fill="#d9eaf2" opacity="0.9" />
+          <circle cx="21" cy="34.6" r="2.8" fill="#a06a2c" />
+        </g>
+      </svg>
+    </a>
+  </section>
+
+  <main id="lectura">
+    <BookReader lang={lang} />
+  </main>
+</Base>
+
+<style>
+  /* ---------- Sprungmarke ----------
+     Auf dieser Seite läuft keine Nav.astro mit, die sie sonst stylt. Ohne
+     diese Regeln stünde der Link sichtbar über dem Buch. Honig mit Tinte
+     statt Weiß — siehe Anmerkung beim Sprachschalter. */
+
+  .skip-link {
+    position: absolute;
+    top: -100px;
+    left: 1rem;
+    z-index: 300;
+    background: var(--miel-500);
+    color: var(--tinta);
+    font-weight: 600;
+    text-decoration: none;
+    padding: 0.6em 1.2em;
+    border-radius: var(--r-full);
+  }
+
+  .skip-link:focus-visible {
+    top: 0.75rem;
+  }
+
+  /* ---------- Kopfleiste ----------
+     Höhe, Polsterung, Papierfarbe, Unschärfe und die zarte Schattenkante
+     sind 1:1 aus .site-nav (Nav.astro) übernommen, damit der Wechsel von
+     der Startseite ins Buch keinen Sprung macht. Drei Zonen wie dort:
+     Marke — Kontext — Sprache. */
+
+  .libro-nav {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    z-index: 200;
+    display: grid;
+    grid-template-columns: auto 1fr auto;
+    align-items: center;
+    gap: var(--sp-4);
+    padding: 0.65rem clamp(1rem, 4vw, 2.5rem);
+    background: color-mix(in srgb, var(--papel) 82%, transparent);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    box-shadow: 0 1px 0 rgba(51, 41, 31, 0.07);
+  }
+
+  /* Unterhalb von 860 px trägt die Startseite ihren 44 px hohen Menüknopf
+     und ist dadurch 65 px hoch. Diese Leiste hält dieselbe Zeilenhöhe frei,
+     damit beim Seitenwechsel nichts springt; darüber sind beide 52 px. */
+  @media (max-width: 859px) {
+    .libro-nav {
+      grid-auto-rows: minmax(44px, auto);
+    }
+  }
+
+  .libro-marca {
+    grid-column: 1;
+    justify-self: start;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    text-decoration: none;
+    color: var(--tinta);
+    font-family: var(--font-display);
+    font-variation-settings: 'SOFT' 80, 'WONK' 1;
+    font-weight: 620;
+    font-size: 1.05rem;
+    white-space: nowrap;
+  }
+
+  .libro-marca-logo {
+    display: block;
+    flex: none;
+  }
+
+  .libro-volver {
+    flex: none;
+    color: var(--tinta-tenue);
+    transition:
+      translate var(--dur-2) var(--ease-out),
+      color var(--dur-1) var(--ease-out);
+  }
+
+  .libro-marca:hover .libro-volver,
+  .libro-marca:focus-visible .libro-volver {
+    translate: -3px 0;
+    color: var(--tinta-suave);
+  }
+
+  .libro-nav-titulo {
+    grid-column: 2;
+    display: none;
+    font-family: var(--font-display);
+    font-variation-settings: 'SOFT' 90, 'WONK' 1;
+    font-style: italic;
+    font-size: var(--fs-300);
+    color: var(--tinta-suave);
+    text-align: center;
+    min-width: 0;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  /* Ab derselben Schwelle, ab der die Startseite ihre Sektionslinks zeigt,
+     bekommt die Leiste hier ihre Mitte — und beide Seiten gleich viel
+     Platz, damit der Titel wirklich mittig sitzt. */
+  @media (min-width: 860px) {
+    .libro-nav {
+      grid-template-columns: 1fr auto 1fr;
+    }
+
+    .libro-nav-titulo {
+      display: block;
+    }
+  }
+
+  /* Der Schalter der Startseite, Form und Farbe unverändert. Eine Abweichung:
+     die aktive Sprache trägt Tinte statt Weiß. Weiß auf --miel-500 kommt nur
+     auf 2,2:1, mit --tinta sind es 6,5:1 — bei identischer Pille. */
+  .lang-switch {
+    grid-column: 3;
+    justify-self: end;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    font-size: var(--fs-300);
+    font-weight: 700;
+    color: var(--tinta-suave);
+  }
+
+  .lang-switch a {
+    position: relative;
+    text-decoration: none;
+    color: var(--tinta-suave);
+    padding: 0.25em 0.5em;
+    border-radius: var(--r-full);
+    transition:
+      background var(--dur-1) var(--ease-out),
+      color var(--dur-1) var(--ease-out);
+  }
+
+  /* Die Pille bleibt klein, die Trefferfläche wird 44 px hoch — Kinderfinger. */
+  .lang-switch a::before {
+    content: '';
+    position: absolute;
+    inset: -11px -4px;
+  }
+
+  .lang-switch a[aria-current='page'] {
+    background: var(--miel-500);
+    color: var(--tinta);
+  }
+
+  .lang-switch a:not([aria-current]):hover {
+    color: var(--tinta);
+    background: var(--miel-100);
+  }
+
+  /* ---------- Einstieg ---------- */
+
+  .entrada {
+    position: relative;
+    isolation: isolate;
+    min-height: 100svh;
+    display: grid;
+    place-items: center;
+    overflow: hidden;
+    padding: clamp(5rem, 12vh, 7rem) clamp(1rem, 5vw, 3rem) clamp(4.5rem, 11vh, 6rem);
+    background:
+      radial-gradient(130% 90% at 50% 6%, var(--miel-100), transparent 62%),
+      linear-gradient(180deg, var(--papel), var(--papel-warm) 70%, var(--miel-100));
+  }
+
+  /* --c-accent-deep (--miel-700) erreicht auf diesem Papier nur 3,5:1. */
+  .entrada .kicker {
+    color: var(--miel-800);
+  }
+
+  /* ---------- Der Auftritt ----------
+     Ein Bogen, in Bewegungstokens gerechnet:
+       0 ms     das Honiglicht geht auf
+       140 ms   der Deckel schwingt auf
+       240 ms   die Zeilen steigen nacheinander, 70 ms Abstand
+       480 ms   Meli fliegt herein
+       1440 ms  sie geht ins Schweben über
+     Danach steht die Szene. */
+
+  .entrada-luz {
+    position: absolute;
+    z-index: -1;
+    left: 50%;
+    top: 42%;
+    width: min(140vw, 1100px);
+    aspect-ratio: 1;
+    translate: -50% -50%;
+    border-radius: 50%;
+    background: radial-gradient(
+      circle,
+      rgba(255, 227, 160, 0.95) 0%,
+      rgba(243, 200, 127, 0.55) 32%,
+      rgba(232, 161, 61, 0.16) 55%,
+      transparent 72%
+    );
+    animation: luz-crece calc(var(--dur-3) * 2) var(--ease-out) both;
+  }
+
+  @keyframes luz-crece {
+    from {
+      opacity: 0;
+      scale: 0.55;
+    }
+    to {
+      opacity: 1;
+      scale: 1;
+    }
+  }
+
+  .entrada-chispas i {
+    position: absolute;
+    z-index: -1;
+    left: var(--x);
+    top: var(--y);
+    width: var(--s);
+    height: var(--s);
+    border-radius: 50%;
+    background: radial-gradient(circle, #fff6d0 0 45%, rgba(243, 200, 127, 0.5) 65%, transparent 75%);
+    animation: chispa-sube var(--d) var(--ease-in-out) var(--delay) infinite;
+  }
+
+  @keyframes chispa-sube {
+    0% {
+      translate: 0 12px;
+      scale: 0.5;
+      opacity: 0;
+    }
+    30%,
+    60% {
+      opacity: 0.85;
+    }
+    100% {
+      translate: 0 -56px;
+      scale: 1.05;
+      opacity: 0;
+    }
+  }
+
+  .entrada-grid {
+    width: min(100%, 64rem);
+    display: grid;
+    gap: clamp(1.5rem, 5vw, 3.5rem);
+    align-items: center;
+    justify-items: center;
+  }
+
+  @media (min-width: 860px) {
+    .entrada-grid {
+      grid-template-columns: minmax(0, 0.95fr) minmax(0, 1.05fr);
+    }
+  }
+
+  /* Der Buchdeckel schwingt beim Laden auf — dieselbe Geste wie beim
+     Teaser auf der Startseite (.lt-cover), nur in groß. */
+  .tapa {
+    position: relative;
+    margin: 0;
+    line-height: 0;
+    width: min(88vw, 32rem);
+    border-radius: 6px 20px 20px 6px;
+    overflow: hidden;
+    box-shadow:
+      var(--shadow-modal),
+      0 0 70px rgba(255, 205, 120, 0.55);
+    transform-origin: 8% 50%;
+    animation: tapa-abre calc(var(--dur-3) * 2) var(--ease-out) var(--dur-1) both;
+  }
+
+  @keyframes tapa-abre {
+    0% {
+      opacity: 0;
+      transform: perspective(1200px) rotateY(-38deg) translateX(-4%) scale(0.95);
+    }
+    70% {
+      opacity: 1;
+      transform: perspective(1200px) rotateY(2deg) scale(1.008);
+    }
+    100% {
+      opacity: 1;
+      transform: perspective(1200px) rotateY(-1.6deg) scale(1);
+    }
+  }
+
+  .tapa-img {
+    width: 100%;
+    height: auto;
+  }
+
+  /* Buchrücken links */
+  .tapa-canto {
+    position: absolute;
+    inset: 0 auto 0 0;
+    width: 9px;
+    background: linear-gradient(90deg, rgba(90, 48, 8, 0.45), transparent);
+  }
+
+  /* Beim Zeigen hebt sich das Buch wie die Karte im Teaser. Bewusst über
+     translate/scale statt transform: der Deckel behält sonst seine leichte
+     Schrägstellung nicht, weil die Auftritts-Animation transform hält. */
+  @media (hover: hover) and (pointer: fine) {
+    .tapa {
+      transition:
+        translate var(--dur-2) var(--ease-out),
+        scale var(--dur-2) var(--ease-out),
+        box-shadow var(--dur-2) var(--ease-out);
+    }
+
+    .tapa:hover {
+      translate: 0 -4px;
+      scale: 1.02;
+      box-shadow: var(--shadow-lift), 0 0 90px rgba(255, 205, 120, 0.75);
+    }
+  }
+
+  .entrada-copy {
+    display: grid;
+    gap: var(--sp-3);
+    justify-items: start;
+  }
+
+  /* Zeilenweiser Aufbau. Der Versatz läuft über translate, nicht transform —
+     sonst hielte die Animation den Knopf fest und sein Hover-Federn
+     (.btn, --ease-bounce) käme nie an. */
+  .entrada-l {
+    --entrada-espera: 0ms;
+    animation: sube var(--dur-3) var(--ease-out) both;
+    animation-delay: calc(var(--entrada-espera) + var(--dur-2) + var(--l) * var(--dur-1) * 0.5);
+  }
+
+  /* Wer über die Travesía hereinkommt, sieht zuerst, wie sich das Papier
+     auflöst. Liefe der Zeilenaufbau schon darunter, wäre er halb vorbei,
+     bevor man ihn sehen kann — also wartet er, bis die Auflage weg ist. */
+  :global(html.travesia-llega) .entrada-l {
+    --entrada-espera: 380ms;
+  }
+
+  @keyframes sube {
+    from {
+      opacity: 0;
+      translate: 0 12px;
+    }
+    to {
+      opacity: 1;
+      translate: 0 0;
+    }
+  }
+
+  .entrada-copy h1 {
+    font-size: clamp(2rem, 4.6vw, 3.3rem);
+  }
+
+  .entrada-sub {
+    font-family: var(--font-display);
+    font-style: italic;
+    font-size: var(--fs-600);
+    color: var(--tinta-suave);
+  }
+
+  .entrada-meli {
+    display: grid;
+    grid-template-columns: auto 1fr;
+    gap: var(--sp-3);
+    align-items: start;
+    margin-block: var(--sp-2);
+  }
+
+  /* Meli fliegt einmal von außen herein und geht dann in ihren Flügelschlag
+     über — der Übergang sitzt genau auf dem Ende des Anflugs. */
+  .meli-vuela {
+    display: block;
+    animation: meli-llega calc(var(--dur-3) * 2) var(--ease-out) calc(var(--dur-2) * 2) both;
+  }
+
+  @keyframes meli-llega {
+    0% {
+      opacity: 0;
+      transform: translate(-150%, 110%) rotate(20deg) scale(0.6);
+    }
+    60% {
+      opacity: 1;
+      transform: translate(18%, -22%) rotate(-10deg) scale(1.08);
+    }
+    100% {
+      opacity: 1;
+      transform: none;
+    }
+  }
+
+  /* 3,2 s ist die Taktzeit von .bee-float in global.css — Meli schlägt
+     überall auf der Seite im selben Rhythmus. */
+  .meli-flota {
+    display: block;
+    animation: bee-hover 3.2s var(--ease-in-out) calc(var(--dur-3) * 3) infinite;
+  }
+
+  .entrada-burbuja {
+    font-size: var(--fs-400);
+    padding: var(--sp-4);
+  }
+
+  .entrada-burbuja::after {
+    display: none;
+  }
+
+  /* Der Startknopf ist der Knopf der Startseite, nur eine Stufe größer.
+     Kein Glanzstreifen, kein wippender Pfeil: die Bewegung nach unten
+     zeigt die Biene am Rand, das Federn beim Zeigen macht .btn selbst. */
+  .entrada-cta {
+    font-size: var(--fs-500);
+    padding: 0.85em 1.7em;
+  }
+
+  .entrada-promesa {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--sp-2);
+    margin-top: var(--sp-1);
+  }
+
+  .entrada-baja {
+    position: absolute;
+    bottom: clamp(1rem, 4vh, 2.5rem);
+    left: 50%;
+    translate: -50% 0;
+    display: grid;
+    justify-items: center;
+    line-height: 0;
+  }
+
+  /* 2,4 s ist die Taktzeit von .scroll-cue im Hero — beide Bienen fliegen
+     dieselbe Strecke im selben Tempo. */
+  .baja-abeja {
+    animation: cue-baja 2.4s var(--ease-in-out) infinite;
+  }
+
+  @keyframes cue-baja {
+    0% {
+      translate: 0 -28px;
+      opacity: 0;
+    }
+    12% {
+      translate: 0 -26px;
+      opacity: 1;
+    }
+    55%,
+    78% {
+      translate: 0 0;
+      opacity: 1;
+    }
+    92%,
+    100% {
+      translate: 0 4px;
+      opacity: 0;
+    }
+  }
+
+  /* Auf dem Handy muss der Startknopf über der Faltkante bleiben — sonst
+     sieht die Zielgruppe (Eltern mit Kind auf dem Sofa) ihn gar nicht.
+     Deshalb weicht dort auch die Biene am Rand: Sie säße dem Knopf sonst
+     im Nacken. */
+  @media (max-width: 640px) {
+    .entrada {
+      padding-top: clamp(4rem, 9vh, 5.5rem);
+      padding-bottom: 3.2rem;
+    }
+
+    .entrada-grid {
+      gap: var(--sp-4);
+    }
+
+    .tapa {
+      width: min(74vw, 20rem);
+    }
+
+    .entrada-copy h1 {
+      font-size: clamp(1.7rem, 7.4vw, 2.3rem);
+    }
+
+    .entrada-sub {
+      font-size: var(--fs-500);
+    }
+
+    .entrada-burbuja {
+      font-size: var(--fs-300);
+      line-height: 1.45;
+      padding: var(--sp-3);
+    }
+
+    .entrada-meli {
+      margin-block: 0;
+      gap: var(--sp-2);
+    }
+
+    .entrada-baja {
+      display: none;
+    }
+  }
+
+  #lectura {
+    scroll-snap-type: y proximity;
+  }
+
+  /* ---------- Ruhige Fassung ----------
+     Kein „alles aus", sondern der Endzustand der Szene: Buch, Zeilen und
+     Meli stehen fertig da, die Biene am Rand sitzt am Ende ihrer Linie.
+     Weg fällt nur, was reine Bewegung ist — die Funken. */
+
+  @media (prefers-reduced-motion: reduce) {
+    #lectura {
+      scroll-snap-type: none;
+    }
+
+    .entrada-luz,
+    .tapa,
+    .entrada-l,
+    .meli-vuela,
+    .meli-flota,
+    .baja-abeja {
+      animation: none;
+      opacity: 1;
+      translate: none;
+      scale: none;
+      transform: none;
+    }
+
+    .tapa {
+      transition: box-shadow var(--dur-2) var(--ease-out);
+    }
+
+    .tapa:hover {
+      translate: none;
+      scale: none;
+    }
+
+    .libro-volver {
+      transition: color var(--dur-1) var(--ease-out);
+    }
+
+    .libro-marca:hover .libro-volver,
+    .libro-marca:focus-visible .libro-volver {
+      translate: none;
+    }
+
+    .entrada-chispas {
+      display: none;
+    }
+  }
+</style>

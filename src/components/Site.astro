@@ -1,0 +1,73 @@
+---
+import Base from '../layouts/Base.astro';
+import Apertura from './Apertura.astro';
+import Travesia from './Travesia.astro';
+import Nav from './Nav.astro';
+import Hero from './Hero.astro';
+import Intro from './Intro.astro';
+import SectionDivider from './SectionDivider.astro';
+import Timeline from './Timeline.astro';
+import Pistacho from './Pistacho.astro';
+import Lavanda from './Lavanda.astro';
+import Abejas from './Abejas.astro';
+import FincaMap from './FincaMap.astro';
+import Herbario from './Herbario.astro';
+import Products from './Products.astro';
+import Quiz from './Quiz.astro';
+import Workshops from './Workshops.astro';
+import Stay from './Stay.astro';
+import Contact from './Contact.astro';
+import Footer from './Footer.astro';
+import MeliCompanion from './MeliCompanion.astro';
+import { getDict, type Lang } from '../i18n';
+
+interface Props {
+  lang: Lang;
+}
+
+const { lang } = Astro.props;
+const t = getDict(lang);
+---
+
+<Base lang={lang} title={t.meta.title} description={t.meta.description}>
+  {/* Beide ganz nach vorn: ihre Vorgriff-Skripte müssen laufen, bevor das
+      erste Bild steht — sonst blitzt die Startseite unter der Auflage auf. */}
+  <Apertura saltar={t.hero.saltar} />
+  <Travesia />
+
+  <div class="scroll-honey" aria-hidden="true"></div>
+  <Nav lang={lang} t={t} />
+
+  <main>
+    <Hero t={t} />
+    <Intro t={t} />
+    <SectionDivider color="var(--papel-warm)" />
+    <Timeline t={t} />
+    <SectionDivider color="var(--pistacho-100)" flip />
+    <Pistacho t={t} />
+    <SectionDivider color="var(--lavanda-100)" />
+    <Lavanda t={t} />
+    <SectionDivider color="var(--cielo-100)" flip />
+    <Abejas t={t} lang={lang} />
+    <SectionDivider color="var(--papel)" />
+    <FincaMap t={t} />
+    <SectionDivider color="var(--papel-warm)" flip />
+    <Herbario t={t} />
+    <SectionDivider color="var(--papel)" />
+    <Products t={t} />
+    <SectionDivider color="var(--miel-100)" flip />
+    <Quiz t={t} />
+    <Workshops t={t} lang={lang} />
+    <SectionDivider color="var(--barro-100)" />
+    <Stay t={t} />
+    <SectionDivider color="var(--lavanda-100)" flip />
+    <Contact t={t} />
+  </main>
+
+  <MeliCompanion />
+  <Footer t={t} lang={lang} />
+
+  <script>
+    import '../scripts/scroll-story';
+  </script>
+</Base>

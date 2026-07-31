@@ -1,0 +1,209 @@
+---
+import type { Dict } from '../i18n';
+import BeeMeli from './BeeMeli.astro';
+
+interface Props {
+  t: Dict;
+}
+
+const { t } = Astro.props;
+---
+
+<section class="hero" id="top" aria-label={t.hero.title}>
+  <!-- Aquarell-Landschaft -->
+  <svg
+    class="hero-scene"
+    viewBox="0 0 1440 900"
+    preserveAspectRatio="xMidYMax slice"
+    aria-hidden="true"
+  >
+    <!-- Sonne -->
+    <g class="par" data-depth="-0.12">
+      <circle cx="1130" cy="210" r="180" fill="url(#pg-sol)" opacity="0.35" filter="url(#wc-wash)" />
+      <circle cx="1130" cy="210" r="105" fill="url(#pg-sol)" filter="url(#wc-wash)" />
+    </g>
+
+    <!-- Wolken -->
+    <g class="par" data-depth="-0.2" opacity="0.7">
+      <ellipse cx="300" cy="170" rx="150" ry="42" fill="#ffffff" filter="url(#wc-wash)" />
+      <ellipse cx="420" cy="140" rx="100" ry="30" fill="#ffffff" opacity="0.8" filter="url(#wc-wash)" />
+      <ellipse cx="850" cy="90" rx="120" ry="30" fill="#ffffff" opacity="0.6" filter="url(#wc-wash)" />
+    </g>
+
+    <!-- Hügel hinten (Lavendel-Dunst) -->
+    <g class="par" data-depth="0.06">
+      <path
+        d="M-40 640 C 220 520, 460 560, 720 590 C 980 620, 1200 540, 1480 600 L 1480 920 L -40 920 Z"
+        fill="#e0dbf0" opacity="0.85" filter="url(#wc-wash)"
+      />
+    </g>
+
+    <!-- Hügel Mitte mit Eukalyptus-Gürtel -->
+    <g class="par" data-depth="0.12">
+      <path
+        d="M-40 720 C 260 620, 520 680, 780 670 C 1040 660, 1240 610, 1480 680 L 1480 920 L -40 920 Z"
+        fill="#dde4c8" filter="url(#wc-wash)"
+      />
+      <g fill="#7a8b5a" opacity="0.55" filter="url(#wc-rough)">
+        <ellipse cx="180" cy="655" rx="26" ry="38" />
+        <ellipse cx="240" cy="645" rx="22" ry="34" />
+        <ellipse cx="300" cy="652" rx="26" ry="40" />
+        <ellipse cx="1130" cy="630" rx="24" ry="36" />
+        <ellipse cx="1190" cy="622" rx="27" ry="42" />
+        <ellipse cx="1255" cy="632" rx="22" ry="34" />
+      </g>
+    </g>
+
+    <!-- Feld vorne mit Pflanzreihen -->
+    <g class="par" data-depth="0.2">
+      <path
+        d="M-40 810 C 300 720, 640 780, 940 760 C 1180 745, 1330 720, 1480 760 L 1480 920 L -40 920 Z"
+        fill="url(#pg-pistacho-light)" filter="url(#wc-wash)"
+      />
+      <g stroke="#5b6c42" stroke-width="5" stroke-linecap="round" opacity="0.3" filter="url(#wc-rough)">
+        <path d="M160 830 C 300 800, 460 800, 600 812" fill="none" />
+        <path d="M240 868 C 420 832, 640 830, 830 846" fill="none" />
+        <path d="M760 800 C 920 784, 1080 780, 1240 792" fill="none" />
+      </g>
+      <!-- Lavendeltupfer -->
+      <g fill="url(#pg-lavanda)" filter="url(#wc-rough)" opacity="0.85">
+        <ellipse cx="120" cy="798" rx="9" ry="20" />
+        <ellipse cx="152" cy="812" rx="8" ry="17" />
+        <ellipse cx="1305" cy="792" rx="9" ry="20" />
+        <ellipse cx="1340" cy="806" rx="8" ry="16" />
+        <ellipse cx="1270" cy="808" rx="7" ry="15" />
+      </g>
+      <!-- Calendula-Tupfer -->
+      <g filter="url(#wc-rough)">
+        <circle cx="90" cy="835" r="8" fill="#e8892d" opacity="0.85" />
+        <circle cx="118" cy="852" r="6" fill="#e8a13d" opacity="0.85" />
+        <circle cx="1360" cy="842" r="7" fill="#e8892d" opacity="0.85" />
+      </g>
+    </g>
+  </svg>
+
+  <!-- Inhalt -->
+  <div class="hero-content wrap">
+    <div class="hero-bee" data-hero-bee>
+      <svg class="flight-path" viewBox="0 0 260 120" aria-hidden="true">
+        <path
+          d="M8 100 C 60 30, 120 20, 150 55 C 170 78, 150 100, 130 92 C 112 84, 128 58, 160 52 C 196 46, 228 58, 248 78"
+          stroke="#b3761c" stroke-width="2.5" stroke-dasharray="1 9"
+          stroke-linecap="round" fill="none" opacity="0.65"
+        />
+      </svg>
+      <BeeMeli width="clamp(96px, 14vw, 150px)" class="bee-float" />
+    </div>
+
+    <p class="kicker" data-reveal>{t.hero.kicker}</p>
+    <h1 data-reveal>{t.hero.title}</h1>
+    <p class="lead" data-reveal>{t.hero.sub}</p>
+
+    <div class="hero-cta" data-reveal>
+      <a class="btn" href="#talleres">{t.nav.talleres}</a>
+      <a class="btn btn--ghost" href="#historia">{t.nav.historia}</a>
+    </div>
+  </div>
+
+  <a class="scroll-cue" href="#historia" aria-label={t.hero.scroll}>
+    <span>{t.hero.scroll}</span>
+    <svg viewBox="0 0 30 44" width="24" aria-hidden="true">
+      <path d="M15 2 C 8 10, 22 18, 15 26 C 10 32, 17 38, 15 41"
+        stroke="#b3761c" stroke-width="2.2" stroke-dasharray="1 6"
+        stroke-linecap="round" fill="none" opacity="0.7" />
+      <g class="cue-bee">
+        <ellipse cx="15" cy="36" rx="6" ry="4.2" fill="#e8a13d" />
+        <path d="M12.4 33 L 13 39.4 M 16.4 32.8 L 17 39.6" stroke="#6b4a1f" stroke-width="1.6" />
+        <ellipse cx="12.5" cy="31" rx="4.6" ry="2.2" transform="rotate(-24 12.5 31)" fill="#d9eaf2" opacity="0.9" />
+        <circle cx="21" cy="34.6" r="2.8" fill="#a06a2c" />
+      </g>
+    </svg>
+  </a>
+</section>
+
+<style>
+  .hero {
+    position: relative;
+    min-height: 100svh;
+    display: grid;
+    place-items: center;
+    overflow: hidden;
+    background: linear-gradient(180deg, var(--cielo-100) 0%, var(--papel) 46%, var(--papel-warm) 100%);
+    padding-top: 4.5rem;
+  }
+
+  .hero-scene {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+  }
+
+  .hero-content {
+    position: relative;
+    text-align: center;
+    display: grid;
+    justify-items: center;
+    gap: var(--sp-4);
+    padding-bottom: 16vh;
+  }
+
+  .hero-content .lead {
+    max-width: 34rem;
+  }
+
+  .hero-bee {
+    position: relative;
+    display: grid;
+    justify-items: end;
+    width: min(72vw, 330px);
+  }
+
+  .flight-path {
+    position: absolute;
+    right: 8%;
+    bottom: 28%;
+    width: 92%;
+    opacity: 0.9;
+    z-index: 0;
+  }
+
+  .hero-cta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--sp-3);
+    justify-content: center;
+    margin-top: var(--sp-3);
+  }
+
+  .scroll-cue {
+    position: absolute;
+    bottom: clamp(1rem, 4vh, 2.5rem);
+    left: 50%;
+    transform: translateX(-50%);
+    display: grid;
+    justify-items: center;
+    gap: 0.5rem;
+    text-decoration: none;
+    color: var(--tinta-suave);
+    font-size: var(--fs-300);
+    font-weight: 600;
+  }
+
+  .bee-float {
+    position: relative;
+    z-index: 1;
+  }
+
+  .cue-bee {
+    animation: cue-fly 2.4s ease-in-out infinite;
+  }
+
+  @keyframes cue-fly {
+    0% { transform: translateY(-28px); opacity: 0; }
+    12% { transform: translateY(-26px); opacity: 1; }
+    55%, 78% { transform: translateY(0); opacity: 1; }
+    92%, 100% { transform: translateY(4px); opacity: 0; }
+  }
+</style>

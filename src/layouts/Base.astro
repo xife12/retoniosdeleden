@@ -1,0 +1,47 @@
+---
+import '@fontsource-variable/fraunces';
+import '@fontsource-variable/outfit';
+import '../styles/tokens.css';
+import '../styles/global.css';
+import WatercolorDefs from '../components/WatercolorDefs.astro';
+
+interface Props {
+  lang: 'es' | 'en';
+  title: string;
+  description: string;
+}
+
+const { lang, title, description } = Astro.props;
+const altLang = lang === 'es' ? 'en' : 'es';
+---
+
+<!doctype html>
+<html lang={lang} class="no-js">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>{title}</title>
+    <meta name="description" content={description} />
+    {/* favicon.svg ist die reduzierte Bildmarke (Ring, Stock, Biene) mit fest
+        eingetragenen Farben — Favicons erben keine Seiten-Styles. Die
+        PNG-Zeile darunter ist die Rückfallebene für Browser ohne
+        SVG-Favicon; eine favicon.ico gibt es bewusst nicht. Alle Icons
+        entstehen aus src/components/Logo.astro. */}
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32.png" />
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+    <link rel="manifest" href="/site.webmanifest" />
+    <meta name="theme-color" content="#fbf6ec" />
+    <link rel="alternate" hreflang={altLang} href={`/${altLang}/`} />
+    <meta property="og:title" content={title} />
+    <meta property="og:description" content={description} />
+    <meta property="og:type" content="website" />
+    <script is:inline>
+      document.documentElement.classList.replace('no-js', 'js');
+    </script>
+  </head>
+  <body>
+    <WatercolorDefs />
+    <slot />
+  </body>
+</html>

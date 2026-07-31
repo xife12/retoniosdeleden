@@ -1,0 +1,294 @@
+---
+import type { Dict } from '../i18n';
+
+interface Props {
+  t: Dict;
+}
+
+const { t } = Astro.props;
+const q = t.quiz;
+---
+
+<section
+  id="quiz"
+  class="quiz"
+  data-chapter
+  data-meli-zone
+  data-quiz={JSON.stringify(
+    q.questions.map(({ correct, right, wrong }) => ({ correct, right, wrong }))
+  )}
+>
+  <div class="wrap quiz-wrap">
+    <div class="quiz-card card" data-reveal data-perfect={q.perfect} data-good={q.good}>
+      <span class="quiz-bee meli-perch" data-meli-perch aria-hidden="true"></span>
+
+      <h2><span class="swash">{q.title}</span></h2>
+      <p class="quiz-intro">{q.intro}</p>
+
+      {q.questions.map((question, qi) => (
+        <div class="quiz-step" data-quiz-step={qi} hidden={qi !== 0}>
+          <p class="quiz-progress" aria-hidden="true">
+            {qi + 1} {q.of} {q.questions.length}
+          </p>
+          <h3>{question.q}</h3>
+          <div class="quiz-options">
+            {question.options.map((opt, oi) => (
+              <button class="quiz-option" data-option={oi}>
+                {opt}
+              </button>
+            ))}
+          </div>
+          <p class="quiz-feedback bubble" data-feedback hidden></p>
+          <button class="btn quiz-next" data-quiz-next hidden>
+            {qi === q.questions.length - 1 ? q.seeResult : q.next}
+          </button>
+        </div>
+      ))}
+
+      <!-- Ergebnis -->
+      <div class="quiz-step quiz-result" data-quiz-step="result" hidden>
+        <div class="badge-medal" aria-hidden="true">
+          <svg viewBox="0 0 120 130">
+            <path d="M44 6 L 60 30 L 76 6 L 70 44 L 50 44 Z" fill="url(#pg-barro)" opacity="0.8" filter="url(#wc-rough)" />
+            <circle cx="60" cy="78" r="42" fill="url(#pg-miel)" filter="url(#wc-soft)" />
+            <circle cx="60" cy="78" r="42" fill="none" stroke="#33291f" stroke-width="2.4" opacity="0.55" filter="url(#ink)" />
+            <ellipse cx="56" cy="82" rx="15" ry="11" fill="#6b4a1f" opacity="0.85" filter="url(#wc-rough)" />
+            <path d="M50 74 L 51 91 M 59 73 L 60 92" stroke="#f3c87f" stroke-width="3" />
+            <ellipse cx="52" cy="68" rx="10" ry="5" transform="rotate(-24 52 68)" fill="#eef5f8" opacity="0.95" />
+            <circle cx="74" cy="77" r="7" fill="#4a3316" />
+          </svg>
+        </div>
+        <h3>{q.scoreTitle}</h3>
+        <p class="quiz-score">
+          <strong data-score>0</strong> {q.scoreOf}
+        </p>
+        <p class="quiz-badge chip chip--miel" data-badge hidden>{q.badge}</p>
+        <p class="quiz-verdict" data-verdict></p>
+        <div class="quiz-actions">
+          <a class="btn" href="#talleres">{q.cta}</a>
+          <button class="btn btn--ghost" data-quiz-restart>{q.restart}</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<script>
+  const section = document.getElementById('quiz')!;
+  const data: { correct: number; right: string; wrong: string }[] = JSON.parse(
+    section.dataset.quiz ?? '[]'
+  );
+  const steps = Array.from(section.querySelectorAll<HTMLElement>('[data-quiz-step]'));
+  const resultStep = steps.find((s) => s.dataset.quizStep === 'result')!;
+  const questionSteps = steps.filter((s) => s !== resultStep);
+
+  let score = 0;
+
+  questionSteps.forEach((step, qi) => {
+    const options = Array.from(step.querySelectorAll<HTMLButtonElement>('.quiz-option'));
+    const feedback = step.querySelector<HTMLElement>('[data-feedback]')!;
+    const nextBtn = step.querySelector<HTMLElement>('[data-quiz-next]')!;
+
+    options.forEach((opt, oi) => {
+      opt.addEventListener('click', () => {
+        if (step.classList.contains('answered')) return;
+        step.classList.add('answered');
+        const ok = oi === data[qi].correct;
+        if (ok) score += 1;
+        opt.classList.add(ok ? 'is-right' : 'is-wrong');
+        options[data[qi].correct].classList.add('is-right');
+        options.forEach((o) => (o.disabled = true));
+        feedback.textContent = ok ? data[qi].right : data[qi].wrong;
+        feedback.hidden = false;
+        nextBtn.hidden = false;
+      });
+    });
+
+    nextBtn.addEventListener('click', () => {
+      step.hidden = true;
+      const next = questionSteps[qi + 1] ?? resultStep;
+      next.hidden = false;
+      if (next === resultStep) showResult();
+    });
+  });
+
+  function showResult() {
+    resultStep.querySelector('[data-score]')!.textContent = String(score);
+    const badge = resultStep.querySelector<HTMLElement>('[data-badge]')!;
+    const verdict = resultStep.querySelector<HTMLElement>('[data-verdict]')!;
+    const perfect = score === data.length;
+    badge.hidden = !perfect;
+    verdict.textContent = perfect
+      ? section.querySelector<HTMLElement>('.quiz-card')!.dataset.perfect ?? ''
+      : section.querySelector<HTMLElement>('.quiz-card')!.dataset.good ?? '';
+
+    if (perfect) {
+      const card = section.querySelector<HTMLElement>('.quiz-card')!;
+      const colors = ['#e8a13d', '#f3c87f', '#9b8ec4', '#7a8b5a', '#c1714f'];
+      for (let i = 0; i < 30; i++) {
+        const p = document.createElement('i');
+        const size = 5 + Math.random() * 7;
+        p.className = 'quiz-pollen';
+        p.style.cssText = `left:${8 + Math.random() * 84}%; width:${size}px; height:${size}px;
+          background:${colors[i % colors.length]};
+          animation-delay:${Math.random() * 0.4}s; animation-duration:${1.3 + Math.random() * 1.2}s;`;
+        card.appendChild(p);
+        setTimeout(() => p.remove(), 3200);
+      }
+    }
+  }
+
+  section.querySelector('[data-quiz-restart]')?.addEventListener('click', () => {
+    score = 0;
+    resultStep.hidden = true;
+    questionSteps.forEach((step, i) => {
+      step.hidden = i !== 0;
+      step.classList.remove('answered');
+      step.querySelectorAll<HTMLButtonElement>('.quiz-option').forEach((o) => {
+        o.disabled = false;
+        o.classList.remove('is-right', 'is-wrong');
+      });
+      step.querySelector<HTMLElement>('[data-feedback]')!.hidden = true;
+      step.querySelector<HTMLElement>('[data-quiz-next]')!.hidden = true;
+    });
+  });
+</script>
+
+<style>
+  .quiz {
+    background: var(--miel-100);
+    padding-bottom: 0 !important;
+  }
+
+  .quiz-wrap {
+    display: grid;
+    justify-items: center;
+  }
+
+  .quiz-card {
+    position: relative;
+    width: min(100%, 36rem);
+    display: grid;
+    gap: var(--sp-4);
+    justify-items: start;
+    overflow: hidden;
+    padding: clamp(1.75rem, 5vw, 3rem);
+  }
+
+  .quiz-bee {
+    position: absolute;
+    top: 1.1rem;
+    right: 1.2rem;
+  }
+
+  .quiz-intro {
+    color: var(--c-text-soft);
+  }
+
+  .quiz-step {
+    display: grid;
+    gap: var(--sp-3);
+    justify-items: start;
+    width: 100%;
+  }
+
+  .quiz-progress {
+    font-size: var(--fs-300);
+    font-weight: 700;
+    color: var(--miel-700);
+  }
+
+  .quiz-options {
+    display: grid;
+    gap: var(--sp-2);
+    width: 100%;
+  }
+
+  .quiz-option {
+    text-align: left;
+    background: var(--papel-warm);
+    border: 2px solid transparent;
+    border-radius: var(--r-md);
+    padding: 0.75em 1.1em;
+    font-weight: 600;
+    cursor: pointer;
+    transition:
+      border-color var(--dur-1) ease,
+      background var(--dur-1) ease,
+      transform var(--dur-1) var(--ease-out);
+  }
+
+  @media (hover: hover) and (pointer: fine) {
+    .quiz-option:not(:disabled):hover {
+      border-color: var(--miel-300);
+      transform: translateX(3px);
+    }
+  }
+
+  .quiz-option:active {
+    transform: scale(0.98);
+  }
+
+  .quiz-option.is-right {
+    background: var(--pistacho-100);
+    border-color: var(--pistacho-500);
+  }
+
+  .quiz-option.is-wrong {
+    background: var(--barro-100);
+    border-color: var(--barro-500);
+  }
+
+  .quiz-feedback {
+    font-size: var(--fs-400);
+    padding: var(--sp-3) var(--sp-5);
+  }
+
+  .quiz-feedback::after {
+    display: none;
+  }
+
+  .quiz-result {
+    justify-items: center;
+    text-align: center;
+  }
+
+  .badge-medal svg {
+    width: 96px;
+    animation: medal-in 600ms var(--ease-bounce);
+  }
+
+  @keyframes medal-in {
+    from { transform: scale(0.85) rotate(-8deg); opacity: 0; }
+    to { transform: scale(1) rotate(0); opacity: 1; }
+  }
+
+  .quiz-score strong {
+    font-family: var(--font-display);
+    font-size: var(--fs-800);
+    color: var(--miel-700);
+  }
+
+  .quiz-actions {
+    display: flex;
+    gap: var(--sp-3);
+    flex-wrap: wrap;
+    justify-content: center;
+    margin-top: var(--sp-2);
+  }
+
+  .quiz-card :global(.quiz-pollen) {
+    position: absolute;
+    top: -12px;
+    border-radius: 50% 42% 55% 48%;
+    pointer-events: none;
+    animation: pollen-fall linear forwards;
+  }
+
+  @keyframes pollen-fall {
+    to {
+      transform: translateY(34rem) rotate(480deg);
+      opacity: 0;
+    }
+  }
+</style>

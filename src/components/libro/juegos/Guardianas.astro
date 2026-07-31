@@ -1,0 +1,482 @@
+---
+/**
+ * Seite 9 — „Vos sos la guardiana"
+ *
+ * Der Duft der Königin umgibt Luna beim Eintreten — davon handelt die Seite.
+ * Also übernimmt das Kind die Tür: Fünf Anflieger landen nacheinander vor
+ * dem Flugloch, jede mit einer Duftfahne über sich. Entschieden wird am
+ * Geruch, nie am Aussehen. Die zweite und die letzte brechen die Erwartung —
+ * das ist der eigentliche Wissenskern. Punkte gibt es keine.
+ */
+import BeeMeli from '../../BeeMeli.astro';
+import { libroUI } from '../../../data/libro';
+import type { Lang } from '../../../i18n';
+
+interface Props {
+  lang: Lang;
+}
+
+const { lang } = Astro.props;
+const j = libroUI[lang].juegos.guardianas;
+
+/* Wer riecht nach Zuhause? Reihenfolge wie in den Daten. */
+const olores: ('casa' | 'raro')[] = ['casa', 'raro', 'casa', 'raro', 'raro'];
+---
+
+<div
+  class="escena"
+  data-gua-escena
+  data-textos={JSON.stringify({
+    done: j.done,
+    fact: j.fact,
+    logro: j.logro,
+    home: j.smellHome,
+    strange: j.smellStrange,
+    arrivals: j.arrivals,
+    olores,
+  })}
+>
+  <h3 class="escena-titulo">{j.title}</h3>
+  <p class="escena-pista">{j.hint}</p>
+
+  <div class="mesa gua-mesa">
+    <svg viewBox="0 0 300 210">
+      <!-- Der Stock von außen -->
+      <path d="M20 200 L20 120 L280 120 L280 200 Z" fill="#6f8a52" filter="url(#wc-soft)" />
+      <path d="M12 120 L288 120 L292 104 L8 104 Z" fill="#5b7343" filter="url(#wc-soft)" />
+      <path d="M20 200 L20 120 L280 120 L280 200" fill="none" stroke="#33291f" stroke-width="2.6"
+        opacity="0.65" filter="url(#ink)" />
+
+      <!-- Das Flugloch mit zwei Wächterinnen -->
+      <g transform="translate(150 200)">
+        <path d="M-46 0 L -46 -22 C -46 -34, 46 -34, 46 -22 L 46 0 Z" fill="#2a1704" opacity="0.9" />
+        <path d="M-46 0 L -46 -22 C -46 -34, 46 -34, 46 -22 L 46 0" fill="none" stroke="#ffdf9e"
+          stroke-width="2.4" opacity="0.85" />
+        <g class="gua-guardias" fill="#4a3308">
+          <ellipse cx="-26" cy="-6" rx="9" ry="6" />
+          <ellipse cx="26" cy="-6" rx="9" ry="6" />
+        </g>
+      </g>
+
+      <!-- Der Anflieger -->
+      <g class="gua-visita" data-gua-visita transform="translate(150 74)">
+        <g class="gua-olor" data-gua-olor>
+          <path d="M-16 -30 C -24 -44, -8 -50, -16 -64" fill="none" stroke-width="3.4"
+            stroke-linecap="round" />
+          <path d="M0 -33 C -8 -50, 8 -56, 0 -70" fill="none" stroke-width="3.4"
+            stroke-linecap="round" />
+          <path d="M16 -30 C 8 -44, 24 -50, 16 -64" fill="none" stroke-width="3.4"
+            stroke-linecap="round" />
+        </g>
+
+        {[0, 1, 2, 3, 4].map((i) => (
+          <g class="gua-bicho" data-gua-bicho={i}>
+            {i === 0 && (
+              <g>
+                <ellipse rx="27" ry="18" fill="#c9922f" />
+                <path d="M-13 -14 L -9 14 M 4 -16 L 8 16" stroke="#4a3308" stroke-width="7" />
+                <ellipse cx="-5" cy="-20" rx="22" ry="7" transform="rotate(-16 -5 -20)"
+                  fill="#dfd7c0" opacity="0.8" />
+                <circle cx="29" cy="-4" r="12" fill="#8a5a22" />
+                <circle cx="32" cy="-8" r="2.8" fill="#2a1704" />
+                <g fill="#a9885a" opacity="0.85">
+                  <circle cx="-11" cy="11" r="4" /><circle cx="11" cy="12" r="3.2" />
+                  <circle cx="0" cy="-7" r="2.8" />
+                </g>
+              </g>
+            )}
+            {i === 1 && (
+              <g>
+                <ellipse rx="27" ry="18" fill="#f0c04a" />
+                <path d="M-13 -14 L -9 14 M 4 -16 L 8 16" stroke="#4a3308" stroke-width="7" />
+                <ellipse cx="-5" cy="-20" rx="22" ry="7" transform="rotate(-22 -5 -20)"
+                  fill="#f2fbff" opacity="0.95" />
+                <circle cx="29" cy="-4" r="12" fill="#a06a2c" />
+                <circle cx="32" cy="-8" r="2.8" fill="#2a1704" />
+                <path d="M-21 -10 C -14 -16, -4 -18, 7 -16" stroke="#fffdf8" stroke-width="2.6"
+                  fill="none" opacity="0.85" />
+              </g>
+            )}
+            {i === 2 && (
+              <g>
+                <ellipse rx="27" ry="18" fill="#e8b23d" />
+                <path d="M-13 -14 L -9 14 M 4 -16 L 8 16" stroke="#4a3308" stroke-width="7" />
+                <ellipse cx="-5" cy="-20" rx="22" ry="7" transform="rotate(-16 -5 -20)"
+                  fill="#eef5f8" opacity="0.85" />
+                <circle cx="29" cy="-4" r="12" fill="#8a5a22" />
+                <circle cx="32" cy="-8" r="2.8" fill="#2a1704" />
+                <ellipse cx="-11" cy="16" rx="11" ry="8" fill="#e8892d" />
+                <ellipse cx="11" cy="18" rx="9.6" ry="7.4" fill="#e8892d" />
+              </g>
+            )}
+            {i === 3 && (
+              <g>
+                <ellipse rx="25" ry="12.6" fill="#f5d327" />
+                <path d="M-11 -11 L -9 11 M 5 -11.4 L 7 11.4" stroke="#2a2a2a" stroke-width="7" />
+                <path d="M-25 0 L -40 0" stroke="#2a2a2a" stroke-width="4.6" stroke-linecap="round" />
+                <ellipse cx="-4" cy="-14" rx="21" ry="5.4" transform="rotate(-10 -4 -14)"
+                  fill="#dfe6ea" opacity="0.85" />
+                <circle cx="27" cy="-2" r="11" fill="#f5d327" />
+                <circle cx="30" cy="-6" r="2.8" fill="#2a2a2a" />
+              </g>
+            )}
+            {i === 4 && (
+              <g>
+                <ellipse rx="25" ry="17" fill="#d9a94b" />
+                <path d="M-13 -14 L -9 14 M 4 -14 L 8 14" stroke="#4a3308" stroke-width="7" />
+                <ellipse cx="-5" cy="-18" rx="20" ry="6.4" transform="rotate(-14 -5 -18)"
+                  fill="#eef5f8" opacity="0.85" />
+                <circle cx="27" cy="-4" r="11.8" fill="#8a5a22" />
+                <circle cx="30" cy="-8" r="2.8" fill="#2a1704" />
+                <path d="M36 10 C 43 18, 43 27, 36 27 C 29 27, 29 18, 36 10 Z" fill="#ffd977"
+                  stroke="#b3761c" stroke-width="1.8" />
+              </g>
+            )}
+          </g>
+        ))}
+      </g>
+
+      <!-- Rückmeldung: so macht es der Stock -->
+      <g class="gua-sello" data-gua-sello transform="translate(212 60)">
+        <circle r="17" fill="#fdf6e6" opacity="0.96" />
+        <path class="gua-tilde" d="M-8 0 L -2.5 6 L 8.5 -6" fill="none" stroke="#3f4f30"
+          stroke-width="4" stroke-linecap="round" stroke-linejoin="round" />
+        <path class="gua-espiral" d="M0 -8 C 8 -8, 8 3, 0 3 C -6 3, -6 -5, -2 -5" fill="none"
+          stroke="#8f4c31" stroke-width="3.6" stroke-linecap="round" />
+      </g>
+    </svg>
+  </div>
+
+  <div class="gua-ficha">
+    <span class="gua-olor-chip" data-gua-chip></span>
+    <p class="gua-quien" data-gua-quien></p>
+  </div>
+
+  <div class="escena-mandos">
+    <button class="boton boton--si" data-gua-si>{j.yes}</button>
+    <button class="boton boton--no" data-gua-no>{j.no}</button>
+    <ol class="gua-pasos" data-gua-pasos aria-hidden="true">
+      {j.arrivals.map(() => (
+        <li></li>
+      ))}
+    </ol>
+  </div>
+
+  <div class="dice">
+    <span class="dice-meli" aria-hidden="true"><BeeMeli width="100%" /></span>
+    <p class="dice-texto" data-gua-dice aria-live="polite"></p>
+  </div>
+</div>
+
+<script>
+  import { datos, decir, logro, quieto, tin } from '../../../scripts/juego';
+
+  const escena = document.querySelector<HTMLElement>('[data-gua-escena]');
+
+  if (escena) {
+    const t = datos(escena, 'textos', {
+      done: '',
+      fact: '',
+      logro: '',
+      home: '',
+      strange: '',
+      arrivals: [] as { name: string; enter: boolean; meli: string }[],
+      olores: [] as ('casa' | 'raro')[],
+    });
+
+    const visita = escena.querySelector<SVGGElement>('[data-gua-visita]')!;
+    const olor = escena.querySelector<SVGGElement>('[data-gua-olor]')!;
+    const sello = escena.querySelector<SVGGElement>('[data-gua-sello]')!;
+    const bichos = [...escena.querySelectorAll<SVGGElement>('[data-gua-bicho]')];
+    const chip = escena.querySelector<HTMLElement>('[data-gua-chip]')!;
+    const quien = escena.querySelector<HTMLElement>('[data-gua-quien]')!;
+    const si = escena.querySelector<HTMLButtonElement>('[data-gua-si]')!;
+    const no = escena.querySelector<HTMLButtonElement>('[data-gua-no]')!;
+    const pasos = [...escena.querySelectorAll<HTMLElement>('[data-gua-pasos] li')];
+    const dice = escena.querySelector<HTMLElement>('[data-gua-dice]');
+
+    let i = 0;
+    let ocupado = false;
+
+    const mostrar = () => {
+      const a = t.arrivals[i];
+      if (!a) return;
+      const casa = t.olores[i] === 'casa';
+      bichos.forEach((b, k) => b.classList.toggle('is-aqui', k === i));
+      olor.classList.toggle('is-casa', casa);
+      olor.classList.toggle('is-raro', !casa);
+      chip.textContent = casa ? t.home : t.strange;
+      chip.className = `gua-olor-chip ${casa ? 'is-casa' : 'is-raro'}`;
+      quien.textContent = a.name;
+      visita.classList.remove('is-yendo', 'is-entrando', 'is-fuera');
+      sello.classList.remove('is-bien', 'is-mal');
+      void visita.getBoundingClientRect();
+      visita.classList.add('is-yendo');
+    };
+
+    const decidir = (dejar: boolean) => {
+      if (ocupado || i >= t.arrivals.length) return;
+      ocupado = true;
+      si.disabled = true;
+      no.disabled = true;
+
+      const a = t.arrivals[i];
+      const acertado = dejar === a.enter;
+      sello.classList.add(acertado ? 'is-bien' : 'is-mal');
+      visita.classList.remove('is-yendo');
+      visita.classList.add(dejar ? 'is-entrando' : 'is-fuera');
+      decir(dice, a.meli);
+      tin(acertado ? 1.4 : 0.75);
+      pasos[i]?.classList.add(acertado ? 'is-bien' : 'is-visto');
+
+      i += 1;
+
+      window.setTimeout(
+        () => {
+          ocupado = false;
+          if (i < t.arrivals.length) {
+            si.disabled = false;
+            no.disabled = false;
+            mostrar();
+          } else {
+            visita.classList.add('is-fin');
+            chip.textContent = '';
+            chip.className = 'gua-olor-chip';
+            quien.textContent = '';
+            window.setTimeout(() => decir(dice, `${t.done} ${t.fact}`), 1500);
+            logro('guardianas', t.logro);
+          }
+        },
+        quieto() ? 200 : 1600
+      );
+    };
+
+    si.addEventListener('click', () => decidir(true));
+    no.addEventListener('click', () => decidir(false));
+    mostrar();
+  }
+</script>
+
+<style>
+  .gua-mesa {
+    max-width: 30rem;
+  }
+
+  .gua-olor path {
+    stroke: #ffd977;
+    opacity: 0;
+  }
+
+  .gua-olor.is-raro path {
+    stroke: #9b8ec4;
+  }
+
+  .gua-visita.is-yendo .gua-olor path {
+    opacity: 0.95;
+    animation: gua-humo 2.4s ease-in-out infinite;
+  }
+
+  .gua-olor path:nth-child(2) {
+    animation-delay: 0.3s;
+  }
+
+  .gua-olor path:nth-child(3) {
+    animation-delay: 0.6s;
+  }
+
+  @keyframes gua-humo {
+    0%,
+    100% {
+      transform: translateY(0);
+      opacity: 0.35;
+    }
+    50% {
+      transform: translateY(-7px);
+      opacity: 1;
+    }
+  }
+
+  .gua-bicho {
+    opacity: 0;
+    pointer-events: none;
+  }
+
+  .gua-bicho.is-aqui {
+    opacity: 1;
+  }
+
+  .gua-visita.is-yendo {
+    animation: gua-flota 2.8s ease-in-out infinite;
+  }
+
+  @keyframes gua-flota {
+    0%,
+    100% {
+      translate: 0 0;
+    }
+    50% {
+      translate: 4px -7px;
+    }
+  }
+
+  .gua-visita.is-entrando {
+    animation: gua-entra 1.3s var(--ease-in-out) forwards;
+  }
+
+  @keyframes gua-entra {
+    0% {
+      translate: 0 0;
+      scale: 1;
+      opacity: 1;
+    }
+    100% {
+      translate: 0 116px;
+      scale: 0.4;
+      opacity: 0;
+    }
+  }
+
+  .gua-visita.is-fuera {
+    animation: gua-sale 1.3s var(--ease-in-out) forwards;
+  }
+
+  @keyframes gua-sale {
+    0% {
+      translate: 0 0;
+      opacity: 1;
+    }
+    100% {
+      translate: -130px -52px;
+      opacity: 0;
+    }
+  }
+
+  .gua-visita.is-fin {
+    opacity: 0;
+  }
+
+  .gua-sello {
+    opacity: 0;
+    transition: opacity 300ms ease;
+  }
+
+  .gua-sello.is-bien,
+  .gua-sello.is-mal {
+    opacity: 1;
+    animation: gua-sello 520ms var(--ease-bounce);
+    transform-box: fill-box;
+    transform-origin: 50% 50%;
+  }
+
+  @keyframes gua-sello {
+    0% {
+      scale: 0.3;
+    }
+    100% {
+      scale: 1;
+    }
+  }
+
+  .gua-tilde,
+  .gua-espiral {
+    display: none;
+  }
+
+  .gua-sello.is-bien .gua-tilde {
+    display: block;
+  }
+
+  .gua-sello.is-mal .gua-espiral {
+    display: block;
+  }
+
+  .gua-guardias ellipse {
+    animation: gua-vigila 3.2s ease-in-out infinite alternate;
+  }
+
+  @keyframes gua-vigila {
+    from {
+      translate: -1.5px 0;
+    }
+    to {
+      translate: 1.5px -1.5px;
+    }
+  }
+
+  /* Karteikarte */
+  .gua-ficha {
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr);
+    align-items: center;
+    gap: var(--sp-3);
+    width: min(100%, 32rem);
+    padding: var(--sp-2) var(--sp-3);
+    border-radius: 4px 16px 16px 16px;
+    background: rgba(255, 253, 248, 0.85);
+    min-height: 3.2rem;
+    text-align: left;
+  }
+
+  .gua-olor-chip:empty {
+    display: none;
+  }
+
+  .gua-olor-chip {
+    display: inline-flex;
+    align-items: center;
+    padding: 0.3em 0.85em;
+    border-radius: 999px;
+    font-size: var(--fs-200);
+    font-weight: 700;
+    white-space: nowrap;
+  }
+
+  .gua-olor-chip.is-casa {
+    background: var(--miel-200);
+    color: var(--miel-800);
+  }
+
+  .gua-olor-chip.is-raro {
+    background: var(--lavanda-200);
+    color: var(--lavanda-700);
+  }
+
+  .gua-quien {
+    font-size: var(--fs-300);
+    color: var(--tinta-suave-papel);
+  }
+
+  .gua-pasos {
+    display: flex;
+    gap: 5px;
+    list-style: none;
+    padding: 0;
+    margin: 0;
+  }
+
+  .gua-pasos li {
+    width: 12px;
+    height: 14px;
+    background: rgba(179, 118, 28, 0.22);
+    clip-path: polygon(50% 0, 100% 25%, 100% 75%, 50% 100%, 0 75%, 0 25%);
+    transition: background 300ms ease;
+  }
+
+  .gua-pasos li.is-visto {
+    background: var(--barro-300);
+  }
+
+  .gua-pasos li.is-bien {
+    background: var(--miel-500);
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .gua-visita,
+    .gua-olor path,
+    .gua-guardias ellipse,
+    .gua-sello.is-bien,
+    .gua-sello.is-mal {
+      animation: none !important;
+    }
+  }
+</style>

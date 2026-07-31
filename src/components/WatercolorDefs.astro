@@ -1,0 +1,104 @@
+---
+/**
+ * Globale SVG-Filter für den Aquarell-Look.
+ * Einmal im Layout eingebunden; alle Inline-SVGs der Seite
+ * referenzieren die Filter per url(#id).
+ *
+ *  - wc-wash   große, weiche Waschung (Hintergründe, Hügel)
+ *  - wc-soft   mittlere Verformung (Körper, Blätter)
+ *  - wc-rough  körnige Kante (Streifen, kleine Flecken)
+ *  - ink       zittrige Tuschelinie
+ */
+---
+
+<svg width="0" height="0" style="position:absolute" aria-hidden="true" focusable="false">
+  <defs>
+    <filter id="wc-wash" x="-25%" y="-25%" width="150%" height="150%">
+      <feTurbulence type="fractalNoise" baseFrequency="0.008 0.014" numOctaves="3" seed="7" result="n" />
+      <feDisplacementMap in="SourceGraphic" in2="n" scale="28" />
+    </filter>
+
+    <filter id="wc-soft" x="-20%" y="-20%" width="140%" height="140%">
+      <feTurbulence type="fractalNoise" baseFrequency="0.02 0.03" numOctaves="3" seed="4" result="n" />
+      <feDisplacementMap in="SourceGraphic" in2="n" scale="12" />
+    </filter>
+
+    <filter id="wc-rough" x="-20%" y="-20%" width="140%" height="140%">
+      <feTurbulence type="fractalNoise" baseFrequency="0.055" numOctaves="2" seed="12" result="n" />
+      <feDisplacementMap in="SourceGraphic" in2="n" scale="8" />
+    </filter>
+
+    <filter id="ink" x="-10%" y="-10%" width="120%" height="120%">
+      <feTurbulence type="fractalNoise" baseFrequency="0.09" numOctaves="2" seed="3" result="n" />
+      <feDisplacementMap in="SourceGraphic" in2="n" scale="2.6" />
+    </filter>
+
+    <!--
+      Bienensicht. Bienen sehen kein Rot, dafür Ultraviolett. Aus einem
+      RGB-Bild lässt sich UV natürlich nicht zurückholen, also verschieben
+      wir die Kanäle so, wie es die Biologie nahelegt: Grün wird zum
+      "roten" Reiz, Blau zum "grünen", und aus Blau entsteht ein
+      violetter UV-Schimmer. Rot fällt fast ganz weg — genau der Effekt,
+      um den es geht.
+    -->
+    <filter id="vision-abeja" color-interpolation-filters="sRGB">
+      <feColorMatrix
+        type="matrix"
+        values="0.06 0.94 0.10 0 0
+                0.02 0.16 0.86 0 0
+                0.14 0.05 0.62 0 0.16
+                0    0    0    1 0"
+      />
+    </filter>
+
+    <!-- Wiederverwendbare Pigment-Verläufe (dunklerer Rand = Pigmentansammlung) -->
+    <radialGradient id="pg-miel" cx="50%" cy="45%" r="60%">
+      <stop offset="0%" stop-color="#f3c87f" />
+      <stop offset="72%" stop-color="#e8a13d" />
+      <stop offset="100%" stop-color="#c9871f" />
+    </radialGradient>
+
+    <radialGradient id="pg-pistacho" cx="50%" cy="45%" r="60%">
+      <stop offset="0%" stop-color="#aebd8a" />
+      <stop offset="70%" stop-color="#7a8b5a" />
+      <stop offset="100%" stop-color="#5b6c42" />
+    </radialGradient>
+
+    <radialGradient id="pg-pistacho-light" cx="50%" cy="45%" r="65%">
+      <stop offset="0%" stop-color="#dde4c8" />
+      <stop offset="75%" stop-color="#aebd8a" />
+      <stop offset="100%" stop-color="#8a9c68" />
+    </radialGradient>
+
+    <radialGradient id="pg-lavanda" cx="50%" cy="45%" r="60%">
+      <stop offset="0%" stop-color="#c3b9e0" />
+      <stop offset="70%" stop-color="#9b8ec4" />
+      <stop offset="100%" stop-color="#7a6cab" />
+    </radialGradient>
+
+    <radialGradient id="pg-barro" cx="50%" cy="42%" r="62%">
+      <stop offset="0%" stop-color="#dfa98c" />
+      <stop offset="70%" stop-color="#c1714f" />
+      <stop offset="100%" stop-color="#9e5636" />
+    </radialGradient>
+
+    <radialGradient id="pg-cielo" cx="50%" cy="40%" r="70%">
+      <stop offset="0%" stop-color="#eef5f8" />
+      <stop offset="65%" stop-color="#c9e0ec" />
+      <stop offset="100%" stop-color="#a5c9dd" />
+    </radialGradient>
+
+    <!-- Ultraviolettes Nektarmal, wie es die Biene sieht -->
+    <radialGradient id="uv-halo" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" stop-color="#dcf6ff" stop-opacity="0.85" />
+      <stop offset="55%" stop-color="#9bd8ff" stop-opacity="0.4" />
+      <stop offset="100%" stop-color="#7b6cc4" stop-opacity="0" />
+    </radialGradient>
+
+    <radialGradient id="pg-sol" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" stop-color="#fbe6b5" />
+      <stop offset="60%" stop-color="#f3c87f" />
+      <stop offset="100%" stop-color="#e8a13d" stop-opacity="0.4" />
+    </radialGradient>
+  </defs>
+</svg>

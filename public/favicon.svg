@@ -1,0 +1,38 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200" fill="none"
+     role="img" aria-label="Retoños del Edén">
+  <!--
+    Reduzierte Bildmarke: offener Goldring, Bienenstock mit Flugloch, Biene.
+    Lavendel, Zweig und Blüte des großen Logos fehlen bewusst — sie werden
+    bei 16 px zu Grau.
+
+    Diese Datei ist Zeichen für Zeichen die `simple`-Fassung von
+    src/components/Logo.astro, nur mit einer deckenden Papierscheibe
+    darunter und mit fest eingetragenen Farben: Favicons erben keine
+    Seiten-Styles, CSS-Variablen sind hier also nicht erlaubt. Auch der
+    viewBox 0 0 200 200 ist derselbe wie im Logo — wer dort etwas ändert,
+    kann die Koordinaten unverändert hierher übernehmen.
+
+    Die Strichstärke 12 (statt 6,5 im großen Logo) ist gemessen: ein
+    6,5er-Strich ist bei 16 px 0,5 Gerätepixel breit und verschwindet im
+    Antialiasing. Bei 12 steht der Ring auch im Browsertab.
+  -->
+  <circle cx="100" cy="100" r="99" fill="#fbf6ec"/>
+
+  <!-- Der offene Ring. Die Lücke oben links ist die Stelle, an der im
+       großen Logo der Lavendel hineinwächst. -->
+  <path d="M78.3 18.9 A84 84 0 1 1 17.3 85.4"
+        stroke="#9d7b2e" stroke-width="12" stroke-linecap="round"/>
+
+  <!-- Bienenstock mit Flugloch -->
+  <path d="M68 160 C 70 134, 86 120, 100 120 C 114 120, 130 134, 132 160"
+        stroke="#9d7b2e" stroke-width="12" stroke-linecap="round"/>
+  <path d="M64 160 L 136 160" stroke="#9d7b2e" stroke-width="12" stroke-linecap="round"/>
+  <path d="M93 160 L 93 146 C 93 140, 107 140, 107 146 L 107 160 Z" fill="#9d7b2e"/>
+
+  <!-- Die Biene über dem Stock: Kopf rechts, Flügel schräg nach hinten —
+       dieselbe Haltung wie Meli in BeeMeli.astro. -->
+  <ellipse cx="102" cy="54" rx="15" ry="10.5" transform="rotate(-10 102 54)" fill="#9d7b2e"/>
+  <circle cx="121" cy="49" r="7.5" fill="#9d7b2e"/>
+  <ellipse cx="98" cy="38" rx="13" ry="6.4" transform="rotate(-24 98 38)"
+           fill="#eef5f8" stroke="#9d7b2e" stroke-width="3"/>
+</svg>

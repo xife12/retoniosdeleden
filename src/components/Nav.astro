@@ -1,0 +1,633 @@
+---
+import type { Dict, Lang } from '../i18n';
+import Logo from './Logo.astro';
+
+interface Props {
+  lang: Lang;
+  t: Dict;
+}
+
+const { lang, t } = Astro.props;
+
+// Reihenfolge der Sektionen, wie sie tatsächlich auf der Seite liegen
+// (siehe Site.astro). Diese Liste speist sowohl das Mobilmenü als auch
+// den IntersectionObserver, der die aktive Sektion markiert.
+const allLinks = [
+  { href: '#historia', label: t.nav.historia },
+  { href: '#pistacho', label: t.nav.pistacho },
+  { href: '#lavanda', label: t.nav.lavanda },
+  { href: '#abejas', label: t.nav.abejas },
+  { href: '#chacra', label: t.nav.chacra },
+  { href: '#herbario', label: t.nav.herbario },
+  { href: '#productos', label: t.nav.productos },
+  { href: '#talleres', label: t.nav.talleres },
+  { href: '#visita', label: t.nav.visita },
+  { href: '#contacto', label: t.nav.contacto },
+  // Eigene Unterseite, kein Anker: das interaktive Buch
+  { href: `/${lang}/${lang === 'es' ? 'libro' : 'book'}`, label: t.nav.libro, external: true },
+];
+
+// Auf Desktop bleibt die Nav einzeilig: nur die sechs Hauptstationen der
+// Erzählung (Start, Chacra-Übersicht, Produkte, Talleres, Visita, Kontakt).
+// Die vier neueren Detail-Sektionen (Pistacho, Lavanda, Abejas, Herbario)
+// sind Vertiefungen innerhalb der Chacra-Übersicht und leben vollständig
+// im Mobilmenü sowie im normalen Scroll-Fluss der Seite.
+const desktopHrefs = new Set(['#historia', '#chacra', '#productos', '#talleres', '#visita', '#contacto']);
+const desktopLinks = allLinks.filter((l) => desktopHrefs.has(l.href));
+
+// Das Buch führt von der Seite weg statt zu einer Sektion. Hinten an die
+// Ankerliste geklebt wirkte es wie ein Fremdkörper; es steht deshalb rechts
+// bei den Aktionen — links die Navigation der Seite, rechts, was hinausführt.
+const libroLink = allLinks.find((l) => l.external);
+---
+
+<a class="skip-link" href="#historia">{t.nav.skip}</a>
+
+<header class="site-nav">
+  <a class="logo" href={`/${lang}/`} aria-label="Retoños del Edén">
+    <Logo width="34px" decorative />
+    <span>Retoños del Edén</span>
+  </a>
+
+  <nav class="nav-links" aria-label="Secciones">
+    {desktopLinks.map((l) => <a href={l.href} data-nav-link={l.href.slice(1)}>{l.label}</a>)}
+  </nav>
+
+  <div class="nav-right">
+    {libroLink && (
+      <a class="nav-libro" href={libroLink.href} data-astro-prefetch>
+        <svg viewBox="0 0 22 18" width="16" height="16" aria-hidden="true">
+          <path d="M11 5 C 8 2, 3.6 2, 1.6 3.2 L 1.6 15 C 3.6 13.8, 8 13.8, 11 16.4"
+            fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"
+            filter="url(#ink)" />
+          <path d="M11 5 C 14 2, 18.4 2, 20.4 3.2 L 20.4 15 C 18.4 13.8, 14 13.8, 11 16.4"
+            fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"
+            filter="url(#ink)" />
+        </svg>
+        <span>{libroLink.label}</span>
+      </a>
+    )}
+
+    <div class="lang-switch" role="group" aria-label="Idioma / Language">
+      <a href="/es/" aria-current={lang === 'es' ? 'page' : undefined}>ES</a>
+      <span aria-hidden="true">·</span>
+      <a href="/en/" aria-current={lang === 'en' ? 'page' : undefined}>EN</a>
+    </div>
+
+    <button
+      type="button"
+      class="nav-toggle"
+      id="nav-toggle"
+      aria-expanded="false"
+      aria-controls="mobile-menu"
+      aria-label={t.nav.menu}
+    >
+      <svg viewBox="0 0 32 32" width="24" height="24" aria-hidden="true" class="nav-toggle-icon">
+        <path class="bar bar-1" d="M5 10.5 Q16 8.8 27 10.8" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" filter="url(#ink)" />
+        <path class="bar bar-2" d="M5 16.3 Q16 15.2 27 16.9" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" filter="url(#ink)" />
+        <path class="bar bar-3" d="M5 22.1 Q16 23.4 27 21.3" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" filter="url(#ink)" />
+      </svg>
+    </button>
+  </div>
+</header>
+
+<div class="menu-backdrop" data-menu-backdrop hidden></div>
+
+<div class="mobile-menu" id="mobile-menu" role="dialog" aria-modal="true" aria-label={t.nav.menu} hidden>
+  <div class="mobile-menu-head">
+    <span class="mobile-menu-brand">Retoños del Edén</span>
+    <button type="button" class="menu-close" data-menu-close aria-label={t.nav.closeMenu}>
+      <svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true">
+        <path d="M5 5.6 L18.6 19" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" filter="url(#ink)" />
+        <path d="M18.7 5.3 L5.3 18.7" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" filter="url(#ink)" />
+      </svg>
+    </button>
+  </div>
+
+  <nav class="mobile-links" aria-label="Secciones">
+    {allLinks.map((l, i) => (
+      <a
+        href={l.href}
+        data-nav-link={l.external ? undefined : l.href.slice(1)}
+        data-menu-link
+        class={l.external ? 'is-libro' : undefined}
+        data-astro-prefetch={l.external ? true : undefined}
+        style={`--i: ${i}`}
+      >
+        {l.label}
+      </a>
+    ))}
+  </nav>
+
+  <div class="mobile-lang-switch" role="group" aria-label="Idioma / Language">
+    <a href="/es/" aria-current={lang === 'es' ? 'page' : undefined}>ES · Español</a>
+    <a href="/en/" aria-current={lang === 'en' ? 'page' : undefined}>EN · English</a>
+  </div>
+</div>
+
+<style>
+  .skip-link {
+    position: absolute;
+    top: -100px;
+    left: 1rem;
+    z-index: 300;
+    background: var(--miel-500);
+    color: #fff;
+    padding: 0.6em 1.2em;
+    border-radius: var(--r-full);
+  }
+
+  .skip-link:focus-visible {
+    top: 0.75rem;
+  }
+
+  .site-nav {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    z-index: 200;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--sp-4);
+    padding: 0.65rem clamp(1rem, 4vw, 2.5rem);
+    background: color-mix(in srgb, var(--papel) 82%, transparent);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    box-shadow: 0 1px 0 rgba(51, 41, 31, 0.07);
+  }
+
+  .logo {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.55rem;
+    text-decoration: none;
+    color: var(--tinta);
+    font-family: var(--font-display);
+    font-variation-settings: 'SOFT' 80, 'WONK' 1;
+    font-weight: 620;
+    font-size: 1.05rem;
+    white-space: nowrap;
+  }
+
+  .nav-links {
+    display: none;
+    gap: clamp(0.8rem, 2vw, 1.6rem);
+  }
+
+  .nav-links a {
+    text-decoration: none;
+    color: var(--tinta-suave);
+    font-size: var(--fs-300);
+    font-weight: 600;
+    position: relative;
+    white-space: nowrap;
+  }
+
+  .nav-links a::after {
+    content: '';
+    position: absolute;
+    left: 0;
+    right: 100%;
+    bottom: -4px;
+    height: 3px;
+    border-radius: 2px;
+    background: var(--miel-500);
+    transition: right var(--dur-2) var(--ease-out);
+  }
+
+  .nav-links a:hover {
+    color: var(--tinta);
+  }
+
+  .nav-links a:hover::after {
+    right: 0;
+  }
+
+  .nav-links a.is-active {
+    color: var(--tinta);
+  }
+
+  /* Das Buch steht bei den Aktionen, nicht in der Sektionsliste. Kein
+     Pillenknopf: ein ruhiger Link mit Buchzeichen, getrennt durch einen
+     feinen Strich. Er soll einladen, nicht rufen. */
+  .nav-libro {
+    display: none;
+    align-items: center;
+    gap: 0.4rem;
+    padding-right: 0.9rem;
+    margin-right: 0.1rem;
+    border-right: 1px solid rgba(51, 41, 31, 0.14);
+    text-decoration: none;
+    color: var(--miel-800);
+    font-size: var(--fs-300);
+    font-weight: 600;
+    white-space: nowrap;
+    transition: color var(--dur-1) var(--ease-out);
+  }
+
+  .nav-libro svg {
+    flex: none;
+    transition: transform var(--dur-2) var(--ease-out);
+  }
+
+  @media (min-width: 860px) {
+    .nav-libro {
+      display: inline-flex;
+    }
+  }
+
+  @media (hover: hover) and (pointer: fine) {
+    .nav-libro:hover {
+      color: var(--tinta);
+    }
+
+    /* Der Buchdeckel hebt sich einen Spalt — dieselbe Geste wie beim
+       Teaser in der Bienen-Sektion. */
+    .nav-libro:hover svg {
+      transform: translateY(-1px) rotate(-3deg);
+    }
+  }
+
+  .nav-links a.is-active::after {
+    right: 0;
+  }
+
+  @media (min-width: 860px) {
+    .nav-links {
+      display: flex;
+    }
+  }
+
+  .nav-right {
+    display: flex;
+    align-items: center;
+    gap: var(--sp-3);
+  }
+
+  .lang-switch {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    font-size: var(--fs-300);
+    font-weight: 700;
+    color: var(--tinta-tenue);
+  }
+
+  .lang-switch a {
+    text-decoration: none;
+    color: var(--tinta-tenue);
+    padding: 0.25em 0.5em;
+    border-radius: var(--r-full);
+  }
+
+  .lang-switch a[aria-current='page'] {
+    background: var(--miel-500);
+    color: #fff;
+  }
+
+  .lang-switch a:not([aria-current]):hover {
+    color: var(--tinta);
+    background: var(--miel-100);
+  }
+
+  /* ---------- Hamburger ---------- */
+
+  .nav-toggle {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 44px;
+    height: 44px;
+    padding: 0;
+    border: none;
+    border-radius: var(--r-full);
+    background: transparent;
+    color: var(--tinta);
+    cursor: pointer;
+  }
+
+  .nav-toggle:hover {
+    background: var(--miel-100);
+  }
+
+  .nav-toggle-icon .bar {
+    transition:
+      transform var(--dur-2) var(--ease-out),
+      opacity var(--dur-2) var(--ease-out);
+    transform-origin: 16px 16px;
+  }
+
+  .nav-toggle[aria-expanded='true'] .bar-1 {
+    transform: translateY(5.8px) rotate(45deg);
+  }
+
+  .nav-toggle[aria-expanded='true'] .bar-2 {
+    opacity: 0;
+  }
+
+  .nav-toggle[aria-expanded='true'] .bar-3 {
+    transform: translateY(-5.2px) rotate(-45deg);
+  }
+
+  @media (min-width: 860px) {
+    .nav-toggle {
+      display: none;
+    }
+  }
+
+  /* ---------- Mobilmenü ---------- */
+
+  .menu-backdrop {
+    position: fixed;
+    inset: 0;
+    z-index: 250;
+    background: color-mix(in srgb, var(--tinta) 45%, transparent);
+    opacity: 0;
+    transition: opacity var(--dur-2) var(--ease-out);
+  }
+
+  .menu-backdrop[hidden] {
+    display: none;
+  }
+
+  .menu-backdrop.is-visible {
+    opacity: 1;
+  }
+
+  .mobile-menu {
+    position: fixed;
+    inset: 0;
+    z-index: 260;
+    display: flex;
+    flex-direction: column;
+    background: var(--papel);
+    padding: 0.9rem clamp(1.25rem, 6vw, 2.5rem) clamp(1.5rem, 6vh, 2.5rem);
+    overflow-y: auto;
+    opacity: 0;
+    transform: scale(0.98);
+    transition:
+      opacity var(--dur-2) var(--ease-out),
+      transform var(--dur-2) var(--ease-out);
+  }
+
+  .mobile-menu[hidden] {
+    display: none;
+  }
+
+  .mobile-menu.is-visible {
+    opacity: 1;
+    transform: scale(1);
+  }
+
+  .mobile-menu-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--sp-3);
+  }
+
+  .mobile-menu-brand {
+    font-family: var(--font-display);
+    font-variation-settings: 'SOFT' 80, 'WONK' 1;
+    font-weight: 620;
+    font-size: 1.05rem;
+    color: var(--tinta);
+  }
+
+  .menu-close {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 44px;
+    height: 44px;
+    border: none;
+    border-radius: var(--r-full);
+    background: transparent;
+    color: var(--tinta);
+    cursor: pointer;
+  }
+
+  .menu-close:hover {
+    background: var(--miel-100);
+  }
+
+  .mobile-links {
+    display: flex;
+    flex-direction: column;
+    gap: 0.2rem;
+    margin: clamp(1.5rem, 5vh, 3rem) 0 clamp(1.5rem, 4vh, 2rem);
+  }
+
+  .mobile-links a {
+    text-decoration: none;
+    color: var(--tinta-suave);
+    font-family: var(--font-display);
+    font-size: clamp(1.35rem, 4.5vw, 1.9rem);
+    font-weight: 600;
+    padding: 0.5rem 0.2rem;
+    min-height: 44px;
+    display: flex;
+    align-items: center;
+    border-bottom: 1px solid color-mix(in srgb, var(--tinta) 10%, transparent);
+    opacity: 0;
+    transform: translateY(10px);
+    transition:
+      opacity var(--dur-3) var(--ease-out),
+      transform var(--dur-3) var(--ease-out),
+      color var(--dur-1) var(--ease-out);
+  }
+
+  .mobile-menu.is-visible .mobile-links a {
+    opacity: 1;
+    transform: translateY(0);
+    transition-delay: calc(var(--i) * 35ms + 60ms);
+  }
+
+  /* Das Buch führt auf eine eigene Seite und wird darum abgesetzt */
+  .mobile-links a.is-libro {
+    color: var(--miel-800);
+    font-style: italic;
+    border-bottom: none;
+    margin-top: var(--sp-2);
+  }
+
+  .mobile-links a.is-libro::after {
+    content: '→';
+    margin-left: 0.5rem;
+    font-style: normal;
+  }
+
+  .mobile-links a:hover,
+  .mobile-links a:focus-visible {
+    color: var(--tinta);
+  }
+
+  .mobile-links a.is-active {
+    color: var(--miel-800);
+  }
+
+  .mobile-lang-switch {
+    display: flex;
+    gap: 0.6rem;
+    margin-top: auto;
+    padding-top: var(--sp-4);
+  }
+
+  .mobile-lang-switch a {
+    flex: 1;
+    text-align: center;
+    text-decoration: none;
+    color: var(--tinta-suave);
+    font-weight: 700;
+    font-size: var(--fs-300);
+    padding: 0.75em 1em;
+    min-height: 44px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: var(--r-full);
+    background: var(--miel-100);
+  }
+
+  .mobile-lang-switch a[aria-current='page'] {
+    background: var(--miel-500);
+    color: #fff;
+  }
+
+  @media (min-width: 860px) {
+    .menu-backdrop,
+    .mobile-menu {
+      display: none !important;
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    /* Der Hamburger darf noch zum X werden (Endzustand, keine Bewegung),
+       nur ohne animierten Übergang. */
+    .nav-toggle-icon .bar {
+      transition-duration: 1ms;
+    }
+
+    /* Menü und Einträge: nur Ein-/Ausblenden, keine Verschiebung/Skalierung. */
+    .menu-backdrop,
+    .mobile-menu,
+    .mobile-links a {
+      transition-duration: 1ms;
+      transition-delay: 0ms !important;
+      transform: none !important;
+    }
+  }
+</style>
+
+<script>
+  const toggle = document.getElementById('nav-toggle') as HTMLButtonElement | null;
+  const backdrop = document.querySelector<HTMLElement>('[data-menu-backdrop]');
+  const menu = document.getElementById('mobile-menu');
+  const closeBtn = menu?.querySelector<HTMLButtonElement>('[data-menu-close]');
+
+  if (toggle && backdrop && menu && closeBtn) {
+    let isOpen = false;
+
+    const focusables = () =>
+      Array.from(
+        menu.querySelectorAll<HTMLElement>('a[href], button:not([disabled])')
+      ).filter((el) => el.offsetParent !== null);
+
+    function open() {
+      isOpen = true;
+      backdrop!.hidden = false;
+      menu!.hidden = false;
+      // ein Frame warten, damit die Transition greift statt sofort zu springen
+      requestAnimationFrame(() => {
+        backdrop!.classList.add('is-visible');
+        menu!.classList.add('is-visible');
+      });
+      toggle!.setAttribute('aria-expanded', 'true');
+      document.body.style.overflow = 'hidden';
+      closeBtn!.focus();
+      document.addEventListener('keydown', onKeydown);
+    }
+
+    function close() {
+      isOpen = false;
+      backdrop!.classList.remove('is-visible');
+      menu!.classList.remove('is-visible');
+      toggle!.setAttribute('aria-expanded', 'false');
+      document.body.style.overflow = '';
+      document.removeEventListener('keydown', onKeydown);
+      const onEnd = (e: TransitionEvent) => {
+        if (e.target !== menu) return;
+        if (!isOpen) {
+          backdrop!.hidden = true;
+          menu!.hidden = true;
+        }
+        menu!.removeEventListener('transitionend', onEnd);
+      };
+      menu!.addEventListener('transitionend', onEnd);
+      // Fallback falls transitionend ausbleibt (z. B. reduced motion)
+      setTimeout(() => {
+        if (!isOpen) {
+          backdrop!.hidden = true;
+          menu!.hidden = true;
+        }
+      }, 320);
+      toggle!.focus();
+    }
+
+    function onKeydown(e: KeyboardEvent) {
+      if (e.key === 'Escape') {
+        e.preventDefault();
+        close();
+        return;
+      }
+      if (e.key !== 'Tab') return;
+      const items = focusables();
+      if (items.length === 0) return;
+      const first = items[0];
+      const last = items[items.length - 1];
+      if (e.shiftKey && document.activeElement === first) {
+        e.preventDefault();
+        last.focus();
+      } else if (!e.shiftKey && document.activeElement === last) {
+        e.preventDefault();
+        first.focus();
+      }
+    }
+
+    toggle.addEventListener('click', () => (isOpen ? close() : open()));
+    closeBtn.addEventListener('click', close);
+    backdrop.addEventListener('click', close);
+    menu.querySelectorAll<HTMLAnchorElement>('[data-menu-link]').forEach((a) => {
+      a.addEventListener('click', close);
+    });
+  }
+
+  // Aktive Sektion im Menü und in der Desktop-Nav markieren
+  const sections = Array.from(
+    document.querySelectorAll<HTMLElement>(
+      '[id="historia"], [id="pistacho"], [id="lavanda"], [id="abejas"], [id="chacra"], [id="herbario"], [id="productos"], [id="talleres"], [id="visita"], [id="contacto"]'
+    )
+  );
+
+  if (sections.length > 0 && 'IntersectionObserver' in window) {
+    const navLinks = document.querySelectorAll<HTMLAnchorElement>('[data-nav-link]');
+    const markActive = (id: string) => {
+      navLinks.forEach((a) => {
+        a.classList.toggle('is-active', a.dataset.navLink === id);
+      });
+    };
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting) markActive(entry.target.id);
+        });
+      },
+      { rootMargin: '-45% 0px -50% 0px', threshold: 0 }
+    );
+
+    sections.forEach((s) => observer.observe(s));
+  }
+</script>

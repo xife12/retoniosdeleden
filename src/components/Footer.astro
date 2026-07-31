@@ -1,0 +1,83 @@
+---
+import type { Dict, Lang } from '../i18n';
+
+interface Props {
+  t: Dict;
+  lang: Lang;
+}
+
+const { t, lang } = Astro.props;
+const year = new Date().getFullYear();
+---
+
+<footer class="site-footer">
+  <!-- Wabenmuster -->
+  <svg class="honeycomb" viewBox="0 0 300 80" aria-hidden="true" preserveAspectRatio="xMidYMid slice">
+    <g fill="none" stroke="#f3c87f" stroke-width="1.6" opacity="0.35" filter="url(#ink)">
+      {Array.from({ length: 8 }, (_, c) => (
+        <path d={`M${c * 40 + 10} 20 l 12 -8 l 12 8 l 0 16 l -12 8 l -12 -8 Z`} />
+      ))}
+      {Array.from({ length: 8 }, (_, c) => (
+        <path d={`M${c * 40 + 30} 52 l 12 -8 l 12 8 l 0 16 l -12 8 l -12 -8 Z`} />
+      ))}
+    </g>
+  </svg>
+
+  <div class="wrap footer-grid">
+    <p class="footer-tagline">{t.footer.tagline}</p>
+    <p class="footer-demo">{t.footer.demo}</p>
+    <div class="footer-meta">
+      <span>© {year} {t.footer.rights}</span>
+      <span aria-hidden="true">·</span>
+      <a href="/design">{t.footer.design}</a>
+      <span aria-hidden="true">·</span>
+      <a href={lang === 'es' ? '/en/' : '/es/'}>{lang === 'es' ? 'English' : 'Español'}</a>
+    </div>
+  </div>
+</footer>
+
+<style>
+  .site-footer {
+    background: var(--pistacho-700);
+    color: var(--papel);
+    padding: var(--sp-7) 0 var(--sp-6);
+    text-align: center;
+  }
+
+  .honeycomb {
+    width: min(20rem, 70%);
+    margin: 0 auto var(--sp-5);
+  }
+
+  .footer-grid {
+    display: grid;
+    gap: var(--sp-3);
+    justify-items: center;
+  }
+
+  .footer-tagline {
+    font-family: var(--font-display);
+    font-variation-settings: 'SOFT' 90, 'WONK' 1;
+    font-style: italic;
+    font-size: var(--fs-600);
+    color: var(--miel-200);
+  }
+
+  .footer-demo {
+    font-size: var(--fs-300);
+    opacity: 0.75;
+  }
+
+  .footer-meta {
+    display: flex;
+    gap: var(--sp-2);
+    flex-wrap: wrap;
+    justify-content: center;
+    font-size: var(--fs-300);
+    opacity: 0.85;
+  }
+
+  .site-footer a {
+    color: var(--miel-300);
+  }
+</style>

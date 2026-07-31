@@ -1,0 +1,1356 @@
+/* ============================================================
+   „Luna y el secreto de la colmena" — die Buchwelt
+   ------------------------------------------------------------
+   Ein Grundsatz: Es gibt keine Kästen. Der ganze Leseteil ist EIN
+   Blatt Aquarellpapier, das ohne Unterbrechung nach unten läuft.
+   Was sich ändert, ist das Licht — je tiefer man kommt, desto
+   wärmer das Papier und desto dunkler alles um es herum.
+
+   Ein Kapitel besteht aus zwei Takten:
+     .acto--lamina   die Buchseite, groß und allein
+     .acto--taller   Melis Szene: Sprechblase, Spiel, Wissen
+
+   Dazwischen liegt .vuelo: die gepunktete Tusche-Fluglinie, die
+   Catalina auf Seite 3 selbst gemalt hat. Meli fliegt an ihr aus
+   dem Bild in ihre Szene. Das ist die Naht — nicht eine Kante.
+   ============================================================ */
+
+.libro {
+  /* Von der Zone gesetzt (BookReader.astro), hier die Startwerte. */
+  --zona-fondo: #e6f0dc;
+  --zona-papel: #fbf6ec;
+  --hondura: 0;
+
+  --tinta-suave-papel: #6a5c49;
+  --linea: rgba(107, 74, 31, 0.22);
+}
+
+/* ---------- Der Abstieg: Licht statt Hintergrundfarbe ---------- */
+
+.abismo {
+  position: fixed;
+  inset: 0;
+  z-index: 90;
+  pointer-events: none;
+  /* Die Mitte bleibt frei, damit die Illustration nie zugeschlammt wird;
+     die Ränder schließen sich, je tiefer man kommt. */
+  background:
+    radial-gradient(125% 88% at 50% 44%, transparent 30%, rgba(52, 24, 2, 0.92) 100%),
+    linear-gradient(180deg, rgba(120, 58, 6, 0.3), rgba(52, 24, 2, 0.45));
+  opacity: calc(var(--hondura) * 0.66);
+  transition: opacity 1400ms var(--ease-out);
+}
+
+/* Pollenstaub. Steigt auf, während man sinkt. */
+.polvo {
+  position: fixed;
+  inset: 0;
+  z-index: 91;
+  pointer-events: none;
+  overflow: hidden;
+  opacity: calc(0.16 + var(--hondura) * 0.84);
+  transition: opacity 1400ms var(--ease-out);
+}
+
+.polvo i {
+  position: absolute;
+  left: var(--x);
+  top: 100%;
+  width: var(--s);
+  height: var(--s);
+  border-radius: 50%;
+  background: radial-gradient(circle, #ffe9b0 0 40%, rgba(243, 200, 127, 0.45) 60%, transparent 72%);
+  animation: polvo-sube var(--d) linear var(--delay) infinite;
+}
+
+@keyframes polvo-sube {
+  0% {
+    transform: translateY(0) translateX(0);
+    opacity: 0;
+  }
+  12% {
+    opacity: 0.9;
+  }
+  88% {
+    opacity: 0.7;
+  }
+  100% {
+    transform: translateY(-118vh) translateX(var(--drift));
+    opacity: 0;
+  }
+}
+
+/* ---------- Das durchgehende Blatt ---------- */
+
+.columna {
+  position: relative;
+  z-index: 92;
+  width: min(100%, 74rem);
+  margin-inline: auto;
+  background: var(--zona-papel);
+  transition: background 1400ms var(--ease-out);
+  box-shadow: 0 0 clamp(40px, 9vw, 120px) rgba(255, 206, 120, calc(var(--hondura) * 0.5));
+}
+
+/* Auf breiten Schirmen bekommt das Blatt eine gerissene Kante links und
+   rechts — dann liegt es sichtbar auf dem dunkler werdenden Grund. */
+@media (min-width: 78rem) {
+  .columna::before,
+  .columna::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    width: 16px;
+    background: var(--zona-papel);
+    transition: background 1400ms var(--ease-out);
+  }
+
+  .columna::before {
+    left: -15px;
+    -webkit-mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 400' preserveAspectRatio='none'%3E%3Cpath d='M16 0 L7 0 C 2 24, 11 40, 6 64 C 1 90, 10 106, 7 132 C 3 160, 12 174, 6 200 C 1 228, 10 246, 6 270 C 2 296, 11 314, 5 340 C 1 364, 9 382, 5 400 L 16 400 Z' fill='%23000'/%3E%3C/svg%3E");
+    mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 400' preserveAspectRatio='none'%3E%3Cpath d='M16 0 L7 0 C 2 24, 11 40, 6 64 C 1 90, 10 106, 7 132 C 3 160, 12 174, 6 200 C 1 228, 10 246, 6 270 C 2 296, 11 314, 5 340 C 1 364, 9 382, 5 400 L 16 400 Z' fill='%23000'/%3E%3C/svg%3E");
+  }
+
+  .columna::after {
+    right: -15px;
+    -webkit-mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 400' preserveAspectRatio='none'%3E%3Cpath d='M0 0 L9 0 C 14 24, 5 40, 10 64 C 15 90, 6 106, 9 132 C 13 160, 4 174, 10 200 C 15 228, 6 246, 10 270 C 14 296, 5 314, 11 340 C 15 364, 7 382, 11 400 L 0 400 Z' fill='%23000'/%3E%3C/svg%3E");
+    mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 400' preserveAspectRatio='none'%3E%3Cpath d='M0 0 L9 0 C 14 24, 5 40, 10 64 C 15 90, 6 106, 9 132 C 13 160, 4 174, 10 200 C 15 228, 6 246, 10 270 C 14 296, 5 314, 11 340 C 15 364, 7 382, 11 400 L 0 400 Z' fill='%23000'/%3E%3C/svg%3E");
+  }
+}
+
+/* ---------- Ein Takt ---------- */
+
+.acto {
+  position: relative;
+  min-height: 100svh;
+  display: grid;
+  align-content: center;
+  justify-items: center;
+  gap: clamp(1rem, 3vh, 1.8rem);
+  padding: clamp(3.4rem, 8vh, 5rem) clamp(0.9rem, 4vw, 3.5rem) clamp(1.6rem, 5vh, 3rem);
+  scroll-snap-align: center;
+}
+
+/* ---------- Takt A: die Buchseite ---------- */
+
+.lamina {
+  position: relative;
+  margin: 0;
+  width: min(100%, 62rem);
+  line-height: 0;
+}
+
+/* Schrumpft exakt auf die Illustration, damit die Wissenslichter in
+   Prozent immer an derselben Stelle im Bild sitzen — auch wenn die
+   Höhe das Bild schmaler macht als das Blatt. */
+.lamina-marco {
+  position: relative;
+  display: block;
+  width: fit-content;
+  max-width: 100%;
+  margin-inline: auto;
+  border-radius: 3px;
+  overflow: hidden;
+  box-shadow:
+    0 1px 2px rgba(74, 51, 8, 0.18),
+    0 18px 44px rgba(74, 51, 8, calc(0.12 + var(--hondura) * 0.28));
+  transition: box-shadow 1400ms var(--ease-out);
+}
+
+@media (max-width: 46rem) {
+  .acto--lamina {
+    padding-inline: 0;
+  }
+
+  .lamina-marco {
+    border-radius: 0;
+    box-shadow: 0 12px 34px rgba(74, 51, 8, calc(0.1 + var(--hondura) * 0.3));
+  }
+}
+
+.lamina-img {
+  display: block;
+  width: 100%;
+  height: auto;
+  /* So groß wie möglich, ohne dass Bild + Text über den Bildschirm laufen:
+     der Rest des Taktes braucht rund 15rem. */
+  max-height: min(calc(100svh - 15.5rem), 44rem);
+  object-fit: contain;
+  animation: lamina-entra 1.4s var(--ease-out) both;
+}
+
+/* Nur transform animieren — ein `filter` hier würde mit fill-mode: both
+   dauerhaft gewinnen und den Bienensicht-Filter für immer aushebeln. */
+@keyframes lamina-entra {
+  from {
+    transform: scale(1.04);
+  }
+  to {
+    transform: scale(1);
+  }
+}
+
+/* Bienensicht: der Farbkanal-Tausch liegt als SVG-Filter im Layout */
+.lamina-img {
+  transition: filter 700ms var(--ease-out);
+}
+
+.lamina.is-uv .lamina-img {
+  filter: url(#vision-abeja) saturate(1.35) brightness(1.06) contrast(1.05);
+}
+
+@supports not (filter: url(#vision-abeja)) {
+  .lamina.is-uv .lamina-img {
+    filter: hue-rotate(150deg) saturate(1.6) brightness(0.95);
+  }
+}
+
+/* Die Lupe sitzt in der Ecke der Illustration */
+.lupa {
+  position: absolute;
+  right: 10px;
+  bottom: 10px;
+  z-index: 4;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4em;
+  min-height: 40px;
+  padding: 0.35em 0.85em;
+  border: none;
+  border-radius: 999px;
+  background: color-mix(in srgb, #fffdf8 84%, transparent);
+  backdrop-filter: blur(6px);
+  color: var(--tinta);
+  font-size: var(--fs-200);
+  font-weight: 700;
+  cursor: pointer;
+  box-shadow: 0 2px 10px rgba(74, 51, 8, 0.3);
+  transition: transform var(--dur-1) var(--ease-out), background var(--dur-2) ease;
+}
+
+.lupa:active {
+  transform: scale(0.96);
+}
+
+.lupa svg {
+  width: 16px;
+  height: 16px;
+}
+
+/* ---------- Der Seitentext als Buchsatz ---------- */
+
+.relato {
+  width: min(100%, 42rem);
+  padding-inline: clamp(0.9rem, 4vw, 0);
+  display: grid;
+  gap: clamp(0.7rem, 2vh, 1.1rem);
+  justify-items: center;
+  text-align: center;
+}
+
+.relato-texto {
+  font-family: var(--font-display);
+  font-variation-settings: 'SOFT' 60, 'WONK' 1, 'opsz' 20;
+  font-size: clamp(1.02rem, 0.55vw + 0.92rem, 1.28rem);
+  line-height: 1.62;
+  color: var(--tinta);
+  text-wrap: pretty;
+  max-width: 38rem;
+}
+
+.relato-texto mark {
+  background: linear-gradient(180deg, transparent 56%, var(--miel-300) 56%);
+  color: var(--tinta);
+  border-radius: 3px;
+  padding: 0 1px;
+}
+
+/* Titelseite: der Text ist dort der Titel, nicht Prosa */
+.acto--portada .relato-texto {
+  font-size: var(--fs-600);
+  color: var(--tinta-suave);
+  font-style: italic;
+}
+
+.relato-mandos {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: var(--sp-2) var(--sp-3);
+}
+
+.relato-capitulo {
+  font-size: var(--fs-200);
+  font-weight: 700;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--miel-800);
+}
+
+/* ---------- Die Fluglinie zwischen den Takten ---------- */
+
+/* Die Naht ist schmal und HOCH. Vorher war sie ein breites, flaches Band
+   (rund 480 x 127 px): Meli legte darin mehr Weg zur Seite zurück als nach
+   unten, der Flug las sich als Hin und Her. Jetzt sind es 84 x 260
+   Einheiten — 240 Einheiten hinunter gegen 48 zur Seite (5:1).
+
+   WICHTIG: `--vuelo-alto` und `aspect-ratio` müssen exakt zur viewBox in
+   BookReader.astro passen (0 0 84 260). Nur dann skaliert das SVG
+   gleichmäßig. Ungleichmäßiges Skalieren verzerrt `stroke-width` immer —
+   genau daher kam die dicke, unruhige Linie. */
+.vuelo {
+  --vuelo-alto: clamp(210px, 30vh, 320px);
+  position: relative;
+  /* Bewusst KEIN eigener z-index (früher 93): sonst malte die Linie über
+     Text und Spiele der Takte. Die Stapelung regeln .vuelo-senda (-1) und
+     .vuelo-meli (2) innerhalb des Blattes .columna, das mit z-index 92
+     ein eigener Stapelkontext ist. Ein z-index hier würde daraus einen
+     zweiten Stapelkontext machen und Meli wieder einsperren. */
+  z-index: auto;
+  width: 100%;
+  height: var(--vuelo-alto);
+  display: grid;
+  place-items: center;
+  pointer-events: none;
+}
+
+/* Die gezeichnete Linie liegt UNTER allem, was in den Takten steht —
+   aber über dem Papier selbst: negatives z-index malt innerhalb von
+   .columna nach dessen Hintergrund und vor dessen Inhalt. Text und
+   Spiele liegen damit immer oben, das Blatt bleibt sichtbar. */
+.vuelo-senda {
+  position: relative;
+  z-index: -1;
+  height: var(--vuelo-alto);
+  width: auto;
+  aspect-ratio: 84 / 260;
+  /* Die Tusche läuft oben und unten aus, statt hart an die Takte zu stoßen. */
+  -webkit-mask-image: linear-gradient(180deg, transparent 0, #000 8%, #000 92%, transparent 100%);
+  mask-image: linear-gradient(180deg, transparent 0, #000 8%, #000 92%, transparent 100%);
+}
+
+/* Derselbe Ton wie die Punktlinien der Startseite (Abejas.astro: 1.6/2.4 mit
+   „0.6 3.4" bzw. „1 5"; .entrada-baja in BookPage.astro: 2 mit „1 6").
+   `vector-effect` hält den Strich zusätzlich in Bildschirm-Pixeln fest,
+   damit er auf keiner Fenstergröße fett werden kann. */
+.vuelo-linea {
+  fill: none;
+  stroke: var(--miel-700);
+  stroke-width: 2.2;
+  stroke-linecap: round;
+  stroke-dasharray: 1.6 7;
+  opacity: 0.6;
+}
+
+.vuelo-meli {
+  width: clamp(42px, 9vw, 62px);
+  position: absolute;
+  left: 50%;
+  top: 0;
+  /* Melis MITTE sitzt auf dem Kurvenpunkt, nicht ihre obere Ecke. */
+  translate: -50% -50%;
+  /* Über der Linie und über dem Buchsatz, aber unter den Wissenslichtern
+     (3), der Lupe (4) und den Spielen (30) — die Biene verdeckt nichts,
+     verschwindet aber auch nicht hinter dem Papier. */
+  z-index: 2;
+  /* JS schiebt Meli beim Scrollen an der Linie entlang; --vr kippt sie
+     nur leicht in Flugrichtung (höchstens 15°), sie rotiert nicht. */
+  transform: translate(var(--vx, 0px), var(--vy, 0px)) rotate(var(--vr, 0deg));
+}
+
+.vuelo-meli svg {
+  width: 100%;
+  height: auto;
+}
+
+/* ---------- Takt B: Melis Szene ---------- */
+
+/* Melis Szene trägt mehr Inhalt als eine Buchseite und braucht deshalb
+   weniger Luft am Rand — sonst läuft sie auf dem Handy über. */
+.acto--taller {
+  gap: clamp(0.7rem, 2vh, 1.2rem);
+  padding-top: clamp(2rem, 4.5vh, 3rem);
+  padding-bottom: clamp(1rem, 3vh, 2rem);
+}
+
+.taller {
+  width: min(100%, 52rem);
+  display: grid;
+  gap: clamp(0.8rem, 2.5vh, 1.4rem);
+  justify-items: center;
+}
+
+/* Meli sagt etwas — die Sprechblase ist gemalt, nicht gerahmt */
+.dice {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  align-items: start;
+  gap: var(--sp-3);
+  width: 100%;
+  max-width: 44rem;
+}
+
+.dice-meli {
+  width: clamp(46px, 9vw, 68px);
+  flex: none;
+}
+
+.dice-meli svg {
+  width: 100%;
+}
+
+.dice-texto {
+  position: relative;
+  align-self: center;
+  font-family: var(--font-display);
+  font-variation-settings: 'SOFT' 90, 'WONK' 1;
+  font-size: clamp(0.98rem, 0.4vw + 0.9rem, 1.15rem);
+  line-height: 1.45;
+  color: var(--tinta);
+  background: #fffdf8;
+  border-radius: 4px 18px 18px 18px;
+  padding: 0.6em 0.95em;
+  box-shadow: 0 3px 14px rgba(122, 90, 30, 0.12);
+  min-height: 1em;
+}
+
+.dice-texto:empty {
+  visibility: hidden;
+}
+
+.dice-texto.is-nuevo {
+  animation: dice-pop 380ms var(--ease-bounce);
+}
+
+@keyframes dice-pop {
+  from {
+    opacity: 0;
+    transform: translateY(7px) scale(0.97);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+/* ---------- Die Spielbühne ---------- */
+
+.escena {
+  width: 100%;
+  display: grid;
+  gap: clamp(0.6rem, 2vh, 1rem);
+  justify-items: center;
+  text-align: center;
+}
+
+.escena-titulo {
+  font-family: var(--font-display);
+  font-variation-settings: 'SOFT' 80, 'WONK' 1;
+  font-size: clamp(1.25rem, 1.4vw + 1rem, 1.85rem);
+  line-height: 1.15;
+  color: var(--tinta);
+}
+
+.escena-pista {
+  font-size: var(--fs-300);
+  font-style: italic;
+  color: var(--tinta-suave-papel);
+  max-width: 34rem;
+}
+
+/* Der gezeichnete Spielplatz — groß, im selben Aquarell wie das Buch */
+.mesa {
+  width: 100%;
+  max-width: 40rem;
+  position: relative;
+}
+
+.mesa svg {
+  width: 100%;
+  height: auto;
+  overflow: visible;
+}
+
+.escena-mandos {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: var(--sp-2) var(--sp-3);
+}
+
+.escena-fin {
+  display: grid;
+  gap: var(--sp-2);
+  padding: var(--sp-3) var(--sp-4);
+  border-radius: 4px 18px 18px 18px;
+  background: rgba(232, 161, 61, 0.16);
+  font-size: var(--fs-300);
+  color: var(--tinta);
+  max-width: 34rem;
+  animation: dice-pop 400ms var(--ease-bounce);
+}
+
+/* ---------- Knöpfe im Buchstil ---------- */
+
+.boton {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.45em;
+  min-height: 46px;
+  padding: 0.45em 1.15em;
+  border: 2px solid var(--miel-500);
+  border-radius: 999px 14px 999px 14px;
+  background: linear-gradient(160deg, #fffdf8, var(--miel-100));
+  color: var(--miel-800);
+  font-weight: 700;
+  font-size: var(--fs-300);
+  line-height: 1.2;
+  cursor: pointer;
+  box-shadow: 0 2px 0 rgba(179, 118, 28, 0.25);
+  transition:
+    transform var(--dur-1) var(--ease-out),
+    background var(--dur-2) ease,
+    box-shadow var(--dur-2) ease,
+    color var(--dur-2) ease;
+}
+
+.boton:active {
+  transform: translateY(1px) scale(0.98);
+  box-shadow: none;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .boton:hover {
+    background: linear-gradient(160deg, var(--miel-100), var(--miel-200));
+    box-shadow: 0 3px 0 rgba(179, 118, 28, 0.3);
+  }
+}
+
+.boton[aria-pressed='true'],
+.boton.is-on {
+  background: linear-gradient(160deg, var(--miel-500), var(--miel-700));
+  color: #fffdf8;
+  border-color: var(--miel-800);
+}
+
+.boton--grande {
+  font-size: var(--fs-400);
+  padding: 0.62em 1.5em;
+  min-height: 52px;
+}
+
+.boton--fantasma {
+  border-color: rgba(179, 118, 28, 0.32);
+  background: transparent;
+  box-shadow: none;
+  color: var(--tinta-suave-papel);
+  font-weight: 600;
+}
+
+.boton--si {
+  border-color: var(--pistacho-500);
+  color: var(--pistacho-700);
+  background: linear-gradient(160deg, #fffdf8, var(--pistacho-100));
+}
+
+.boton--no {
+  border-color: var(--barro-500);
+  color: var(--barro-700);
+  background: linear-gradient(160deg, #fffdf8, var(--barro-100));
+}
+
+.boton:disabled {
+  opacity: 0.45;
+  cursor: default;
+}
+
+/* Schrittfolge: macht sichtbar, was zuerst dran ist */
+.pasos {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: var(--sp-2);
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  font-size: var(--fs-300);
+}
+
+.pasos li {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45em;
+  color: var(--tinta-tenue);
+  font-weight: 600;
+  transition: color var(--dur-2) ease;
+}
+
+.pasos li b {
+  display: grid;
+  place-items: center;
+  width: 22px;
+  height: 25px;
+  font-size: 0.72rem;
+  color: #fffdf8;
+  background: var(--miel-300);
+  clip-path: polygon(50% 0, 100% 25%, 100% 75%, 50% 100%, 0 75%, 0 25%);
+  transition: background var(--dur-2) ease;
+}
+
+.pasos li.is-ahora {
+  color: var(--tinta);
+}
+
+.pasos li.is-ahora b {
+  background: var(--miel-500);
+  animation: paso-late 1.8s ease-in-out infinite;
+}
+
+.pasos li.is-hecho b {
+  background: var(--pistacho-500);
+}
+
+@keyframes paso-late {
+  0%,
+  100% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.14);
+  }
+}
+
+/* Regler im Buchstil */
+.regla {
+  display: grid;
+  gap: 4px;
+  width: 100%;
+  max-width: 26rem;
+  font-size: var(--fs-300);
+  text-align: left;
+}
+
+.regla > span {
+  font-weight: 600;
+  color: var(--tinta-suave-papel);
+}
+
+.regla b {
+  color: var(--miel-800);
+}
+
+.regla input[type='range'] {
+  appearance: none;
+  -webkit-appearance: none;
+  width: 100%;
+  height: 32px;
+  background: transparent;
+  cursor: pointer;
+  margin: 0;
+}
+
+.regla input[type='range']::-webkit-slider-runnable-track {
+  height: 8px;
+  border-radius: 999px;
+  background: linear-gradient(90deg, var(--miel-200), var(--miel-500));
+}
+
+.regla input[type='range']::-moz-range-track {
+  height: 8px;
+  border-radius: 999px;
+  background: linear-gradient(90deg, var(--miel-200), var(--miel-500));
+}
+
+.regla input[type='range']::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  width: 32px;
+  height: 32px;
+  margin-top: -12px;
+  border-radius: 58% 42% 55% 45% / 52% 58% 42% 48%;
+  background: var(--miel-500);
+  border: 3px solid #fffdf8;
+  box-shadow: var(--shadow-soft);
+}
+
+.regla input[type='range']::-moz-range-thumb {
+  width: 32px;
+  height: 32px;
+  border-radius: 58% 42% 55% 45% / 52% 58% 42% 48%;
+  background: var(--miel-500);
+  border: 3px solid #fffdf8;
+  box-shadow: var(--shadow-soft);
+}
+
+/* ---------- Vorlesen ---------- */
+
+.voz-fila {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.leer svg {
+  width: 19px;
+  height: 19px;
+}
+
+.leer.is-on .onda {
+  animation: onda 900ms ease-in-out infinite;
+}
+
+.leer.is-on .onda-2 {
+  animation-delay: 0.18s;
+}
+
+@keyframes onda {
+  0%,
+  100% {
+    opacity: 0.25;
+  }
+  50% {
+    opacity: 1;
+  }
+}
+
+.voz-mas {
+  min-height: 44px;
+  width: 44px;
+  padding: 0;
+  border-radius: 50%;
+}
+
+.voz-menu {
+  position: relative;
+}
+
+.voz-lista {
+  position: absolute;
+  right: 0;
+  bottom: calc(100% + 8px);
+  z-index: 30;
+  width: min(78vw, 17rem);
+  max-height: 15rem;
+  overflow-y: auto;
+  display: grid;
+  gap: 2px;
+  padding: var(--sp-2);
+  border-radius: 16px;
+  background: #fffdf8;
+  box-shadow: var(--shadow-modal);
+  text-align: left;
+}
+
+.voz-lista p {
+  font-size: var(--fs-200);
+  color: var(--tinta-tenue);
+  padding: 2px 6px 6px;
+  font-style: italic;
+}
+
+.voz-lista button {
+  text-align: left;
+  border: none;
+  background: none;
+  border-radius: 10px;
+  padding: 0.5em 0.6em;
+  font-size: var(--fs-300);
+  cursor: pointer;
+  min-height: 40px;
+}
+
+.voz-lista button[aria-pressed='true'] {
+  background: var(--miel-100);
+  font-weight: 700;
+  color: var(--miel-800);
+}
+
+@media (hover: hover) {
+  .voz-lista button:hover {
+    background: var(--papel-warm);
+  }
+}
+
+/* ---------- Wissenslichter im Bild ---------- */
+
+.luz {
+  position: absolute;
+  translate: -50% -50%;
+  width: clamp(40px, 4.8vw, 56px);
+  height: clamp(40px, 4.8vw, 56px);
+  padding: 0;
+  border: none;
+  background: none;
+  cursor: pointer;
+  z-index: 3;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.luz svg {
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+}
+
+.luz-halo {
+  transform-origin: 50% 50%;
+  animation: luz-late 2.9s ease-in-out infinite;
+}
+
+.luz-anillo {
+  transform-origin: 50% 50%;
+  animation: luz-anillo 2.9s ease-in-out infinite;
+}
+
+@keyframes luz-late {
+  0%,
+  100% {
+    transform: scale(0.92);
+    opacity: 0.75;
+  }
+  50% {
+    transform: scale(1.12);
+    opacity: 1;
+  }
+}
+
+@keyframes luz-anillo {
+  0% {
+    transform: scale(0.7);
+    opacity: 0.85;
+  }
+  70%,
+  100% {
+    transform: scale(1.5);
+    opacity: 0;
+  }
+}
+
+.acto.is-aqui .luz {
+  animation: luz-llega 900ms var(--ease-bounce) both;
+  animation-delay: 700ms;
+}
+
+@keyframes luz-llega {
+  0% {
+    opacity: 0;
+    transform: translate(-50%, -50%) scale(0.2);
+  }
+  60% {
+    opacity: 1;
+    transform: translate(-50%, -50%) scale(1.4);
+  }
+  100% {
+    opacity: 1;
+    transform: translate(-50%, -50%) scale(1);
+  }
+}
+
+.luz.is-visto .luz-halo,
+.luz.is-visto .luz-anillo {
+  animation: none;
+}
+
+.luz.is-visto {
+  opacity: 0.5;
+}
+
+.luz.is-visto .luz-tilde {
+  opacity: 1;
+}
+
+.luz-tilde {
+  opacity: 0;
+  transition: opacity 300ms ease;
+}
+
+/* ---------- Melis Zettel: die zweite Wissenskarte ---------- */
+
+.apunte {
+  position: relative;
+  width: min(100%, 34rem);
+  padding: var(--sp-4) var(--sp-5);
+  border-radius: 4px 20px 18px 22px;
+  background: #fffdf8;
+  box-shadow: 0 4px 18px rgba(122, 90, 30, 0.14);
+  rotate: -0.5deg;
+  display: grid;
+  gap: var(--sp-2);
+  text-align: left;
+  overflow: hidden;
+}
+
+.apunte::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  opacity: 0.1;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='56' height='64' viewBox='0 0 56 64'%3E%3Cg fill='none' stroke='%23b3761c' stroke-width='2'%3E%3Cpath d='M14 2 L28 10 L28 26 L14 34 L0 26 L0 10 Z'/%3E%3Cpath d='M42 2 L56 10 L56 26 L42 34 L28 26 L28 10 Z'/%3E%3Cpath d='M28 34 L42 42 L42 58 L28 66 L14 58 L14 42 Z'/%3E%3C/g%3E%3C/svg%3E");
+}
+
+.apunte-kicker {
+  position: relative;
+  font-size: var(--fs-200);
+  font-weight: 700;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--miel-800);
+}
+
+.apunte h4 {
+  position: relative;
+  font-size: var(--fs-600);
+}
+
+.apunte p {
+  position: relative;
+  font-size: var(--fs-300);
+  color: var(--tinta-suave-papel);
+  line-height: 1.6;
+}
+
+.apunte-chacra {
+  position: relative;
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  gap: var(--sp-3);
+  align-items: start;
+  background: rgba(122, 139, 90, 0.12);
+  border-radius: 4px 14px 14px 14px;
+  padding: var(--sp-2) var(--sp-3);
+  font-size: var(--fs-300);
+  color: var(--pistacho-700);
+}
+
+.apunte-sello {
+  width: 30px;
+  height: 30px;
+  flex: none;
+}
+
+/* ---------- Wissenskarte als Melis Sprechblase ---------- */
+
+.telon {
+  position: fixed;
+  inset: 0;
+  z-index: 240;
+  background: rgba(45, 26, 6, 0.55);
+  backdrop-filter: blur(3px);
+  animation: telon-in 240ms ease both;
+}
+
+@keyframes telon-in {
+  from {
+    opacity: 0;
+  }
+}
+
+.nota {
+  position: fixed;
+  left: 50%;
+  bottom: 0;
+  translate: -50% 0;
+  width: min(100%, 33rem);
+  z-index: 250;
+  padding: 0;
+  border: none;
+  background: none;
+  animation: nota-sube 420ms var(--ease-out) both;
+}
+
+@keyframes nota-sube {
+  from {
+    opacity: 0;
+    transform: translateY(26px) rotate(-1deg);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+.nota-hoja {
+  position: relative;
+  background: #fdf6e6;
+  background-image:
+    radial-gradient(90% 60% at 15% 0%, rgba(232, 161, 61, 0.16), transparent 55%),
+    radial-gradient(80% 60% at 100% 100%, rgba(122, 139, 90, 0.12), transparent 55%);
+  border-radius: 22px 26px 0 0;
+  padding: var(--sp-6) var(--sp-5) var(--sp-5);
+  box-shadow: var(--shadow-modal);
+  display: grid;
+  gap: var(--sp-3);
+  overflow: hidden;
+}
+
+.nota-hoja::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  opacity: 0.12;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='56' height='64' viewBox='0 0 56 64'%3E%3Cg fill='none' stroke='%23b3761c' stroke-width='2'%3E%3Cpath d='M14 2 L28 10 L28 26 L14 34 L0 26 L0 10 Z'/%3E%3Cpath d='M42 2 L56 10 L56 26 L42 34 L28 26 L28 10 Z'/%3E%3Cpath d='M28 34 L42 42 L42 58 L28 66 L14 58 L14 42 Z'/%3E%3C/g%3E%3C/svg%3E");
+}
+
+.nota-meli {
+  position: absolute;
+  top: -6px;
+  right: 12px;
+  width: clamp(64px, 14vw, 88px);
+  transform: rotate(6deg);
+}
+
+.nota-kicker {
+  position: relative;
+  font-size: var(--fs-200);
+  font-weight: 700;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--miel-800);
+}
+
+.nota h3 {
+  position: relative;
+  font-size: var(--fs-700);
+  padding-right: clamp(60px, 15vw, 96px);
+}
+
+.nota-texto {
+  position: relative;
+  font-size: var(--fs-400);
+  color: var(--tinta-suave);
+  line-height: 1.6;
+}
+
+.nota-chacra {
+  position: relative;
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  gap: var(--sp-3);
+  align-items: start;
+  background: rgba(122, 139, 90, 0.14);
+  border-radius: 4px 16px 16px 16px;
+  padding: var(--sp-3) var(--sp-4);
+  font-size: var(--fs-300);
+  color: var(--pistacho-700);
+}
+
+.nota-sello {
+  width: 34px;
+  height: 34px;
+  flex: none;
+}
+
+.nota-pie {
+  position: relative;
+  display: flex;
+  justify-content: flex-end;
+}
+
+@media (min-width: 640px) {
+  .nota {
+    bottom: clamp(1rem, 5vh, 3rem);
+  }
+  .nota-hoja {
+    border-radius: 24px 28px 22px 26px;
+  }
+}
+
+/* ---------- Der Nahseh-Modus ---------- */
+
+.visor {
+  position: fixed;
+  inset: 0;
+  z-index: 260;
+  background: rgba(30, 16, 2, 0.95);
+  display: grid;
+  grid-template-rows: auto 1fr;
+  animation: telon-in 260ms ease both;
+}
+
+.visor-barra {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--sp-3);
+  padding: var(--sp-3) var(--sp-4);
+  color: var(--miel-200);
+  font-size: var(--fs-300);
+}
+
+.visor-lienzo {
+  overflow: auto;
+  overscroll-behavior: contain;
+  -webkit-overflow-scrolling: touch;
+  display: grid;
+  place-items: center;
+}
+
+.visor-lienzo img {
+  /* Deutlich größer als der Bildschirm — man zieht das Blatt unter sich
+     durch und kann den eingebrannten Text tatsächlich lesen. */
+  width: max(100%, 210vw);
+  max-width: none;
+  height: auto;
+}
+
+@media (min-width: 46rem) {
+  .visor-lienzo img {
+    width: max(100%, 130vw);
+  }
+}
+
+/* ---------- Wabenfortschritt ---------- */
+
+.panal {
+  position: fixed;
+  right: clamp(0.3rem, 1.2vw, 0.9rem);
+  top: 50%;
+  translate: 0 -50%;
+  z-index: 120;
+  display: grid;
+  gap: 3px;
+  padding: 8px 6px;
+  border-radius: 999px;
+  background: color-mix(in srgb, #fdf6e6 74%, transparent);
+  backdrop-filter: blur(7px);
+  box-shadow: 0 4px 18px rgba(40, 20, 4, calc(0.1 + var(--hondura) * 0.3));
+  transition: box-shadow 1400ms var(--ease-out);
+}
+
+.panal-celda {
+  position: relative;
+  width: 22px;
+  height: 26px;
+  border: none;
+  background: none;
+  padding: 0;
+  cursor: pointer;
+  display: grid;
+  place-items: center;
+}
+
+.panal-celda svg {
+  width: 100%;
+  height: 100%;
+}
+
+.celda-miel {
+  fill: var(--miel-500);
+  opacity: 0;
+  transform-origin: 50% 100%;
+  transform: scaleY(0);
+  transition: transform 460ms var(--ease-out), opacity 300ms ease;
+}
+
+.panal-celda.is-leida .celda-miel {
+  opacity: 1;
+  transform: scaleY(1);
+}
+
+.panal-celda.is-plena .celda-miel {
+  fill: var(--miel-700);
+}
+
+.panal-celda.is-plena::after {
+  content: '';
+  position: absolute;
+  inset: 2px;
+  border-radius: 50%;
+  box-shadow: 0 0 9px 1px rgba(232, 161, 61, 0.85);
+  pointer-events: none;
+}
+
+.celda-linea {
+  fill: none;
+  stroke: var(--miel-700);
+  stroke-width: 1.4;
+  opacity: 0.4;
+}
+
+.panal-celda.is-actual .celda-linea {
+  opacity: 1;
+  stroke-width: 2.8;
+}
+
+.panal-n {
+  position: absolute;
+  font-size: 0.55rem;
+  font-weight: 700;
+  color: var(--tinta);
+  opacity: 0;
+}
+
+.panal-celda.is-actual .panal-n {
+  opacity: 0.9;
+}
+
+/* „Hier geht das Buch weiter": eine Zelle mit Auslassung statt vier
+   gepunkteter Kästchen, die wie ein Fehler aussehen. */
+.panal-sigue {
+  display: grid;
+  place-items: center;
+  width: 22px;
+  height: 26px;
+  margin-top: 2px;
+  font-size: 0.7rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  color: var(--miel-800);
+  opacity: 0.6;
+}
+
+/* ---------- Sammelheft ---------- */
+
+.carnet-abre {
+  position: fixed;
+  right: clamp(0.5rem, 2vw, 1.2rem);
+  bottom: clamp(0.6rem, 2.5vh, 1.4rem);
+  z-index: 121;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5em;
+  padding: 0.5em 1em 0.5em 0.6em;
+  border: none;
+  border-radius: 999px;
+  background: color-mix(in srgb, #fdf6e6 92%, transparent);
+  box-shadow: var(--shadow-lift);
+  color: var(--miel-800);
+  font-weight: 700;
+  font-size: var(--fs-300);
+  cursor: pointer;
+  backdrop-filter: blur(7px);
+  transition: transform var(--dur-2) var(--ease-bounce);
+}
+
+.carnet-abre:active {
+  transform: scale(0.96);
+}
+
+.carnet-abre.is-nuevo {
+  animation: carnet-late 700ms var(--ease-bounce) 2;
+}
+
+@keyframes carnet-late {
+  0%,
+  100% {
+    transform: scale(1) rotate(0);
+  }
+  40% {
+    transform: scale(1.12) rotate(-4deg);
+  }
+}
+
+.carnet-gota {
+  width: 26px;
+  height: 26px;
+  flex: none;
+}
+
+.carnet-relleno {
+  clip-path: inset(100% 0 0 0);
+  transition: clip-path 640ms var(--ease-out);
+}
+
+.carnet {
+  position: fixed;
+  left: 50%;
+  bottom: 0;
+  translate: -50% 0;
+  width: min(100%, 36rem);
+  max-height: 88svh;
+  overflow-y: auto;
+  z-index: 250;
+  border: none;
+  padding: 0;
+  background: none;
+  animation: nota-sube 420ms var(--ease-out) both;
+}
+
+.carnet-lista {
+  list-style: none;
+  padding: 0;
+  display: grid;
+  gap: var(--sp-2);
+}
+
+.carnet-lista li {
+  position: relative;
+  display: grid;
+  grid-template-columns: 22px minmax(0, 1fr);
+  gap: var(--sp-3);
+  align-items: start;
+  font-size: var(--fs-300);
+  color: var(--tinta-suave);
+  padding: 0.35em 0;
+}
+
+.carnet-lista li b {
+  color: var(--tinta);
+  font-weight: 600;
+}
+
+.carnet-grupo {
+  position: relative;
+  display: grid;
+  gap: var(--sp-2);
+}
+
+.carnet-grupo > h4 {
+  display: flex;
+  align-items: baseline;
+  gap: var(--sp-2);
+  font-size: var(--fs-500);
+}
+
+.carnet-grupo > h4 span {
+  font-family: var(--font-body);
+  font-size: var(--fs-200);
+  font-weight: 700;
+  color: var(--miel-800);
+  background: var(--miel-100);
+  border-radius: 999px;
+  padding: 0.1em 0.7em;
+}
+
+.carnet-vacio {
+  position: relative;
+  font-style: italic;
+  color: var(--tinta-tenue);
+  font-size: var(--fs-300);
+}
+
+/* ---------- Rücksicht auf ruhige Nutzer ---------- */
+
+@media (prefers-reduced-motion: reduce) {
+  .lamina-img,
+  .luz-halo,
+  .luz-anillo,
+  .polvo i,
+  .acto.is-aqui .luz,
+  .carnet-abre.is-nuevo,
+  .pasos li.is-ahora b {
+    animation: none !important;
+  }
+
+  .polvo {
+    display: none;
+  }
+
+  .abismo,
+  .columna,
+  .panal {
+    transition: none;
+  }
+
+  .vuelo-meli {
+    /* Meli ruht still in der Mitte der Naht — dort liegt der Wendepunkt
+       der Kurve (42|130), also genau auf der Linie. */
+    top: 50%;
+    transform: none;
+  }
+}

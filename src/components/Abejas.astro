@@ -1,0 +1,666 @@
+---
+import type { Dict, Lang } from '../i18n';
+import BeeMeli from './BeeMeli.astro';
+
+interface Props {
+  t: Dict;
+  lang: Lang;
+}
+
+const { t, lang } = Astro.props;
+const a = t.abejas;
+const a2 = t.libroTeaser;
+
+/* Positionen der 5 Kreislauf-Stationen auf dem Ring (in %) */
+const nodes = a.cycle.map((c, i) => {
+  const angle = (-90 + i * 72) * (Math.PI / 180);
+  return {
+    ...c,
+    i,
+    x: 50 + 44 * Math.cos(angle),
+    y: 50 + 44 * Math.sin(angle),
+  };
+});
+---
+
+<section
+  id="abejas"
+  class="abejas"
+  data-chapter
+  data-meli-zone
+  data-cycle-texts={JSON.stringify(a.cycle.map((c) => c.d))}
+  data-game-done={a.gameDone}
+>
+  <div class="wrap">
+    <header class="section-head" data-reveal>
+      <h2>
+        <span class="swash">{a.title}</span>
+        <span class="meli-perch" data-meli-perch aria-hidden="true"></span>
+      </h2>
+      <p class="lead">{a.intro}</p>
+    </header>
+
+    <div class="abejas-grid">
+      <!-- Öko-Kreislauf -->
+      <div class="cycle-wrap" data-reveal>
+        <h3>{a.cycleTitle}</h3>
+        <p class="cycle-hint">{a.cycleHint}</p>
+
+        <div class="eco-circle">
+          <svg class="eco-ring" viewBox="0 0 100 100" aria-hidden="true">
+            <circle cx="50" cy="50" r="44" fill="none" stroke="#f3c87f" stroke-width="1.6"
+              stroke-dasharray="0.6 3.4" opacity="0.9" />
+            <g fill="#e8a13d">
+              <path d="M87.5 30 l 1.9 2.1 l -2.8 0.5 Z" />
+              <path d="M12.5 70 l -1.9 -2.1 l 2.8 -0.5 Z" />
+            </g>
+          </svg>
+
+          {nodes.map((n) => (
+            <button
+              class="eco-node"
+              style={`left:${n.x}%; top:${n.y}%;`}
+              data-cycle={n.i}
+              aria-expanded={n.i === 0 ? 'true' : 'false'}
+            >
+              <span class="eco-glyph" aria-hidden="true">
+                {n.i === 0 && (
+                  <svg viewBox="0 0 44 44">
+                    <circle cx="22" cy="22" r="7" fill="#e8892d" filter="url(#wc-rough)" />
+                    <g fill="#f3c87f" filter="url(#wc-rough)">
+                      <ellipse cx="22" cy="9" rx="5" ry="7" /><ellipse cx="22" cy="35" rx="5" ry="7" />
+                      <ellipse cx="9" cy="22" rx="7" ry="5" /><ellipse cx="35" cy="22" rx="7" ry="5" />
+                    </g>
+                  </svg>
+                )}
+                {n.i === 1 && (
+                  <svg viewBox="0 0 44 44">
+                    <ellipse cx="20" cy="26" rx="11" ry="8" fill="url(#pg-miel)" filter="url(#wc-rough)" />
+                    <path d="M15 19 L 16 33 M 23 18 L 24 34" stroke="#6b4a1f" stroke-width="2.6" />
+                    <ellipse cx="17" cy="15" rx="8" ry="4" transform="rotate(-24 17 15)" fill="#d9eaf2" opacity="0.9" />
+                    <circle cx="32" cy="23" r="5" fill="#a06a2c" filter="url(#wc-rough)" />
+                  </svg>
+                )}
+                {n.i === 2 && (
+                  <svg viewBox="0 0 44 44">
+                    <path d="M8 30 C 16 22, 28 22, 36 14" stroke="#b3761c" stroke-width="2.4"
+                      stroke-dasharray="1 5" stroke-linecap="round" fill="none" />
+                    <g fill="#e8a13d">
+                      <circle cx="12" cy="28" r="3" /><circle cx="22" cy="24" r="2.4" /><circle cx="32" cy="17" r="3.4" />
+                    </g>
+                  </svg>
+                )}
+                {n.i === 3 && (
+                  <svg viewBox="0 0 44 44">
+                    <path d="M22 36 C 22 28, 21 22, 22 14" stroke="#5b6c42" stroke-width="2.8"
+                      stroke-linecap="round" filter="url(#ink)" fill="none" />
+                    <ellipse cx="15" cy="14" rx="8" ry="5" transform="rotate(-30 15 14)" fill="url(#pg-pistacho)" filter="url(#wc-rough)" />
+                    <ellipse cx="29" cy="10" rx="8" ry="5" transform="rotate(26 29 10)" fill="url(#pg-pistacho)" filter="url(#wc-rough)" />
+                  </svg>
+                )}
+                {n.i === 4 && (
+                  <svg viewBox="0 0 44 44">
+                    <path d="M22 6 C 28 15, 32 21, 32 27 C 32 33, 27 37, 22 37 C 17 37, 12 33, 12 27 C 12 21, 16 15, 22 6 Z"
+                      fill="url(#pg-miel)" filter="url(#wc-soft)" />
+                  </svg>
+                )}
+              </span>
+              <span class="eco-name">{n.t}</span>
+            </button>
+          ))}
+
+          <div class="eco-center" aria-live="polite">
+            <strong data-cycle-title>{a.cycle[0].t}</strong>
+            <p data-cycle-text>{a.cycle[0].d}</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="abejas-side">
+        <!-- Bestäubungs-Spiel -->
+        <div class="hive-game card" data-reveal>
+          <h3>{a.gameTitle}</h3>
+          <p class="game-hint" data-game-hint>{a.gameHint}</p>
+
+          <div class="game-stage" data-game>
+            <div class="game-bee" data-game-bee>
+              <BeeMeli width="54px" />
+            </div>
+            <div class="game-flowers">
+              {Array.from({ length: 5 }, (_, i) => (
+                <button class="game-flower" data-flower={i} aria-label={`Flor ${i + 1}`}>
+                  <svg viewBox="0 0 60 80" aria-hidden="true">
+                    <path d={`M30 76 C 30 62, ${i % 2 ? 28 : 32} 52, 30 40`} stroke="#5b6c42"
+                      stroke-width="3" stroke-linecap="round" filter="url(#ink)" fill="none" />
+                    {i % 2 === 0 ? (
+                      <g class="petals">
+                        <circle cx="30" cy="30" r="7" fill="#b3761c" />
+                        <g fill="#e8892d" filter="url(#wc-rough)">
+                          <ellipse cx="30" cy="16" rx="6" ry="9" /><ellipse cx="30" cy="44" rx="6" ry="9" />
+                          <ellipse cx="16" cy="30" rx="9" ry="6" /><ellipse cx="44" cy="30" rx="9" ry="6" />
+                          <ellipse cx="20" cy="20" rx="6" ry="6" /><ellipse cx="40" cy="20" rx="6" ry="6" />
+                          <ellipse cx="20" cy="40" rx="6" ry="6" /><ellipse cx="40" cy="40" rx="6" ry="6" />
+                        </g>
+                      </g>
+                    ) : (
+                      <g class="petals">
+                        <ellipse cx="30" cy="26" rx="10" ry="20" fill="url(#pg-lavanda)" filter="url(#wc-rough)" />
+                      </g>
+                    )}
+                    <g class="sparkle" fill="#f3c87f">
+                      <circle cx="14" cy="12" r="2.4" /><circle cx="47" cy="10" r="2" /><circle cx="50" cy="24" r="1.8" />
+                    </g>
+                  </svg>
+                </button>
+              ))}
+            </div>
+
+            <!-- Honigglas als Fortschritt -->
+            <div class="game-jar" aria-hidden="true">
+              <svg viewBox="0 0 70 90">
+                <defs>
+                  <clipPath id="jar-clip">
+                    <path d="M20 26 C 14 34, 12 52, 15 66 C 18 78, 52 78, 55 66 C 58 52, 56 34, 50 26 Z" />
+                  </clipPath>
+                </defs>
+                <path d="M20 26 C 14 34, 12 52, 15 66 C 18 78, 52 78, 55 66 C 58 52, 56 34, 50 26 Z"
+                  fill="#fffdf8" stroke="#33291f" stroke-width="2" opacity="0.9" filter="url(#ink)" />
+                <rect class="jar-fill" x="10" y="80" width="50" height="60" fill="url(#pg-miel)" clip-path="url(#jar-clip)" />
+                <rect x="22" y="16" width="26" height="10" rx="4" fill="#a06a2c" filter="url(#wc-rough)" />
+              </svg>
+            </div>
+          </div>
+
+          <p class="game-count">
+            <span data-game-count>0</span>/5 <span>{a.gameCount}</span>
+          </p>
+        </div>
+
+        <!-- Produkte aus der Colmena -->
+        <div class="honey-box" data-reveal>
+          <h3>{a.honeyTitle}</h3>
+          <ul class="honey-list">
+            {a.honeyItems.map((h) => (
+              <li>{h}</li>
+            ))}
+          </ul>
+        </div>
+      </div>
+    </div>
+
+    <!-- Einladung ins Buch -->
+    <a class="libro-teaser" href={`/${lang}/${lang === 'es' ? 'libro' : 'book'}`} data-reveal>
+      <span class="lt-book" aria-hidden="true">
+        <svg viewBox="0 0 200 150">
+          <ellipse cx="100" cy="134" rx="76" ry="10" fill="#8a7b68" opacity="0.2" filter="url(#wc-wash)" />
+          <g class="lt-glow">
+            <ellipse cx="100" cy="96" rx="58" ry="22" fill="url(#pg-sol)" opacity="0.85" filter="url(#wc-wash)" />
+          </g>
+          <path d="M24 128 L 24 66 C 56 52, 96 52, 100 62 L 100 128 Z" fill="#c1714f" filter="url(#wc-soft)" />
+          <path d="M176 128 L 176 66 C 144 52, 104 52, 100 62 L 100 128 Z" fill="#a85f40" filter="url(#wc-soft)" />
+          <g class="lt-cover">
+            <path d="M100 62 C 96 52, 56 52, 24 66 L 24 60 C 56 44, 96 44, 100 54 Z" fill="#8f4c31" filter="url(#wc-rough)" />
+            <path d="M100 54 C 104 44, 144 44, 176 60 L 176 66 C 144 52, 104 52, 100 62 Z" fill="#7d4029" filter="url(#wc-rough)" />
+          </g>
+          <g class="lt-pages" fill="#fffdf8" opacity="0.9">
+            <path d="M32 122 L 32 70 C 58 60, 92 60, 96 68 L 96 122 Z" filter="url(#wc-rough)" />
+            <path d="M168 122 L 168 70 C 142 60, 108 60, 104 68 L 104 122 Z" filter="url(#wc-rough)" />
+          </g>
+          <g class="lt-sparks" fill="#f3c87f">
+            <circle cx="76" cy="46" r="3" /><circle cx="118" cy="38" r="2.4" /><circle cx="98" cy="30" r="2" />
+          </g>
+        </svg>
+      </span>
+
+      <span class="lt-copy">
+        <span class="kicker">{a2.kicker}</span>
+        <strong class="lt-title">{a2.title}</strong>
+        <span class="bubble lt-bubble">{a2.bubble}</span>
+        <span class="lt-text">{a2.text}</span>
+        <span class="btn btn--sm lt-cta">{a2.cta}</span>
+        <span class="chip chip--miel lt-badge">{a2.badge}</span>
+      </span>
+    </a>
+  </div>
+</section>
+
+<script>
+  const section = document.getElementById('abejas')!;
+
+  // --- Kreislauf ---
+  const cyc = Array.from(section.querySelectorAll<HTMLButtonElement>('[data-cycle]'));
+  const cTitle = section.querySelector<HTMLElement>('[data-cycle-title]')!;
+  const cText = section.querySelector<HTMLElement>('[data-cycle-text]')!;
+  const cycleData = cyc.map((b) => ({
+    t: b.querySelector('.eco-name')!.textContent ?? '',
+  }));
+  const texts: string[] = JSON.parse(section.dataset.cycleTexts ?? '[]');
+
+  cyc.forEach((btn, i) => {
+    btn.addEventListener('click', () => {
+      cyc.forEach((b, k) => b.setAttribute('aria-expanded', String(k === i)));
+      cTitle.textContent = cycleData[i].t;
+      cText.textContent = texts[i] ?? '';
+      const center = section.querySelector('.eco-center')!;
+      center.classList.remove('bump');
+      requestAnimationFrame(() => center.classList.add('bump'));
+    });
+  });
+
+  // --- Bestäubungs-Spiel ---
+  const stage = section.querySelector<HTMLElement>('[data-game]');
+  const bee = section.querySelector<HTMLElement>('[data-game-bee]');
+  const countEl = section.querySelector<HTMLElement>('[data-game-count]');
+  const hintEl = section.querySelector<HTMLElement>('[data-game-hint]');
+  const jarFill = section.querySelector<SVGRectElement>('.jar-fill');
+  const doneMsg = section.dataset.gameDone ?? '';
+
+  if (stage && bee && countEl && jarFill) {
+    let count = 0;
+    let flying = false;
+
+    stage.querySelectorAll<HTMLButtonElement>('[data-flower]').forEach((flower) => {
+      flower.addEventListener('click', () => {
+        if (flying || flower.classList.contains('is-bloomed')) return;
+        flying = true;
+
+        const sr = stage.getBoundingClientRect();
+        const fr = flower.getBoundingClientRect();
+        const x = fr.left - sr.left + fr.width / 2 - 27;
+        const y = fr.top - sr.top - 26;
+        bee.style.transform = `translate(${x}px, ${y}px)`;
+
+        setTimeout(() => {
+          flower.classList.add('is-bloomed');
+          count += 1;
+          countEl.textContent = String(count);
+          const h = (count / 5) * 56;
+          jarFill.setAttribute('y', String(78 - h));
+          flying = false;
+
+          if (count === 5 && hintEl) {
+            hintEl.textContent = doneMsg;
+            hintEl.classList.add('is-done');
+            stage.classList.add('all-done');
+          }
+        }, 620);
+      });
+    });
+  }
+</script>
+
+<style>
+  .abejas {
+    background: var(--cielo-100);
+  }
+
+  .abejas-grid {
+    display: grid;
+    gap: var(--sp-7);
+    align-items: start;
+  }
+
+  @media (min-width: 920px) {
+    .abejas-grid {
+      grid-template-columns: 1.1fr 1fr;
+    }
+  }
+
+  .cycle-hint {
+    color: var(--tinta-tenue);
+    font-size: var(--fs-300);
+    font-style: italic;
+    margin-top: var(--sp-1);
+  }
+
+  /* ---------- Kreislauf ---------- */
+
+  .eco-circle {
+    position: relative;
+    width: min(88vw, 420px);
+    aspect-ratio: 1;
+    margin: var(--sp-6) auto 0;
+  }
+
+  .eco-ring {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+  }
+
+  .eco-node {
+    position: absolute;
+    transform: translate(-50%, -50%);
+    display: grid;
+    justify-items: center;
+    gap: 2px;
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 4px;
+    z-index: 2;
+  }
+
+  .eco-glyph {
+    width: 58px;
+    height: 58px;
+    border-radius: var(--r-blob);
+    background: #fffdf8;
+    box-shadow: var(--shadow-soft);
+    display: grid;
+    place-items: center;
+    padding: 7px;
+    transition: transform var(--dur-2) var(--ease-bounce), box-shadow var(--dur-2) ease;
+  }
+
+  .eco-node[aria-expanded='true'] .eco-glyph {
+    box-shadow: 0 0 0 3px var(--miel-500), var(--shadow-lift);
+    transform: scale(1.12) rotate(-4deg);
+  }
+
+  .eco-node:active .eco-glyph {
+    transform: scale(0.94);
+  }
+
+  .eco-name {
+    font-size: 0.72rem;
+    font-weight: 700;
+    color: var(--tinta-suave);
+    background: color-mix(in srgb, #fffdf8 85%, transparent);
+    padding: 1px 7px;
+    border-radius: var(--r-full);
+    white-space: nowrap;
+  }
+
+  .eco-center {
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    transform: translate(-50%, -50%);
+    width: 56%;
+    text-align: center;
+    display: grid;
+    gap: var(--sp-1);
+  }
+
+  .eco-center.bump {
+    animation: center-bump 320ms var(--ease-bounce);
+  }
+
+  @keyframes center-bump {
+    0% { transform: translate(-50%, -50%) scale(0.96); }
+    100% { transform: translate(-50%, -50%) scale(1); }
+  }
+
+  .eco-center strong {
+    font-family: var(--font-display);
+    font-size: var(--fs-600);
+  }
+
+  .eco-center p {
+    font-size: var(--fs-300);
+    color: var(--c-text-soft);
+  }
+
+  /* ---------- Spiel ---------- */
+
+  .abejas-side {
+    display: grid;
+    gap: var(--sp-5);
+  }
+
+  .hive-game {
+    overflow: hidden;
+  }
+
+  .game-hint {
+    color: var(--tinta-tenue);
+    font-size: var(--fs-300);
+    font-style: italic;
+    margin-top: var(--sp-1);
+    transition: color var(--dur-2) ease;
+  }
+
+  .game-hint.is-done {
+    color: var(--pistacho-700);
+    font-weight: 600;
+    font-style: normal;
+  }
+
+  .game-stage {
+    position: relative;
+    display: grid;
+    grid-template-columns: 1fr auto;
+    gap: var(--sp-3);
+    align-items: end;
+    margin-top: var(--sp-5);
+    padding-top: 64px;
+  }
+
+  .game-bee {
+    position: absolute;
+    left: 0;
+    top: 0;
+    transform: translate(6px, 4px);
+    transition: transform 600ms var(--ease-in-out);
+    z-index: 2;
+    pointer-events: none;
+  }
+
+  .game-flowers {
+    display: flex;
+    justify-content: space-between;
+    gap: var(--sp-1);
+  }
+
+  .game-flower {
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 2px;
+    width: clamp(38px, 8vw, 56px);
+  }
+
+  .game-flower svg {
+    width: 100%;
+    overflow: visible;
+  }
+
+  .game-flower .petals {
+    transform-box: fill-box;
+    transform-origin: 50% 50%;
+    transform: scale(0.55);
+    opacity: 0.55;
+    filter: saturate(0.55);
+    transition: transform 420ms var(--ease-bounce), opacity 300ms ease, filter 300ms ease;
+  }
+
+  .game-flower.is-bloomed .petals {
+    transform: scale(1);
+    opacity: 1;
+    filter: saturate(1);
+  }
+
+  .game-flower .sparkle {
+    opacity: 0;
+    transform: scale(0.4);
+    transform-box: fill-box;
+    transform-origin: 50% 50%;
+    transition: opacity 300ms ease 150ms, transform 420ms var(--ease-bounce) 150ms;
+  }
+
+  .game-flower.is-bloomed .sparkle {
+    opacity: 1;
+    transform: scale(1);
+  }
+
+  .game-flower:active {
+    transform: scale(0.95);
+  }
+
+  .game-jar svg {
+    width: clamp(46px, 9vw, 64px);
+  }
+
+  .jar-fill {
+    transition: y 500ms var(--ease-out);
+  }
+
+  .all-done .game-jar svg {
+    animation: jar-cheer 700ms var(--ease-bounce);
+  }
+
+  @keyframes jar-cheer {
+    0% { transform: rotate(0); }
+    35% { transform: rotate(-6deg) scale(1.08); }
+    70% { transform: rotate(4deg); }
+    100% { transform: rotate(0); }
+  }
+
+  .game-count {
+    margin-top: var(--sp-3);
+    font-size: var(--fs-300);
+    color: var(--c-text-soft);
+    font-weight: 600;
+  }
+
+  /* ---------- Colmena-Produkte ---------- */
+
+  .honey-box h3 {
+    margin-bottom: var(--sp-3);
+  }
+
+  .honey-list {
+    list-style: none;
+    padding: 0;
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--sp-2);
+  }
+
+  .honey-list li {
+    background: #fffdf8;
+    border-radius: var(--r-full);
+    box-shadow: var(--shadow-soft);
+    padding: 0.5em 1.1em;
+    font-weight: 600;
+    font-size: var(--fs-300);
+  }
+
+  /* ---------- Einladung ins Buch ---------- */
+
+  .libro-teaser {
+    display: grid;
+    gap: var(--sp-5);
+    align-items: center;
+    justify-items: center;
+    margin-top: clamp(3rem, 8vw, 5rem);
+    padding: clamp(1.5rem, 5vw, 2.5rem);
+    border-radius: var(--r-lg);
+    background: linear-gradient(150deg, #fffdf8, var(--miel-100));
+    box-shadow: var(--shadow-soft);
+    text-decoration: none;
+    color: var(--tinta);
+    transition: transform var(--dur-2) var(--ease-out), box-shadow var(--dur-2) var(--ease-out);
+  }
+
+  @media (min-width: 780px) {
+    .libro-teaser {
+      grid-template-columns: minmax(0, 260px) minmax(0, 1fr);
+      gap: var(--sp-7);
+      justify-items: start;
+    }
+  }
+
+  @media (hover: hover) and (pointer: fine) {
+    .libro-teaser:hover {
+      transform: translateY(-4px);
+      box-shadow: var(--shadow-lift);
+    }
+    .libro-teaser:hover .lt-cover {
+      transform: rotateX(38deg);
+    }
+    .libro-teaser:hover .lt-glow {
+      opacity: 1;
+    }
+  }
+
+  .libro-teaser:active {
+    transform: scale(0.99);
+  }
+
+  .lt-book {
+    width: min(70vw, 240px);
+  }
+
+  .lt-book svg {
+    width: 100%;
+    overflow: visible;
+  }
+
+  /* Der Buchdeckel hebt sich, das Honiglicht dringt heraus */
+  .lt-cover {
+    transform-box: fill-box;
+    transform-origin: 50% 100%;
+    transition: transform 620ms var(--ease-out);
+  }
+
+  .lt-glow {
+    opacity: 0.45;
+    transition: opacity 620ms var(--ease-out);
+  }
+
+  .lt-sparks circle {
+    animation: lt-spark 2.8s ease-in-out infinite;
+  }
+
+  .lt-sparks circle:nth-child(2) { animation-delay: 0.5s; }
+  .lt-sparks circle:nth-child(3) { animation-delay: 1s; }
+
+  @keyframes lt-spark {
+    0%, 100% { opacity: 0.2; transform: translateY(2px); }
+    50% { opacity: 1; transform: translateY(-4px); }
+  }
+
+  .lt-copy {
+    display: grid;
+    gap: var(--sp-2);
+    justify-items: start;
+  }
+
+  .lt-title {
+    font-family: var(--font-display);
+    font-variation-settings: 'SOFT' 70, 'WONK' 1;
+    font-size: var(--fs-700);
+    line-height: var(--lh-tight);
+  }
+
+  .lt-bubble {
+    font-size: var(--fs-400);
+    padding: var(--sp-3) var(--sp-4);
+    margin-block: var(--sp-1);
+  }
+
+  .lt-bubble::after {
+    display: none;
+  }
+
+  .lt-text {
+    font-size: var(--fs-300);
+    color: var(--c-text-soft);
+    max-width: 34rem;
+  }
+
+  .lt-cta {
+    margin-top: var(--sp-2);
+  }
+
+  .lt-badge {
+    margin-top: var(--sp-1);
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .lt-sparks circle { animation: none; }
+  }
+</style>

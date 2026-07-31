@@ -1,0 +1,254 @@
+---
+import Base from '../layouts/Base.astro';
+import BeeMeli from '../components/BeeMeli.astro';
+
+const pigments = [
+  { name: 'Miel', vars: ['--miel-100', '--miel-200', '--miel-300', '--miel-500', '--miel-700'] },
+  { name: 'Pistacho', vars: ['--pistacho-100', '--pistacho-200', '--pistacho-300', '--pistacho-500', '--pistacho-700'] },
+  { name: 'Lavanda', vars: ['--lavanda-100', '--lavanda-200', '--lavanda-300', '--lavanda-500', '--lavanda-700'] },
+  { name: 'Barro', vars: ['--barro-100', '--barro-200', '--barro-300', '--barro-500', '--barro-700'] },
+  { name: 'Cielo', vars: ['--cielo-100', '--cielo-200', '--cielo-300', '--cielo-500'] },
+  { name: 'Papel & Tinta', vars: ['--papel', '--papel-warm', '--tinta-tenue', '--tinta-suave', '--tinta'] },
+];
+
+const space = ['--sp-1', '--sp-2', '--sp-3', '--sp-4', '--sp-5', '--sp-6', '--sp-7', '--sp-8'];
+
+const motion = [
+  { token: '--dur-1 · 140 ms', uso: 'Microfeedback: hover, focus, chips' },
+  { token: '--dur-2 · 260 ms', uso: 'Transiciones de UI: botones, tarjetas' },
+  { token: '--dur-3 · 520 ms', uso: 'Escenas: modales, sheets, reveals' },
+  { token: '--ease-out', uso: 'Entradas y salidas estándar' },
+  { token: '--ease-bounce', uso: 'Personalidad: Meli, íconos, botones' },
+];
+---
+
+<Base
+  lang="es"
+  title="Sistema Edén — Sistema de diseño"
+  description="Tokens, tipografía, componentes y principios de movimiento de Retoños del Edén."
+>
+  <main class="ds wrap">
+    <header class="ds-head">
+      <BeeMeli width="110px" class="bee-float" />
+      <div>
+        <p class="kicker">Retoños del Edén</p>
+        <h1>Sistema Edén</h1>
+        <p class="lead">
+          Acuarela + tinta: pigmentos con borde irregular, papel con grano y líneas
+          temblorosas. Todo definido como tokens en <code>src/styles/tokens.css</code>.
+        </p>
+        <p><a href="/es/">← Volver al sitio</a></p>
+      </div>
+    </header>
+
+    <!-- Pigmentos -->
+    <section class="ds-sec">
+      <h2>Pigmentos</h2>
+      <p>Cada color existe como lavado (claro) y pigmento concentrado (oscuro). Los contrastes de texto usan siempre <code>--tinta</code> sobre fondos claros o <code>--papel</code> sobre los 700.</p>
+      <div class="pig-grid">
+        {pigments.map((p) => (
+          <div class="pig-row">
+            <h3>{p.name}</h3>
+            <div class="swatches">
+              {p.vars.map((v) => (
+                <div class="swatch">
+                  <span class="swatch-color" style={`background: var(${v})`}></span>
+                  <code>{v}</code>
+                </div>
+              ))}
+            </div>
+          </div>
+        ))}
+      </div>
+    </section>
+
+    <!-- Tipografía -->
+    <section class="ds-sec">
+      <h2>Tipografía</h2>
+      <p>
+        <strong>Fraunces Variable</strong> (display, con ejes SOFT/WONK para el gesto orgánico)
+        + <strong>Outfit Variable</strong> (texto y UI). Escala fluida con <code>clamp()</code>.
+      </p>
+      <div class="type-samples card">
+        <p class="t-hero">Retoños del Edén</p>
+        <p class="t-900">Nuestra historia, contada volando — fs-900</p>
+        <p class="t-700">Talleres en la chacra — fs-700</p>
+        <p class="t-body">Texto de lectura en Outfit: los pistachos tardan cinco años en dar fruto, y la paciencia es como la miel. — fs-400</p>
+        <p class="t-kicker">KICKER / ETIQUETA — fs-300</p>
+      </div>
+    </section>
+
+    <!-- Espacio y forma -->
+    <section class="ds-sec">
+      <h2>Espacio & forma</h2>
+      <p>Base de 4 px. Radios generosos y un radio “mancha” (<code>--r-blob</code>) para elementos orgánicos.</p>
+      <div class="space-bars card">
+        {space.map((s) => (
+          <div class="space-row">
+            <code>{s}</code>
+            <span class="space-bar" style={`width: var(${s})`}></span>
+          </div>
+        ))}
+      </div>
+      <div class="shape-row">
+        <div class="shape card" style="border-radius: var(--r-sm)"><code>--r-sm</code></div>
+        <div class="shape card" style="border-radius: var(--r-md)"><code>--r-md</code></div>
+        <div class="shape card" style="border-radius: var(--r-lg)"><code>--r-lg</code></div>
+        <div class="shape card" style="border-radius: var(--r-blob)"><code>--r-blob</code></div>
+      </div>
+    </section>
+
+    <!-- Movimiento -->
+    <section class="ds-sec">
+      <h2>Movimiento</h2>
+      <p>Regla de oro: el contenido nunca depende de la animación. Con <code>prefers-reduced-motion</code> todo queda visible y quieto.</p>
+      <table class="motion-table card">
+        <thead><tr><th>Token</th><th>Uso</th></tr></thead>
+        <tbody>
+          {motion.map((m) => (
+            <tr><td><code>{m.token}</code></td><td>{m.uso}</td></tr>
+          ))}
+        </tbody>
+      </table>
+    </section>
+
+    <!-- Componentes -->
+    <section class="ds-sec">
+      <h2>Componentes</h2>
+
+      <h3>Botones</h3>
+      <div class="comp-row">
+        <button class="btn">Primario</button>
+        <button class="btn btn--secondary">Secundario</button>
+        <button class="btn btn--ghost">Ghost</button>
+        <button class="btn btn--sm">Pequeño</button>
+      </div>
+
+      <h3>Chips</h3>
+      <div class="comp-row">
+        <span class="chip">Pistacho</span>
+        <span class="chip chip--miel">Miel</span>
+        <span class="chip chip--lavanda">Lavanda</span>
+        <span class="chip chip--barro">Barro</span>
+      </div>
+
+      <h3>Tarjeta + burbuja</h3>
+      <div class="comp-row comp-row--top">
+        <article class="card" style="max-width: 18rem">
+          <span class="chip chip--miel">Ejemplo</span>
+          <h4 style="margin-top: var(--sp-3)">Tarjeta</h4>
+          <p style="font-size: var(--fs-300); color: var(--c-text-soft)">
+            Fondo blanco cálido, sombra suave, se eleva al pasar el cursor.
+          </p>
+        </article>
+        <p class="bubble">Hola, soy una burbuja de diálogo. Meli habla en Fraunces itálica suave.</p>
+      </div>
+
+      <h3>Formulario</h3>
+      <div class="card" style="max-width: 24rem; display: grid; gap: var(--sp-4)">
+        <div class="field">
+          <label for="ds-input">Etiqueta</label>
+          <input id="ds-input" type="text" placeholder="Texto de ejemplo" />
+        </div>
+        <div class="field">
+          <label for="ds-select">Selector</label>
+          <select id="ds-select"><option>Opción A</option><option>Opción B</option></select>
+        </div>
+      </div>
+
+      <h3>Meli</h3>
+      <div class="comp-row comp-row--top">
+        <BeeMeli width="150px" />
+        <BeeMeli width="96px" flip />
+        <BeeMeli width="60px" />
+      </div>
+    </section>
+
+    <footer class="ds-footer">
+      <p>Sistema Edén · Retoños del Edén · <a href="/es/">volver al sitio</a></p>
+    </footer>
+  </main>
+</Base>
+
+<style>
+  .ds {
+    padding-block: var(--sp-8);
+    display: grid;
+    gap: var(--sp-9);
+  }
+
+  .ds-head {
+    display: flex;
+    gap: var(--sp-6);
+    align-items: center;
+    flex-wrap: wrap;
+  }
+
+  .ds-sec {
+    display: grid;
+    gap: var(--sp-5);
+    justify-items: start;
+  }
+
+  .pig-grid {
+    display: grid;
+    gap: var(--sp-5);
+    width: 100%;
+  }
+
+  .swatches {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--sp-3);
+    margin-top: var(--sp-2);
+  }
+
+  .swatch {
+    display: grid;
+    gap: 4px;
+    justify-items: center;
+    font-size: 0.7rem;
+  }
+
+  .swatch-color {
+    width: 64px;
+    height: 48px;
+    border-radius: var(--r-blob);
+    box-shadow: var(--shadow-soft);
+  }
+
+  .type-samples {
+    display: grid;
+    gap: var(--sp-4);
+    width: 100%;
+  }
+
+  .t-hero { font-family: var(--font-display); font-variation-settings: 'SOFT' 70, 'WONK' 1; font-size: var(--fs-hero); line-height: 1.05; }
+  .t-900 { font-family: var(--font-display); font-size: var(--fs-900); line-height: 1.1; }
+  .t-700 { font-family: var(--font-display); font-size: var(--fs-700); }
+  .t-body { font-size: var(--fs-400); }
+  .t-kicker { font-size: var(--fs-300); letter-spacing: 0.14em; font-weight: 600; color: var(--miel-700); }
+
+  .space-bars { display: grid; gap: var(--sp-2); width: 100%; }
+  .space-row { display: flex; align-items: center; gap: var(--sp-4); }
+  .space-row code { width: 4.5rem; }
+  .space-bar { height: 14px; background: var(--miel-500); border-radius: 7px; display: inline-block; }
+
+  .shape-row { display: flex; gap: var(--sp-4); flex-wrap: wrap; }
+  .shape { width: 108px; height: 84px; display: grid; place-items: center; font-size: 0.7rem; }
+
+  .motion-table { border-collapse: collapse; width: 100%; max-width: 36rem; }
+  .motion-table th, .motion-table td { text-align: left; padding: var(--sp-2) var(--sp-3); border-bottom: 1px dashed var(--miel-300); font-size: var(--fs-300); }
+
+  .comp-row { display: flex; gap: var(--sp-4); flex-wrap: wrap; align-items: center; }
+  .comp-row--top { align-items: flex-start; }
+
+  .ds-footer { color: var(--tinta-tenue); font-size: var(--fs-300); }
+
+  code {
+    background: var(--papel-warm);
+    padding: 0.1em 0.45em;
+    border-radius: 6px;
+    font-size: 0.85em;
+  }
+</style>

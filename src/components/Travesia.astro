@@ -1,0 +1,270 @@
+---
+/**
+ * Travesía — der Weg zwischen Chacra und Buch.
+ *
+ * Meli fliegt voraus und nimmt einen mit. Auf dem Hinweg zeichnet sich vom
+ * Buch-Link aus die gepunktete Bahn quer über den Schirm, Meli fliegt sie
+ * ab, und um ihren Landepunkt blüht das Papier der neuen Seite auf. Auf
+ * `/libro` steht dieselbe Auflage im selben Endbild (Papier voll, Meli am
+ * selben Punkt) und löst sich auf. Dadurch ist die Naht zwischen den
+ * beiden Seiten nicht zu sehen.
+ *
+ * Der Landepunkt ist auf beiden Seiten dieselbe Formel (50 % / 58 % des
+ * Fensters). Genau deshalb passt das Endbild der abgehenden Auflage auf das
+ * Anfangsbild der ankommenden, ohne dass eine Koordinate über die
+ * Navigation hinweg gereicht werden müsste.
+ *
+ * **Die Ankunft läuft rein über CSS.** Sie hängt an einer Klasse, die ein
+ * Vorgriff-Skript noch vor dem ersten Bild auf <html> setzt. Käme sie erst
+ * aus dem Modulskript, würde die Zielseite kurz aufblitzen. Und weil die
+ * Auflösung eine CSS-Animation ist, kann die Auflage auch dann nicht hängen
+ * bleiben, wenn das Modul gar nicht lädt. Das Modul räumt nur auf.
+ *
+ * Bewusst **kein** `ClientRouter`: ein SPA-Router würde verlangen, dass
+ * alle Skripte des Buches (`voz.ts`, `juego.ts` und acht Spiele)
+ * mehrfach-aufrufbar sind. Das bricht still. Stattdessen ein eigener
+ * Übergang plus `prefetch` auf dem Buch-Link, damit die Netzwerklücke
+ * dazwischen gar nicht erst auffällt. Siehe PLAN-ANIMATIONEN.md,
+ * Abschnitt 2.
+ *
+ * Wie überall hier: kein `filter` in den Keyframes (HANDOFF.md, 4).
+ */
+import BeeMeli from './BeeMeli.astro';
+---
+
+{/* Muss vor dem ersten Bild laufen, darum inline und ganz oben. Der
+    Merker wird sofort gelöscht: ein Neuladen soll die Ankunft nicht
+    wiederholen. */}
+<script is:inline>
+  try {
+    const rumbo = sessionStorage.getItem('re:travesia');
+    if (rumbo) {
+      sessionStorage.removeItem('re:travesia');
+      const aqui = rumbo === 'libro' ? 'travesia-llega' : 'travesia-vuelve';
+      document.documentElement.classList.add(aqui);
+    }
+  } catch {
+    /* Kein Speicher, keine Ankunft. Die Seite steht trotzdem. */
+  }
+</script>
+
+<div class="travesia" id="travesia" aria-hidden="true">
+  <div class="travesia-papel"></div>
+
+  {/* Hier steht absichtlich **kein** `pathLength`: das würde die Pfadlänge
+      auf 1 normieren, und `stroke-dasharray: 1.6 7` wäre dann ein einziger
+      Riesenstrich statt einer Punktreihe.
+
+      Die Bahn blendet deshalb ein, statt sich zu zeichnen: eine Punktreihe
+      lässt sich über `stroke-dashoffset` nicht fortschreitend aufdecken,
+      das verschöbe nur die Punkte. Wer sie wirklich wachsen lassen will,
+      braucht einen zweiten, breiten Pfad mit demselben `d` in einem
+      `<mask>`, der die Punkte freilegt. Das ist der saubere Weg und hier
+      bewusst nicht gegangen: bei 400 ms Laufzeit ist der Unterschied
+      zwischen „wächst" und „blendet ein" kaum zu sehen, und das Einblenden
+      kommt ohne zweiten Pfad und ohne Maskenfläche aus. */}
+  <svg class="travesia-senda" fill="none" aria-hidden="true">
+    {/* `non-scaling-stroke` ist hier streng genommen wirkungslos —
+        travesia.ts setzt den viewBox auf die Fenstergröße, eine Einheit ist
+        also ohnehin ein Pixel. Es steht trotzdem da, weil es im Projekt die
+        Regel für gepunktete Linien ist: an anderer Stelle wurden die Punkte
+        durch eine viewBox-Verzerrung schon einmal zu Strichen gezogen. */}
+    <path
+      class="travesia-puntos"
+      stroke="var(--miel-700)"
+      stroke-width="2.2"
+      stroke-linecap="round"
+      stroke-dasharray="1.6 7"
+      vector-effect="non-scaling-stroke"></path>
+  </svg>
+
+  <div class="travesia-meli"><BeeMeli width="82px" /></div>
+</div>
+
+<style>
+  .travesia {
+    position: fixed;
+    inset: 0;
+    z-index: 9500;
+    /* Rührt nie an Klicks: der Übergang ist Beiwerk, kein Türsteher. */
+    pointer-events: none;
+    visibility: hidden;
+  }
+
+  .travesia.esta-activa,
+  :global(html.travesia-llega) .travesia,
+  :global(html.travesia-vuelve) .travesia {
+    visibility: visible;
+  }
+
+  .travesia-papel {
+    position: absolute;
+    inset: 0;
+    background: var(--papel);
+    /* Der Landepunkt wird beim Hinweg vom Skript gesetzt. Von dort blüht
+       die Farbe auf — Meli trägt sie herein, statt dass sie einblendet.
+       `--tr-r` ist der Abstand vom Landepunkt zur entferntesten Ecke, auch
+       vom Skript. Ein pauschales `150vmax` wäre so viel zu groß, dass der
+       Kreis schon nach 40 % der Laufzeit alles zudeckt — die Blüte wäre
+       vorbei, bevor man sie sieht. */
+    clip-path: circle(0 at var(--tr-x, 50%) var(--tr-y, 58%));
+  }
+
+  .travesia-senda {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    opacity: 0;
+  }
+
+  .travesia-meli {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 82px;
+    opacity: 0;
+    /* Waagerecht halten. `offset-rotate: auto` legte sie auf der
+       absteigenden Kurve auf den Rücken. */
+    offset-rotate: 0deg;
+    offset-distance: 0%;
+  }
+
+  /* ---- Hinweg: die Seite verlassen ---- */
+
+  /* `--ease-in-out`, nicht `--ease-out`: die Projektkurve steigt so steil
+     an, dass der Kreis nach der halben Laufzeit schon bei 94 % seines
+     Radius stünde — gemessen war bei 450 ms von 640 ms alles zugedeckt.
+     Eine Blüte soll wachsen, nicht aufspringen. */
+  .travesia.va-saliendo .travesia-papel {
+    animation: tr-florece 380ms var(--ease-in-out) 260ms both;
+  }
+
+  @keyframes tr-florece {
+    to {
+      clip-path: circle(var(--tr-r, 120vmax) at var(--tr-x, 50%) var(--tr-y, 58%));
+    }
+  }
+
+  .travesia.va-saliendo .travesia-senda {
+    animation: tr-aclara 280ms var(--ease-out) both;
+  }
+
+  @keyframes tr-aclara {
+    from {
+      opacity: 0;
+      translate: 0 -8px;
+    }
+    to {
+      opacity: 0.5;
+      translate: 0 0;
+    }
+  }
+
+  .travesia.va-saliendo .travesia-meli {
+    animation: tr-vuela 500ms var(--ease-in-out) 80ms both;
+  }
+
+  @keyframes tr-vuela {
+    from {
+      offset-distance: 0%;
+      opacity: 0;
+    }
+    12% {
+      opacity: 1;
+    }
+    to {
+      offset-distance: 100%;
+      opacity: 1;
+    }
+  }
+
+  /* Der Rückweg ist derselbe Gedanke, nur knapper: das Papier blüht vom
+     angeklickten Punkt aus auf, ohne gezeichnete Bahn und ohne Biene. Ein
+     Rückweg darf nicht so feierlich sein wie der Hinweg. */
+  .travesia.va-volviendo .travesia-papel {
+    animation: tr-florece 400ms var(--ease-in-out) both;
+  }
+
+  /* ---- Ankunft: dasselbe Endbild, das sich auflöst ---- */
+
+  /* `linear`, nicht `--ease-out`. Die Projektkurve steigt so steil an, dass
+     eine Überblendung damit nach einem Fünftel der Laufzeit schon durch
+     ist — gemessen: nach 250 ms von 480 ms stand das Papier bei 19 %. Eine
+     Überblendung will gleichmäßig laufen, sonst ist sie ein Schnitt mit
+     Nachlauf. */
+  :global(html.travesia-llega) .travesia-papel,
+  :global(html.travesia-vuelve) .travesia-papel {
+    clip-path: none;
+    animation: tr-disuelve 520ms linear 100ms both;
+  }
+
+  @keyframes tr-disuelve {
+    from {
+      opacity: 1;
+    }
+    to {
+      opacity: 0;
+      visibility: hidden;
+    }
+  }
+
+  /* Nur wer aus der Chacra kommt, wird von Meli empfangen — sie steht
+     genau dort, wo sie auf dem Hinweg gelandet ist. */
+  :global(html.travesia-llega) .travesia-meli {
+    top: 58%;
+    left: 50%;
+    translate: -50% -50%;
+    animation: tr-posa 700ms linear 60ms both;
+  }
+
+  /* Sie bleibt stehen, solange das Papier weicht, und geht erst dann. Sonst
+     wäre sie weg, bevor der Zeilenaufbau des Buches anfängt — und die
+     Übergabe an die Meli des Einstiegs fiele aus. */
+  @keyframes tr-posa {
+    from {
+      opacity: 1;
+    }
+    55% {
+      opacity: 1;
+    }
+    to {
+      opacity: 0;
+    }
+  }
+
+  /* Ruhige Fassung: eine Überblendung im Papierton, mehr nicht. Keine
+     fliegende Biene, keine gezeichnete Bahn — aber auch keine harte
+     Umschaltung. */
+  @media (prefers-reduced-motion: reduce) {
+    .travesia.va-saliendo .travesia-papel,
+    .travesia.va-volviendo .travesia-papel {
+      clip-path: none;
+      animation: tr-aparece 200ms var(--ease-out) both;
+    }
+
+    @keyframes tr-aparece {
+      from {
+        opacity: 0;
+      }
+      to {
+        opacity: 1;
+      }
+    }
+
+    :global(html.travesia-llega) .travesia-papel,
+    :global(html.travesia-vuelve) .travesia-papel {
+      animation-duration: 220ms;
+      animation-delay: 0ms;
+    }
+
+    .travesia-senda,
+    .travesia-meli {
+      display: none;
+    }
+  }
+</style>
+
+<script>
+  import '../scripts/travesia';
+</script>

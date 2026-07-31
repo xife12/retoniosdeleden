@@ -1,0 +1,59 @@
+---
+import type { Dict } from '../i18n';
+import BeeMeli from './BeeMeli.astro';
+
+interface Props {
+  t: Dict;
+}
+
+const { t } = Astro.props;
+---
+
+<section class="intro" data-chapter aria-label="Meli">
+  <div class="wrap intro-grid">
+    <div class="intro-bee" data-reveal>
+      <BeeMeli width="clamp(130px, 22vw, 200px)" class="bee-float" flip />
+    </div>
+    <div class="intro-bubbles">
+      <p class="bubble" data-reveal>{t.intro.bubble1}</p>
+      <p class="bubble bubble--right" data-reveal>{t.intro.bubble2}</p>
+      <p class="intro-hint" data-reveal>{t.intro.hint}</p>
+    </div>
+  </div>
+</section>
+
+<style>
+  .intro {
+    background: var(--papel);
+  }
+
+  .intro-grid {
+    display: grid;
+    gap: var(--sp-6);
+    justify-items: center;
+  }
+
+  .intro-bubbles {
+    display: grid;
+    gap: var(--sp-6);
+    justify-items: start;
+  }
+
+  .bubble--right {
+    justify-self: end;
+  }
+
+  .intro-hint {
+    justify-self: center;
+    color: var(--tinta-tenue);
+    font-size: var(--fs-300);
+    font-style: italic;
+  }
+
+  @media (min-width: 760px) {
+    .intro-grid {
+      grid-template-columns: auto 1fr;
+      align-items: center;
+    }
+  }
+</style>

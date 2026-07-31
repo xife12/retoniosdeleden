@@ -1,0 +1,211 @@
+---
+import type { Dict } from '../i18n';
+
+interface Props {
+  t: Dict;
+}
+
+const { t } = Astro.props;
+const accents = ['pistacho', 'lavanda', 'miel', 'miel'] as const;
+const tints = ['tint-pistacho', 'tint-lavanda', 'tint-barro', 'tint-miel'] as const;
+const items = t.products.items.map((item, i) => ({ ...item, tint: tints[i], i }));
+---
+
+<section id="productos" class="products" data-chapter data-meli-zone>
+  <div class="wrap">
+    <header class="section-head" data-reveal>
+      <h2>
+        <span class="swash">{t.products.title}</span>
+        <span class="meli-perch" data-meli-perch aria-hidden="true"></span>
+      </h2>
+      <p class="lead">{t.products.intro}</p>
+    </header>
+  </div>
+
+  <div class="shelf" data-reveal>
+    <ul class="shelf-track">
+      {items.map((item) => (
+        <li class={`shelf-card ${item.tint}`}>
+          <span class="tag" aria-hidden="true">{item.badge}</span>
+
+          <div class="shelf-art">
+            {item.i === 0 && (
+              <svg viewBox="0 0 170 170" role="img" aria-label={item.name}>
+                <ellipse cx="85" cy="148" rx="56" ry="10" fill="#5b6c42" opacity="0.25" filter="url(#wc-wash)" />
+                <ellipse cx="72" cy="92" rx="40" ry="48" fill="#e0c9a4" filter="url(#wc-soft)" />
+                <path d="M72 44 C 48 54, 38 76, 40 100 C 42 122, 54 138, 72 140 Z" fill="#d9bd94" filter="url(#wc-rough)" />
+                <ellipse cx="80" cy="92" rx="18" ry="34" fill="url(#pg-pistacho)" filter="url(#wc-rough)" />
+                <ellipse cx="72" cy="92" rx="40" ry="48" fill="none" stroke="#33291f" stroke-width="2.2" opacity="0.5" filter="url(#ink)" />
+                <g filter="url(#wc-rough)">
+                  <ellipse cx="128" cy="120" rx="16" ry="22" fill="#e0c9a4" transform="rotate(18 128 120)" />
+                  <ellipse cx="131" cy="121" rx="7" ry="15" fill="#7a8b5a" transform="rotate(18 131 121)" />
+                </g>
+              </svg>
+            )}
+            {item.i === 1 && (
+              <svg viewBox="0 0 170 170" role="img" aria-label={item.name}>
+                <ellipse cx="85" cy="150" rx="56" ry="9" fill="#675a96" opacity="0.2" filter="url(#wc-wash)" />
+                <g filter="url(#wc-soft)">
+                  <path d="M44 74 C 38 84, 36 120, 40 134 C 44 146, 92 146, 96 134 C 100 120, 98 84, 92 74 Z" fill="#f1eef8" />
+                  <rect x="52" y="58" width="32" height="18" rx="5" fill="#9b8ec4" />
+                  <path d="M44 74 C 38 84, 36 120, 40 134 C 44 146, 92 146, 96 134 C 100 120, 98 84, 92 74"
+                    stroke="#33291f" stroke-width="2" opacity="0.5" filter="url(#ink)" fill="none" />
+                  <text x="68" y="112" text-anchor="middle" font-family="Fraunces Variable, serif"
+                    font-style="italic" font-size="15" fill="#675a96">lav</text>
+                </g>
+                <g filter="url(#wc-rough)">
+                  <path d="M122 140 C 124 112, 126 90, 130 64" stroke="#5b6c42" stroke-width="3.4" stroke-linecap="round" filter="url(#ink)" fill="none" />
+                  <ellipse cx="131" cy="58" rx="10" ry="20" fill="url(#pg-lavanda)" />
+                  <ellipse cx="118" cy="92" rx="7" ry="13" transform="rotate(-24 118 92)" fill="url(#pg-lavanda)" opacity="0.8" />
+                  <ellipse cx="142" cy="88" rx="7" ry="13" transform="rotate(20 142 88)" fill="url(#pg-lavanda)" opacity="0.8" />
+                </g>
+              </svg>
+            )}
+            {item.i === 2 && (
+              <svg viewBox="0 0 170 170" role="img" aria-label={item.name}>
+                <ellipse cx="85" cy="150" rx="56" ry="9" fill="#8f4c31" opacity="0.18" filter="url(#wc-wash)" />
+                <path d="M36 84 L 130 84 C 130 118, 112 140, 83 140 C 54 140, 36 118, 36 84 Z" fill="#fffdf8" filter="url(#wc-soft)" />
+                <path d="M36 84 L 130 84 C 130 118, 112 140, 83 140 C 54 140, 36 118, 36 84 Z" fill="none" stroke="#33291f" stroke-width="2.2" opacity="0.55" filter="url(#ink)" />
+                <path d="M130 92 C 146 92, 148 112, 130 116" fill="none" stroke="#33291f" stroke-width="2.2" opacity="0.55" filter="url(#ink)" />
+                <circle cx="83" cy="84" r="15" fill="#e8892d" filter="url(#wc-rough)" />
+                <circle cx="83" cy="84" r="6" fill="#b3761c" />
+                <path d="M66 56 C 71 46, 66 40, 71 30 M 92 58 C 97 48, 92 42, 97 32" stroke="#8a7b68" stroke-width="2.6"
+                  stroke-linecap="round" opacity="0.6" filter="url(#ink)" fill="none" />
+                <g filter="url(#wc-rough)">
+                  <circle cx="140" cy="132" r="8" fill="#e8892d" />
+                  <circle cx="152" cy="124" r="6" fill="#e8a13d" />
+                </g>
+              </svg>
+            )}
+            {item.i === 3 && (
+              <svg viewBox="0 0 170 170" role="img" aria-label={item.name}>
+                <ellipse cx="85" cy="150" rx="56" ry="9" fill="#b3761c" opacity="0.2" filter="url(#wc-wash)" />
+                <path d="M52 62 C 42 76, 40 106, 46 122 C 52 138, 112 138, 118 122 C 124 106, 122 76, 112 62 Z"
+                  fill="url(#pg-miel)" filter="url(#wc-soft)" />
+                <rect x="56" y="44" width="52" height="20" rx="7" fill="#a06a2c" filter="url(#wc-rough)" />
+                <path d="M52 62 C 42 76, 40 106, 46 122 C 52 138, 112 138, 118 122 C 124 106, 122 76, 112 62 Z"
+                  fill="none" stroke="#33291f" stroke-width="2.2" opacity="0.5" filter="url(#ink)" />
+                <ellipse cx="82" cy="98" rx="20" ry="12" fill="#f3c87f" opacity="0.75" filter="url(#wc-rough)" />
+                <path d="M128 92 C 138 82, 144 92, 136 100 M 131 96 L 118 110" stroke="#8f4c31" stroke-width="3.4"
+                  stroke-linecap="round" filter="url(#ink)" fill="none" />
+                <g fill="#b3761c">
+                  <circle cx="134" cy="52" r="3.4" />
+                  <circle cx="146" cy="42" r="2.6" />
+                </g>
+              </svg>
+            )}
+          </div>
+
+          <h3>{item.name}</h3>
+          <p>{item.desc}</p>
+          {item.i === 0 && (
+            <a class="shelf-link" href="#pistacho">↳ {t.pistacho.title}</a>
+          )}
+        </li>
+      ))}
+    </ul>
+  </div>
+</section>
+
+<style>
+  .products {
+    background: var(--papel);
+    overflow: hidden;
+  }
+
+  .shelf {
+    margin-top: var(--sp-2);
+  }
+
+  .shelf-track {
+    list-style: none;
+    display: flex;
+    gap: var(--sp-5);
+    padding: var(--sp-6) max(1.25rem, calc((100vw - var(--content-w)) / 2)) var(--sp-7);
+    margin: 0;
+    overflow-x: auto;
+    scroll-snap-type: x proximity;
+    scrollbar-width: thin;
+    scrollbar-color: var(--miel-300) transparent;
+  }
+
+  .shelf-card {
+    position: relative;
+    scroll-snap-align: center;
+    flex: 0 0 min(78vw, 19rem);
+    border-radius: var(--r-lg);
+    padding: var(--sp-6);
+    box-shadow: var(--shadow-soft);
+    display: grid;
+    gap: var(--sp-3);
+    align-content: start;
+    transition: transform var(--dur-2) var(--ease-out), box-shadow var(--dur-2) var(--ease-out);
+  }
+
+  /* Regal-Rhythmus: unterschiedliche Höhenlage und Neigung */
+  .shelf-card:nth-child(1) { rotate: -0.7deg; }
+  .shelf-card:nth-child(2) { translate: 0 1.4rem; rotate: 0.5deg; flex-basis: min(72vw, 17rem); }
+  .shelf-card:nth-child(3) { rotate: 0.3deg; flex-basis: min(70vw, 16.5rem); }
+  .shelf-card:nth-child(4) { translate: 0 1rem; rotate: -0.5deg; }
+
+  @media (hover: hover) and (pointer: fine) {
+    .shelf-card:hover {
+      transform: translateY(-6px);
+      box-shadow: var(--shadow-lift);
+    }
+    .shelf-card:hover .shelf-art svg {
+      transform: rotate(-3deg) scale(1.06);
+    }
+  }
+
+  .tint-pistacho { background: linear-gradient(165deg, #f4f6ea, var(--pistacho-100)); }
+  .tint-lavanda { background: linear-gradient(165deg, #f7f5fb, var(--lavanda-100)); }
+  .tint-barro { background: linear-gradient(165deg, #fbf1ea, var(--barro-100)); }
+  .tint-miel { background: linear-gradient(165deg, #fdf6e6, var(--miel-100)); }
+
+  .tag {
+    position: absolute;
+    top: -0.7rem;
+    right: 1.1rem;
+    rotate: 3deg;
+    background: var(--tinta);
+    color: var(--papel);
+    font-size: var(--fs-200);
+    font-weight: 600;
+    padding: 0.32em 0.9em;
+    border-radius: 4px 10px 4px 10px;
+    box-shadow: var(--shadow-soft);
+  }
+
+  .tag::before {
+    content: '';
+    position: absolute;
+    left: -7px;
+    top: 50%;
+    width: 10px;
+    height: 2px;
+    background: var(--tinta-tenue);
+    transform: rotate(-40deg);
+  }
+
+  .shelf-art svg {
+    width: min(46vw, 168px);
+    margin-inline: auto;
+    transition: transform var(--dur-2) var(--ease-bounce);
+  }
+
+  .shelf-card h3 {
+    font-size: var(--fs-600);
+  }
+
+  .shelf-card p {
+    color: var(--c-text-soft);
+    font-size: var(--fs-300);
+  }
+
+  .shelf-link {
+    font-size: var(--fs-300);
+    font-weight: 600;
+    justify-self: start;
+  }
+</style>

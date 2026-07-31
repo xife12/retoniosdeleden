@@ -1,0 +1,43 @@
+---
+/**
+ * Verteiler für die Mitmach-Momente.
+ *
+ * Die meisten Spiele leben vollständig in Melis Szene (`escena`) — auf einer
+ * eigens gezeichneten Bühne, groß, ohne mit der Illustration zu konkurrieren.
+ *
+ * Die einzige Ausnahme ist „Los ojos de Meli". Das ist kein Spiel neben dem
+ * Bild, sondern eine andere Art, DASSELBE Bild zu sehen. Deshalb liegt sein
+ * Umschalter bei den Bedienelementen der Buchseite (`mando`) und seine
+ * Leuchtspur über der Illustration (`lamina`).
+ */
+import type { Juego } from '../../data/libro';
+import type { Lang } from '../../i18n';
+
+import Ojos from './juegos/Ojos.astro';
+import Zumbido from './juegos/Zumbido.astro';
+import Plato from './juegos/Plato.astro';
+import Transformacion from './juegos/Transformacion.astro';
+import Colmena from './juegos/Colmena.astro';
+import Larvas from './juegos/Larvas.astro';
+import Baile from './juegos/Baile.astro';
+import Guardianas from './juegos/Guardianas.astro';
+
+export type Parte = 'lamina' | 'mando' | 'escena';
+
+interface Props {
+  juego?: Juego;
+  lang: Lang;
+  parte: Parte;
+}
+
+const { juego, lang, parte } = Astro.props;
+---
+
+{juego === 'ojos' && <Ojos lang={lang} parte={parte} />}
+{juego === 'zumbido' && parte === 'escena' && <Zumbido lang={lang} />}
+{juego === 'plato' && parte === 'escena' && <Plato lang={lang} />}
+{juego === 'transformacion' && parte === 'escena' && <Transformacion lang={lang} />}
+{juego === 'colmena' && parte === 'escena' && <Colmena lang={lang} />}
+{juego === 'larvas' && parte === 'escena' && <Larvas lang={lang} />}
+{juego === 'baile' && parte === 'escena' && <Baile lang={lang} />}
+{juego === 'guardianas' && parte === 'escena' && <Guardianas lang={lang} />}

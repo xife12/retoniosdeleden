@@ -1,0 +1,334 @@
+---
+/**
+ * Seite 4 — „El plato sin abejas"
+ *
+ * Luna sagt der Biene gerade, wie wichtig sie sei. Das Kind prüft es nach:
+ * Es nimmt vom Tisch, was ohne Bestäuber verschwinden würde. Mit jedem
+ * richtigen Griff verliert die Illustration selbst ein Stück Farbe — am Ende
+ * steht ein halb leerer Tisch vor einer verblassten Welt. Das Zurücksetzen
+ * bringt beides wieder.
+ */
+import BeeMeli from '../../BeeMeli.astro';
+import { libroUI } from '../../../data/libro';
+import type { Lang } from '../../../i18n';
+
+interface Props {
+  lang: Lang;
+}
+
+const { lang } = Astro.props;
+const j = libroUI[lang].juegos.plato;
+const total = j.items.filter((i) => i.poliniza).length;
+---
+
+<div
+    class="escena"
+    data-plato-escena
+    data-textos={JSON.stringify({ done: j.done, fact: j.fact, logro: j.logro, total })}
+  >
+    <h3 class="escena-titulo">{j.title}</h3>
+    <p class="escena-pista">{j.hint}</p>
+
+    <div class="plato-mesa" data-plato-mesa>
+      <ul class="plato-lista" data-plato-lista>
+        {j.items.map((it, i) => (
+          <li>
+            <button
+              class="plato-item"
+              data-plato-item={i}
+              data-poliniza={String(it.poliniza)}
+              data-meli={it.meli}
+            >
+              <span class="plato-glifo" aria-hidden="true">
+                {i === 0 && (
+                  <svg viewBox="0 0 40 40">
+                    <circle cx="20" cy="23" r="13" fill="#d4553f" filter="url(#wc-rough)" />
+                    <path d="M20 12 C 19 7, 20 4, 21 2" stroke="#5b6c42" stroke-width="2.4"
+                      stroke-linecap="round" fill="none" filter="url(#ink)" />
+                    <ellipse cx="26" cy="6" rx="7" ry="3.6" transform="rotate(-24 26 6)"
+                      fill="url(#pg-pistacho)" filter="url(#wc-rough)" />
+                  </svg>
+                )}
+                {i === 1 && (
+                  <svg viewBox="0 0 40 40">
+                    <path d="M20 5 C 30 12, 32 26, 20 36 C 8 26, 10 12, 20 5 Z"
+                      fill="#e0c9a4" filter="url(#wc-soft)" />
+                    <path d="M20 9 C 26 15, 27 25, 20 32" stroke="#a06a2c" stroke-width="1.6"
+                      opacity="0.6" fill="none" filter="url(#ink)" />
+                  </svg>
+                )}
+                {i === 2 && (
+                  <svg viewBox="0 0 40 40">
+                    <ellipse cx="20" cy="24" rx="15" ry="12" fill="#e8892d" filter="url(#wc-soft)" />
+                    <g stroke="#b3600f" stroke-width="1.6" opacity="0.7" fill="none" filter="url(#ink)">
+                      <path d="M14 14 C 12 20, 12 28, 14 34" /><path d="M26 14 C 28 20, 28 28, 26 34" />
+                    </g>
+                    <path d="M20 12 L 20 5" stroke="#5b6c42" stroke-width="3" stroke-linecap="round" />
+                  </svg>
+                )}
+                {i === 3 && (
+                  <svg viewBox="0 0 40 40">
+                    <g filter="url(#wc-rough)">
+                      <circle cx="15" cy="24" r="8" fill="#5f6aa8" />
+                      <circle cx="26" cy="19" r="7" fill="#7a6cab" />
+                      <circle cx="25" cy="30" r="6" fill="#4e5891" />
+                    </g>
+                    <g stroke="#2f3560" stroke-width="1.2" fill="none" opacity="0.6">
+                      <path d="M12 21 L 18 21 M 13 24 L 17 27" />
+                    </g>
+                  </svg>
+                )}
+                {i === 4 && (
+                  <svg viewBox="0 0 40 40">
+                    <path d="M7 14 L 27 14 C 28 26, 24 33, 17 33 C 10 33, 6 26, 7 14 Z"
+                      fill="#fffdf8" stroke="#33291f" stroke-width="2" filter="url(#ink)" />
+                    <path d="M27 17 C 34 16, 35 25, 27 26" fill="none" stroke="#33291f"
+                      stroke-width="2" filter="url(#ink)" />
+                    <path d="M8 17 L 26 17 C 27 25, 23 30, 17 30 C 11 30, 7 25, 8 17 Z"
+                      fill="#6b4a1f" filter="url(#wc-rough)" />
+                    <g stroke="#c9b48c" stroke-width="1.6" stroke-linecap="round" opacity="0.7" fill="none">
+                      <path d="M13 11 C 11 8, 14 6, 12 3" /><path d="M21 11 C 19 8, 22 6, 20 3" />
+                    </g>
+                  </svg>
+                )}
+                {i === 5 && (
+                  <svg viewBox="0 0 40 40">
+                    <path d="M5 26 C 5 16, 12 11, 20 11 C 28 11, 35 16, 35 26 C 35 31, 28 33, 20 33 C 12 33, 5 31, 5 26 Z"
+                      fill="#d7a45e" filter="url(#wc-soft)" />
+                    <g stroke="#a06a2c" stroke-width="1.8" stroke-linecap="round" fill="none" filter="url(#ink)">
+                      <path d="M13 16 L 17 20" /><path d="M21 15 L 25 19" /><path d="M17 23 L 21 27" />
+                    </g>
+                  </svg>
+                )}
+                {i === 6 && (
+                  <svg viewBox="0 0 40 40">
+                    <path d="M8 20 C 8 30, 14 34, 20 34 C 26 34, 32 30, 32 20 Z"
+                      fill="#dfe6ea" stroke="#33291f" stroke-width="2" filter="url(#ink)" />
+                    <g fill="#fffdf8" filter="url(#wc-rough)">
+                      <ellipse cx="14" cy="17" rx="4" ry="2.4" transform="rotate(-18 14 17)" />
+                      <ellipse cx="21" cy="14" rx="4" ry="2.4" transform="rotate(12 21 14)" />
+                      <ellipse cx="27" cy="17" rx="4" ry="2.4" transform="rotate(-8 27 17)" />
+                      <ellipse cx="18" cy="19" rx="4" ry="2.4" transform="rotate(22 18 19)" />
+                    </g>
+                  </svg>
+                )}
+                {i === 7 && (
+                  <svg viewBox="0 0 40 40">
+                    <path d="M12 8 L 28 8 L 26 34 L 14 34 Z" fill="#fffdf8"
+                      stroke="#33291f" stroke-width="2" filter="url(#ink)" />
+                    <path d="M13 16 L 27 16 L 25.6 32 L 14.4 32 Z" fill="#f4f2ea" filter="url(#wc-rough)" />
+                  </svg>
+                )}
+              </span>
+              <span class="plato-nombre">{it.name}</span>
+            </button>
+          </li>
+        ))}
+      </ul>
+      <div class="plato-marca" aria-hidden="true">
+        <svg viewBox="0 0 300 10" preserveAspectRatio="none">
+          <path d="M0 4 C 60 1, 120 8, 180 3 C 232 -1, 268 7, 300 4" stroke="#c9a86a"
+            stroke-width="3" fill="none" stroke-linecap="round" opacity="0.7" filter="url(#ink)" />
+        </svg>
+      </div>
+    </div>
+
+    <div class="escena-mandos">
+      <span class="plato-cuenta"><b data-plato-n>0</b>/{total}</span>
+      <button class="boton boton--fantasma" data-plato-reset hidden>{libroUI[lang].againLabel}</button>
+    </div>
+
+    <div class="dice">
+      <span class="dice-meli" aria-hidden="true"><BeeMeli width="100%" /></span>
+      <p class="dice-texto" data-plato-dice aria-live="polite"></p>
+    </div>
+  </div>
+
+<script>
+  import { datos, decir, logro, tin } from '../../../scripts/juego';
+
+  const escena = document.querySelector<HTMLElement>('[data-plato-escena]');
+
+  if (escena) {
+    const t = datos(escena, 'textos', { done: '', fact: '', logro: '', total: 0 });
+    const items = [...escena.querySelectorAll<HTMLButtonElement>('[data-plato-item]')];
+    const dice = escena.querySelector<HTMLElement>('[data-plato-dice]');
+    const cuenta = escena.querySelector<HTMLElement>('[data-plato-n]')!;
+    const reset = escena.querySelector<HTMLButtonElement>('[data-plato-reset]')!;
+    const mesa = escena.querySelector<HTMLElement>('[data-plato-mesa]');
+
+    let fuera = 0;
+
+    const pintarMundo = () => {
+      // Der Tisch verliert Farbe, während er sich leert.
+      const p = t.total ? fuera / t.total : 0;
+      mesa?.style.setProperty('--desvaido', String(p));
+    };
+
+    items.forEach((btn) => {
+      btn.addEventListener('click', () => {
+        const desaparece = btn.dataset.poliniza === 'true';
+        decir(dice, btn.dataset.meli ?? '');
+
+        if (!desaparece) {
+          btn.classList.remove('is-firme');
+          void btn.offsetWidth;
+          btn.classList.add('is-firme');
+          return;
+        }
+        if (btn.classList.contains('is-fuera')) return;
+
+        btn.classList.add('is-fuera');
+        btn.disabled = true;
+        fuera += 1;
+        cuenta.textContent = String(fuera);
+        pintarMundo();
+        reset.hidden = false;
+        tin(1.4 - fuera * 0.1);
+
+        if (fuera === t.total) {
+          const quedan = items.length - fuera;
+          const frase = (t.done ?? '')
+            .replace('{q}', String(quedan))
+            .replace('{t}', String(items.length));
+          window.setTimeout(() => decir(dice, `${frase} ${t.fact}`), 900);
+          logro('plato', t.logro ?? '');
+        }
+      });
+    });
+
+    reset.addEventListener('click', () => {
+      fuera = 0;
+      cuenta.textContent = '0';
+      reset.hidden = true;
+      items.forEach((b) => {
+        b.classList.remove('is-fuera', 'is-firme');
+        b.disabled = false;
+      });
+      pintarMundo();
+      decir(dice, '');
+    });
+  }
+</script>
+
+<style>
+  /* Je leerer der Tisch, desto blasser wird er — die Welt wird ärmer. */
+  .plato-mesa {
+    position: relative;
+    width: min(100%, 34rem);
+    padding: var(--sp-3) var(--sp-3) var(--sp-2);
+    border-radius: 18px 22px 20px 24px;
+    background: rgba(232, 161, 61, calc(0.14 - var(--desvaido, 0) * 0.1));
+    filter: saturate(calc(1 - var(--desvaido, 0) * 0.65));
+    transition: filter 700ms var(--ease-out), background 700ms var(--ease-out);
+  }
+
+  .plato-lista {
+    list-style: none;
+    padding: 0;
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--sp-2);
+    justify-content: center;
+  }
+
+  .plato-item {
+    display: grid;
+    justify-items: center;
+    gap: 2px;
+    width: clamp(62px, 15vw, 82px);
+    padding: 6px 4px 5px;
+    border: 2px solid transparent;
+    border-radius: 16px 12px 18px 14px;
+    background: rgba(255, 253, 248, 0.75);
+    box-shadow: 0 2px 8px rgba(122, 90, 30, 0.1);
+    cursor: pointer;
+    transition:
+      transform 320ms var(--ease-out),
+      opacity 320ms ease,
+      filter 320ms ease,
+      border-color var(--dur-1) ease;
+  }
+
+  @media (hover: hover) and (pointer: fine) {
+    .plato-item:not(.is-fuera):hover {
+      border-color: var(--miel-300);
+      transform: translateY(-3px) rotate(-1deg);
+    }
+  }
+
+  .plato-item:active {
+    transform: scale(0.95);
+  }
+
+  .plato-glifo {
+    width: clamp(30px, 7vw, 38px);
+  }
+
+  .plato-glifo svg {
+    width: 100%;
+    overflow: visible;
+  }
+
+  .plato-nombre {
+    font-size: 0.66rem;
+    font-weight: 600;
+    line-height: 1.15;
+    color: var(--tinta-suave);
+    text-align: center;
+  }
+
+  .plato-item.is-fuera {
+    opacity: 0;
+    transform: translateY(-34px) scale(0.6) rotate(-8deg);
+    filter: blur(3px);
+    pointer-events: none;
+  }
+
+  .plato-item.is-firme {
+    animation: plato-firme 520ms var(--ease-bounce);
+    border-color: var(--pistacho-300);
+  }
+
+  @keyframes plato-firme {
+    0%,
+    100% {
+      rotate: 0deg;
+    }
+    25% {
+      rotate: -5deg;
+    }
+    60% {
+      rotate: 4deg;
+    }
+  }
+
+  .plato-marca {
+    margin-top: 2px;
+    opacity: 0.8;
+  }
+
+  .plato-marca svg {
+    width: 100%;
+    height: 9px;
+  }
+
+  .plato-cuenta {
+    font-size: var(--fs-300);
+    font-weight: 600;
+    color: var(--tinta-suave);
+  }
+
+  .plato-cuenta b {
+    font-size: var(--fs-600);
+    color: var(--miel-800);
+    font-variant-numeric: tabular-nums;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .plato-item {
+      transition: opacity 200ms ease;
+      animation: none !important;
+    }
+  }
+</style>

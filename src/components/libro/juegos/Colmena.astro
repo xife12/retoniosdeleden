@@ -1,0 +1,251 @@
+---
+/**
+ * Seite 6 — „¿Cuántas viven ahí adentro?"
+ *
+ * Meli hat gerade auf die grüne Kiste gezeigt. Hier steht die Kiste noch
+ * einmal groß und gezeichnet: Das Kind rät eine Zahl, öffnet sie, und der
+ * Schwarm strömt heraus, während der Zähler bis sechzigtausend hochläuft.
+ * Die Zahl bleibt hängen, weil man sie hat herauskommen sehen.
+ */
+import BeeMeli from '../../BeeMeli.astro';
+import { libroUI } from '../../../data/libro';
+import type { Lang } from '../../../i18n';
+
+interface Props {
+  lang: Lang;
+}
+
+const { lang } = Astro.props;
+const j = libroUI[lang].juegos.colmena;
+
+const pasos = [200, 500, 1000, 2500, 5000, 10000, 20000, 40000, 60000, 80000, 120000];
+const correcto = 8;
+
+/* Vorberechnete Flugbahnen — deterministisch, damit Server und Browser
+   dasselbe rendern. */
+const enjambre = Array.from({ length: 70 }, (_, i) => {
+  const a = (i * 137.5 * Math.PI) / 180;
+  const r = 40 + ((i * 17) % 150);
+  return {
+    dx: Math.round(Math.cos(a) * r * 1.25),
+    dy: Math.round(Math.sin(a) * r * 0.62 - 40),
+    s: 0.6 + ((i * 7) % 10) / 12,
+    d: 1700 + ((i * 233) % 2000),
+    delay: (i * 38) % 2400,
+  };
+});
+---
+
+<div
+  class="escena"
+  data-col-escena
+  data-textos={JSON.stringify({
+    low: j.low,
+    high: j.high,
+    close: j.close,
+    fact: j.fact,
+    logro: j.logro,
+    pasos,
+    correcto,
+  })}
+>
+  <h3 class="escena-titulo">{j.title}</h3>
+  <p class="escena-pista">{j.hint}</p>
+
+  <div class="mesa col-mesa" data-col-mesa>
+    <svg viewBox="0 0 300 210" aria-hidden="true">
+      <!-- Wiese -->
+      <ellipse cx="150" cy="192" rx="120" ry="16" fill="#aebd8a" opacity="0.35"
+        filter="url(#wc-wash)" />
+
+      <!-- Der Schwarm kommt aus dem Flugloch -->
+      <g class="col-enjambre" transform="translate(150 158)">
+        {enjambre.map((b) => (
+          <g
+            class="col-abeja"
+            style={`--dx:${b.dx}px; --dy:${b.dy}px; --d:${b.d}ms; --delay:${b.delay}ms; --s:${b.s}`}
+          >
+            <ellipse rx="3.2" ry="2.2" fill="#e8b23d" />
+            <path d="M-2 -2 L -1.5 2 M 0.5 -2.2 L 1 2.2" stroke="#4a3308" stroke-width="1" />
+            <ellipse cx="-0.5" cy="-2.6" rx="3" ry="1.1" fill="#eef5f8" opacity="0.85" />
+            <circle cx="3.6" cy="-0.4" r="1.5" fill="#8a5a22" />
+          </g>
+        ))}
+      </g>
+
+      <!-- Die grüne Kiste -->
+      <g class="col-caja">
+        <path d="M84 176 L84 96 L216 96 L216 176 Z" fill="#6f8a52" filter="url(#wc-soft)" />
+        <path d="M84 96 L216 96" stroke="#3f4f30" stroke-width="3" opacity="0.6"
+          filter="url(#ink)" />
+        <path d="M84 132 L216 132" stroke="#3f4f30" stroke-width="2.4" opacity="0.4"
+          filter="url(#ink)" />
+        <path d="M76 96 L224 96 L228 82 L72 82 Z" fill="#5b7343" filter="url(#wc-soft)" />
+        <path d="M84 176 L84 96 L216 96 L216 176 Z" fill="none" stroke="#33291f" stroke-width="2.6"
+          opacity="0.7" filter="url(#ink)" />
+        <!-- Flugloch -->
+        <path class="col-puerta" d="M126 176 L126 166 C 126 160, 174 160, 174 166 L174 176 Z"
+          fill="#2a1704" />
+      </g>
+
+      <!-- Zeiger auf das Flugloch, solange noch zu -->
+      <g class="col-marca" transform="translate(150 170)">
+        <circle class="col-marca-pulso" r="24" fill="none" stroke="#e8a13d" stroke-width="2.6" />
+      </g>
+
+      <!-- Der Zähler steht über dem Schwarm -->
+      <g class="col-cifra" transform="translate(150 44)">
+        <rect x="-62" y="-22" width="124" height="40" rx="20" fill="#fffdf8" opacity="0.95" />
+        <text x="0" y="7" text-anchor="middle" font-size="24" font-weight="700" fill="#8f5c14"
+          data-col-cifra>0</text>
+      </g>
+    </svg>
+  </div>
+
+  <label class="regla">
+    <span>
+      {j.guess}: <b data-col-out>5.000</b> {j.unit}
+    </span>
+    <input type="range" min="0" max={pasos.length - 1} step="1" value="4" data-col-range />
+  </label>
+
+  <div class="escena-mandos">
+    <button class="boton boton--grande" data-col-abrir>{j.button}</button>
+  </div>
+
+  <div class="dice">
+    <span class="dice-meli" aria-hidden="true"><BeeMeli width="100%" /></span>
+    <p class="dice-texto" data-col-dice aria-live="polite"></p>
+  </div>
+</div>
+
+<script>
+  import { datos, decir, logro, quieto, tin } from '../../../scripts/juego';
+
+  const escena = document.querySelector<HTMLElement>('[data-col-escena]');
+
+  if (escena) {
+    const t = datos(escena, 'textos', {
+      low: '',
+      high: '',
+      close: '',
+      fact: '',
+      logro: '',
+      pasos: [] as number[],
+      correcto: 0,
+    });
+    const mesa = escena.querySelector<HTMLElement>('[data-col-mesa]')!;
+    const range = escena.querySelector<HTMLInputElement>('[data-col-range]')!;
+    const out = escena.querySelector<HTMLElement>('[data-col-out]')!;
+    const abrir = escena.querySelector<HTMLButtonElement>('[data-col-abrir]')!;
+    const dice = escena.querySelector<HTMLElement>('[data-col-dice]');
+    const cifra = escena.querySelector<SVGTextElement>('[data-col-cifra]')!;
+
+    const nf = new Intl.NumberFormat(document.documentElement.lang || 'es');
+    const pinta = () => {
+      out.textContent = nf.format(t.pasos[Number(range.value)] ?? 0);
+    };
+    range.addEventListener('input', pinta);
+    pinta();
+
+    let abierto = false;
+
+    abrir.addEventListener('click', () => {
+      const i = Number(range.value);
+      const real = t.pasos[t.correcto] ?? 60000;
+
+      if (!abierto) {
+        abierto = true;
+        mesa.classList.add('is-abierta');
+        const dur = quieto() ? 0 : 2400;
+        const t0 = performance.now();
+        const sube = (ahora: number) => {
+          const p = dur ? Math.min(1, (ahora - t0) / dur) : 1;
+          cifra.textContent = nf.format(Math.round(real * (1 - Math.pow(1 - p, 3))));
+          if (p < 1) requestAnimationFrame(sube);
+          else tin(0.9);
+        };
+        requestAnimationFrame(sube);
+        logro('colmena', t.logro);
+      }
+
+      const dif = i - t.correcto;
+      decir(dice, `${Math.abs(dif) <= 1 ? t.close : dif < 0 ? t.low : t.high} ${t.fact}`);
+    });
+  }
+</script>
+
+<style>
+  .col-mesa {
+    max-width: 30rem;
+  }
+
+  .col-marca-pulso {
+    transform-box: fill-box;
+    transform-origin: 50% 50%;
+    animation: col-pulso 2.4s ease-out infinite;
+  }
+
+  @keyframes col-pulso {
+    0% {
+      scale: 0.5;
+      opacity: 0.9;
+    }
+    70%,
+    100% {
+      scale: 2;
+      opacity: 0;
+    }
+  }
+
+  .col-marca {
+    transition: opacity 400ms ease;
+  }
+
+  .col-mesa.is-abierta .col-marca {
+    opacity: 0;
+  }
+
+  .col-abeja {
+    opacity: 0;
+    transform: scale(var(--s));
+  }
+
+  .col-mesa.is-abierta .col-abeja {
+    animation: col-sale var(--d) var(--ease-out) var(--delay) forwards;
+  }
+
+  @keyframes col-sale {
+    0% {
+      opacity: 0;
+      transform: translate(0, 0) scale(0.2);
+    }
+    18% {
+      opacity: 1;
+    }
+    100% {
+      opacity: 0.92;
+      transform: translate(var(--dx), var(--dy)) scale(var(--s));
+    }
+  }
+
+  .col-cifra {
+    opacity: 0;
+    transition: opacity 500ms var(--ease-out);
+  }
+
+  .col-mesa.is-abierta .col-cifra {
+    opacity: 1;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .col-marca-pulso {
+      animation: none;
+    }
+    .col-mesa.is-abierta .col-abeja {
+      animation: none;
+      opacity: 0.92;
+      transform: translate(var(--dx), var(--dy)) scale(var(--s));
+    }
+  }
+</style>

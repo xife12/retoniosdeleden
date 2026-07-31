@@ -1,0 +1,247 @@
+---
+import type { Dict } from '../i18n';
+
+interface Props {
+  t: Dict;
+}
+
+const { t } = Astro.props;
+const chapters = t.timeline.chapters;
+---
+
+<section id="historia" class="timeline" data-chapter>
+  <div class="wrap">
+    <header class="section-head" data-reveal>
+      <h2><span class="swash">{t.timeline.title}</span></h2>
+    </header>
+
+    <ol class="chapters">
+      {chapters.map((ch, i) => (
+        <li class="chapter" data-reveal data-meli-zone>
+          <div class="chapter-marker" aria-hidden="true">
+            <span class="dot" data-meli-perch></span>
+          </div>
+          <div class="chapter-body">
+            <span class="year">{ch.year}</span>
+            <h3>{ch.title}</h3>
+            <p>{ch.text}</p>
+
+            <div class="vignette" aria-hidden="true">
+              {i === 0 && (
+                <svg id="vig-suelo" viewBox="0 0 360 200">
+                  <path d="M10 150 C 90 128, 260 132, 350 148 L 350 195 L 10 195 Z" fill="url(#pg-barro)" opacity="0.55" filter="url(#wc-wash)" />
+                  <g stroke="#8f4c31" stroke-width="4" stroke-linecap="round" opacity="0.4" filter="url(#wc-rough)">
+                    <path d="M40 158 C 120 146, 240 146, 320 156" fill="none" />
+                    <path d="M52 174 C 140 162, 236 162, 314 172" fill="none" />
+                  </g>
+                  <g class="v-hole" filter="url(#wc-rough)">
+                    <ellipse cx="90" cy="150" rx="14" ry="6" fill="#5c3a26" opacity="0.85" />
+                    <ellipse cx="180" cy="146" rx="14" ry="6" fill="#5c3a26" opacity="0.85" />
+                    <ellipse cx="270" cy="150" rx="14" ry="6" fill="#5c3a26" opacity="0.85" />
+                  </g>
+                  <g class="v-sprout">
+                    <path d="M180 146 C 180 128, 178 118, 180 106" stroke="#5b6c42" stroke-width="4" stroke-linecap="round" filter="url(#ink)" fill="none" />
+                    <ellipse cx="171" cy="106" rx="11" ry="6" transform="rotate(-30 171 106)" fill="url(#pg-pistacho)" filter="url(#wc-rough)" />
+                    <ellipse cx="190" cy="100" rx="11" ry="6" transform="rotate(24 190 100)" fill="url(#pg-pistacho)" filter="url(#wc-rough)" />
+                  </g>
+                  <circle cx="315" cy="45" r="26" fill="url(#pg-sol)" filter="url(#wc-wash)" />
+                </svg>
+              )}
+              {i === 1 && (
+                <svg id="vig-plantacion" viewBox="0 0 360 200">
+                  <path d="M8 152 C 100 132, 250 134, 352 150 L 352 195 L 8 195 Z" fill="url(#pg-pistacho-light)" opacity="0.8" filter="url(#wc-wash)" />
+                  {[55, 120, 185, 250, 315].map((x, k) => (
+                    <g class="v-tree" style={`--k:${k}`}>
+                      <path d={`M${x} 150 C ${x} 136, ${x - 1} 128, ${x} 118`} stroke="#8f4c31" stroke-width="4" stroke-linecap="round" filter="url(#ink)" fill="none" />
+                      <ellipse cx={x} cy="110" rx="16" ry="14" fill="url(#pg-pistacho)" filter="url(#wc-rough)" />
+                    </g>
+                  ))}
+                  <text x="180" y="42" text-anchor="middle" font-family="Fraunces Variable, serif" font-size="30" fill="#b3761c" opacity="0.9" font-style="italic">× 600</text>
+                </svg>
+              )}
+              {i === 2 && (
+                <svg id="vig-crecer" viewBox="0 0 360 200">
+                  <path d="M8 154 C 110 136, 250 138, 352 152 L 352 195 L 8 195 Z" fill="url(#pg-pistacho-light)" opacity="0.7" filter="url(#wc-wash)" />
+                  <g class="v-lav">
+                    {[40, 62, 84, 106].map((x, k) => (
+                      <g style={`--k:${k}`} class="v-lav-stem">
+                        <path d={`M${x} 152 C ${x + 2} 132, ${x - 2} 120, ${x} 104`} stroke="#5b6c42" stroke-width="3" stroke-linecap="round" filter="url(#ink)" fill="none" />
+                        <ellipse cx={x} cy="98" rx="7" ry="16" fill="url(#pg-lavanda)" filter="url(#wc-rough)" />
+                      </g>
+                    ))}
+                  </g>
+                  <g class="v-hive" filter="url(#wc-soft)">
+                    <rect x="160" y="108" width="52" height="44" rx="6" fill="url(#pg-miel)" />
+                    <rect x="154" y="100" width="64" height="12" rx="5" fill="#a06a2c" />
+                    <rect x="180" y="136" width="14" height="8" rx="3" fill="#5c3a26" />
+                  </g>
+                  <g class="v-casa" filter="url(#wc-soft)">
+                    <path d="M258 152 L 258 114 L 306 114 L 306 152 Z" fill="#e9e4da" />
+                    <path d="M250 118 C 266 96, 298 96, 314 118" stroke="#8a6f4d" stroke-width="8" stroke-linecap="round" fill="none" opacity="0.9" />
+                    <rect x="274" y="128" width="16" height="12" rx="2" fill="#f6f2e8" stroke="#a4444a" stroke-width="2" />
+                    <path d="M320 152 L 320 92 M 244 152 L 244 96" stroke="#8a7b68" stroke-width="3.4" filter="url(#ink)" />
+                    <path d="M244 104 L 320 100" stroke="#8a7b68" stroke-width="2.6" filter="url(#ink)" />
+                  </g>
+                  <g class="v-mini-bees" fill="#b3761c">
+                    <circle cx="210" cy="80" r="3.4" />
+                    <circle cx="230" cy="66" r="2.8" />
+                    <circle cx="196" cy="60" r="2.4" />
+                  </g>
+                </svg>
+              )}
+              {i === 3 && (
+                <svg id="vig-cosecha" viewBox="0 0 360 200">
+                  <path d="M8 156 C 110 140, 250 142, 352 154 L 352 195 L 8 195 Z" fill="url(#pg-pistacho-light)" opacity="0.75" filter="url(#wc-wash)" />
+                  <path d="M180 154 C 178 128, 176 110, 180 88" stroke="#8f4c31" stroke-width="8" stroke-linecap="round" filter="url(#wc-rough)" fill="none" />
+                  <path d="M180 120 C 166 112, 156 104, 150 94 M 180 108 C 194 100, 204 94, 212 86" stroke="#8f4c31" stroke-width="4" stroke-linecap="round" filter="url(#ink)" fill="none" />
+                  <ellipse cx="180" cy="72" rx="66" ry="44" fill="url(#pg-pistacho)" filter="url(#wc-soft)" />
+                  <ellipse cx="145" cy="58" rx="30" ry="22" fill="url(#pg-pistacho-light)" opacity="0.6" filter="url(#wc-rough)" />
+                  <g class="v-fruits">
+                    {[
+                      [140, 82], [175, 96], [210, 78], [190, 55], [155, 48], [222, 58],
+                    ].map(([x, y], k) => (
+                      <g class="v-fruit" style={`--k:${k}`}>
+                        <ellipse cx={x} cy={y} rx="8.5" ry="11" fill="#f0d4c4" filter="url(#wc-rough)" />
+                        <ellipse cx={x} cy={y + 1} rx="4" ry="7.5" fill="#7a8b5a" />
+                      </g>
+                    ))}
+                  </g>
+                  <g filter="url(#wc-soft)">
+                    <path d="M258 152 C 258 170, 306 170, 306 152 L 310 140 L 254 140 Z" fill="url(#pg-miel)" />
+                    <path d="M254 140 L 310 140" stroke="#a06a2c" stroke-width="4" />
+                    <ellipse cx="272" cy="138" rx="6" ry="8" fill="#f0d4c4" filter="url(#wc-rough)" />
+                    <ellipse cx="290" cy="136" rx="6" ry="8" fill="#f0d4c4" filter="url(#wc-rough)" />
+                  </g>
+                </svg>
+              )}
+            </div>
+          </div>
+        </li>
+      ))}
+    </ol>
+  </div>
+</section>
+
+<style>
+  .timeline {
+    background: var(--papel-warm);
+  }
+
+  .chapters {
+    list-style: none;
+    padding: 0;
+    display: grid;
+    gap: clamp(3rem, 8vw, 5rem);
+    position: relative;
+  }
+
+  /* Aquarell-Faden der Timeline */
+  .chapters::before {
+    content: '';
+    position: absolute;
+    left: 11px;
+    top: 8px;
+    bottom: 8px;
+    width: 4px;
+    border-radius: 4px;
+    background: linear-gradient(
+      to bottom,
+      var(--miel-300),
+      var(--pistacho-300) 45%,
+      var(--lavanda-300) 75%,
+      var(--barro-300)
+    );
+    opacity: 0.65;
+  }
+
+  .chapter {
+    display: grid;
+    grid-template-columns: 26px 1fr;
+    gap: var(--sp-4);
+  }
+
+  .chapter-marker {
+    position: relative;
+  }
+
+  .dot {
+    position: sticky;
+    top: 46vh;
+    display: block;
+    width: 22px;
+    height: 22px;
+    margin-left: 2px;
+    border-radius: var(--r-blob);
+    background: var(--miel-500);
+    box-shadow: 0 0 0 5px var(--papel-warm), 0 0 0 7px var(--miel-300);
+  }
+
+  .chapter:nth-child(2) .dot { background: var(--pistacho-500); }
+  .chapter:nth-child(3) .dot { background: var(--lavanda-500); }
+  .chapter:nth-child(4) .dot { background: var(--barro-500); }
+
+  .chapter-body {
+    display: grid;
+    gap: var(--sp-3);
+  }
+
+  .year {
+    font-family: var(--font-display);
+    font-variation-settings: 'SOFT' 90, 'WONK' 1;
+    font-style: italic;
+    font-size: var(--fs-600);
+    color: var(--miel-700);
+  }
+
+  .vignette {
+    margin-top: var(--sp-3);
+    background: #fffdf8;
+    border-radius: var(--r-lg);
+    box-shadow: var(--shadow-soft);
+    padding: var(--sp-3);
+    max-width: 27rem;
+  }
+
+  .vignette svg {
+    width: 100%;
+    height: auto;
+  }
+
+  @media (min-width: 860px) {
+    .chapters::before {
+      left: 50%;
+      transform: translateX(-50%);
+    }
+
+    .chapter {
+      grid-template-columns: 1fr 60px 1fr;
+      align-items: start;
+    }
+
+    .chapter-marker {
+      grid-column: 2;
+      grid-row: 1;
+      justify-self: center;
+    }
+
+    .chapter-body {
+      grid-column: 3;
+      grid-row: 1;
+    }
+
+    .chapter:nth-child(even) .chapter-body {
+      grid-column: 1;
+      justify-items: end;
+      text-align: right;
+    }
+
+    .chapter:nth-child(even) .chapter-body p {
+      text-align: right;
+    }
+
+    .dot {
+      margin-left: 0;
+      box-shadow: 0 0 0 5px var(--papel-warm), 0 0 0 7px var(--miel-300);
+    }
+  }
+</style>

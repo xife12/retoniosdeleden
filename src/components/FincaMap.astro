@@ -1,0 +1,492 @@
+---
+import type { Dict } from '../i18n';
+
+interface Props {
+  t: Dict;
+}
+
+const { t } = Astro.props;
+
+/*
+ * Kartengeometrie nach Handzeichnung + Satellitenbild:
+ * Hochformat, oben = Westen (Tor/Einfahrt), unten = Osten (Tajamar),
+ * rechts = Norden (Bienen), links = Süden.
+ * Pistazien und Lavendel wachsen GEMEINSAM in zwei Feldern
+ * (nördlich und südlich), in abwechselnden Reihen.
+ */
+const spots: { x: number; y: number; status?: 'listo' | 'enObra' | 'planeado' }[] = [
+  { x: 120, y: 46 },                       // Portón (Einfahrt Nordwest-Ecke)
+  { x: 172, y: 142 },                      // Alameda de fugus
+  { x: 200, y: 268, status: 'planeado' },  // Camino circular + frutales
+  { x: 100, y: 560 },                      // Pistachos y lavanda (campo sur)
+  { x: 322, y: 116 },                      // Abejas y caléndula (noroeste)
+  { x: 312, y: 372, status: 'enObra' },    // Casa 2 (norte del anillo)
+  { x: 92, y: 352, status: 'planeado' },   // Casa 3 (sur del anillo)
+  { x: 218, y: 596 },                      // Mirador
+  { x: 200, y: 715, status: 'listo' },     // Casa 1
+  { x: 150, y: 852, status: 'enObra' },    // Tajamar (sureste)
+];
+
+const stations = t.map.stations.map((s, i) => ({ ...s, ...spots[i], index: i }));
+
+/* Diagonale Pflanzreihen: [x1,y1,x2,y2] */
+const rowsSouth = [
+  [48, 500, 150, 470],
+  [50, 545, 160, 512],
+  [54, 590, 166, 556],
+  [58, 635, 170, 600],
+];
+const rowsNorth = [
+  [242, 530, 352, 496],
+  [246, 576, 356, 540],
+  [250, 622, 360, 586],
+  [254, 668, 362, 632],
+];
+---
+
+<section
+  id="chacra"
+  class="finca"
+  data-chapter
+  data-meli-zone
+  data-status-labels={JSON.stringify(t.map.status)}
+>
+  <div class="wrap">
+    <header class="section-head" data-reveal>
+      <h2>
+        <span class="swash">{t.map.title}</span>
+        <span class="meli-perch" data-meli-perch aria-hidden="true"></span>
+      </h2>
+      <p class="lead">{t.map.intro}</p>
+    </header>
+
+    <div class="map-frame" data-reveal>
+      <p class="tap-hint">{t.map.tapHint}</p>
+
+      <div class="map-stage">
+        <svg class="map-svg" viewBox="0 0 400 940" aria-hidden="true">
+          <!-- Parzelle -->
+          <rect x="26" y="22" width="348" height="896" rx="46" fill="#eef1e2" filter="url(#wc-wash)" />
+
+          <!-- Einfahrt (abgeschrägte NW-Ecke) -->
+          <path d="M40 24 L 120 46" stroke="#c9a86a" stroke-width="9" stroke-linecap="round"
+            opacity="0.5" filter="url(#wc-rough)" />
+
+          <!-- Eukalyptus-Gürtel (Rand), links mit Buchen-Abschnitt -->
+          <g fill="url(#pg-pistacho)" opacity="0.5" filter="url(#wc-rough)">
+            {Array.from({ length: 6 }, (_, k) => (
+              <ellipse cx={40} cy={90 + k * 62} rx="11" ry="16" />
+            ))}
+            {Array.from({ length: 5 }, (_, k) => (
+              <ellipse cx={40} cy={640 + k * 56} rx="11" ry="16" />
+            ))}
+            {Array.from({ length: 13 }, (_, k) => (
+              <ellipse cx={360} cy={70 + k * 66} rx="11" ry="16" />
+            ))}
+            {Array.from({ length: 5 }, (_, k) => (
+              <ellipse cx={140 + k * 46} cy={30} rx="12" ry="13" />
+            ))}
+            {Array.from({ length: 5 }, (_, k) => (
+              <ellipse cx={106 + k * 48} cy={910} rx="13" ry="14" />
+            ))}
+          </g>
+          <!-- Buchen (rundere, wärmere Kronen) im Süd-Abschnitt -->
+          <g fill="#a9885a" opacity="0.55" filter="url(#wc-rough)">
+            <circle cx="40" cy="470" r="12" />
+            <circle cx="42" cy="520" r="11" />
+            <circle cx="40" cy="570" r="12" />
+          </g>
+
+          <!-- Bienenstöcke + Calendula (Nordwesten, oben rechts) -->
+          <g filter="url(#wc-soft)">
+            <rect x="300" y="98" width="26" height="20" rx="4" fill="url(#pg-miel)" />
+            <rect x="332" y="108" width="22" height="17" rx="4" fill="url(#pg-miel)" />
+          </g>
+          <g filter="url(#wc-rough)">
+            <circle cx="296" cy="164" r="5" fill="#e8892d" />
+            <circle cx="314" cy="176" r="4" fill="#e8a13d" />
+            <circle cx="332" cy="162" r="4.5" fill="#e8892d" />
+            <circle cx="348" cy="174" r="3.6" fill="#e8a13d" />
+            <circle cx="306" cy="188" r="3.4" fill="#e8892d" />
+          </g>
+
+          <!-- Fugus-Allee beidseits des Wegs -->
+          <g fill="url(#pg-pistacho-light)" filter="url(#wc-rough)" opacity="0.9">
+            {Array.from({ length: 5 }, (_, k) => (
+              <ellipse cx={138 + k * 8} cy={92 + k * 36} rx="7" ry="13" />
+            ))}
+            {Array.from({ length: 5 }, (_, k) => (
+              <ellipse cx={204 + k * 4} cy={104 + k * 36} rx="7" ry="13" />
+            ))}
+          </g>
+
+          <!-- Obstplantage (geplant) im Ring -->
+          <g opacity="0.6" filter="url(#wc-rough)">
+            <circle cx="182" cy="345" r="9" fill="none" stroke="#7a8b5a" stroke-width="2.4" stroke-dasharray="4 5" />
+            <circle cx="218" cy="332" r="9" fill="none" stroke="#7a8b5a" stroke-width="2.4" stroke-dasharray="4 5" />
+            <circle cx="204" cy="372" r="9" fill="none" stroke="#7a8b5a" stroke-width="2.4" stroke-dasharray="4 5" />
+            <circle cx="176" cy="386" r="8" fill="none" stroke="#7a8b5a" stroke-width="2.4" stroke-dasharray="4 5" />
+          </g>
+
+          <!-- Pistazien × Lavendel: Süd-Feld (links) -->
+          <g>
+            {rowsSouth.map(([x1, y1, x2, y2], r) =>
+              r % 2 === 0 ? (
+                <g fill="url(#pg-pistacho)" opacity="0.8" filter="url(#wc-rough)">
+                  {Array.from({ length: 4 }, (_, c) => (
+                    <circle
+                      cx={x1 + ((x2 - x1) / 3) * c}
+                      cy={y1 + ((y2 - y1) / 3) * c}
+                      r="7"
+                    />
+                  ))}
+                </g>
+              ) : (
+                <path
+                  d={`M${x1} ${y1} L ${x2} ${y2}`}
+                  stroke="url(#pg-lavanda)"
+                  stroke-width="5"
+                  stroke-linecap="round"
+                  stroke-dasharray="10 7"
+                  opacity="0.85"
+                  filter="url(#wc-rough)"
+                  fill="none"
+                />
+              )
+            )}
+          </g>
+
+          <!-- Pistazien × Lavendel: Nord-Feld (rechts) -->
+          <g>
+            {rowsNorth.map(([x1, y1, x2, y2], r) =>
+              r % 2 === 0 ? (
+                <g fill="url(#pg-pistacho)" opacity="0.8" filter="url(#wc-rough)">
+                  {Array.from({ length: 4 }, (_, c) => (
+                    <circle
+                      cx={x1 + ((x2 - x1) / 3) * c}
+                      cy={y1 + ((y2 - y1) / 3) * c}
+                      r="7"
+                    />
+                  ))}
+                </g>
+              ) : (
+                <path
+                  d={`M${x1} ${y1} L ${x2} ${y2}`}
+                  stroke="url(#pg-lavanda)"
+                  stroke-width="5"
+                  stroke-linecap="round"
+                  stroke-dasharray="10 7"
+                  opacity="0.85"
+                  filter="url(#wc-rough)"
+                  fill="none"
+                />
+              )
+            )}
+          </g>
+
+          <!-- Casas (Reetdach + helle Lehmwand, wie das echte Haus) -->
+          <g filter="url(#wc-soft)">
+            <!-- Casa 3 (geplant, Umriss) links vom Ring -->
+            <g opacity="0.75">
+              <path d="M76 366 L 76 342 C 76 331, 108 331, 108 342 L 108 366 Z"
+                fill="none" stroke="#9b8ec4" stroke-width="2.6" stroke-dasharray="6 5" filter="url(#ink)" />
+              <path d="M70 344 C 80 330, 104 330, 114 344" fill="none"
+                stroke="#9b8ec4" stroke-width="2.6" stroke-dasharray="6 5" filter="url(#ink)" />
+            </g>
+            <!-- Casa 2 (im Bau) rechts vom Ring -->
+            <g>
+              <path d="M296 386 L 296 364 L 328 364 L 328 386 Z" fill="#e9e4da" />
+              <path d="M290 366 C 300 348, 324 348, 334 366" stroke="#8a6f4d" stroke-width="8"
+                stroke-linecap="round" fill="none" opacity="0.9" />
+              <path d="M338 386 L 338 352 M 286 386 L 286 356" stroke="#8a7b68" stroke-width="3"
+                filter="url(#ink)" />
+            </g>
+            <!-- Casa 1 (fertig) -->
+            <g>
+              <path d="M180 728 L 180 702 L 220 702 L 220 728 Z" fill="#e9e4da" />
+              <path d="M172 704 C 184 682, 216 682, 228 704" stroke="#8a6f4d" stroke-width="10"
+                stroke-linecap="round" fill="none" />
+              <rect x="195" y="712" width="10" height="16" rx="4" fill="#a4444a" opacity="0.85" />
+            </g>
+          </g>
+          <!-- Holunder (nördlich der Casa 1) + Arrayanes (südlich) -->
+          <ellipse cx="242" cy="692" rx="13" ry="16" fill="url(#pg-pistacho)" opacity="0.8" filter="url(#wc-rough)" />
+          <g fill="#aebd8a" opacity="0.8" filter="url(#wc-rough)">
+            <circle cx="166" cy="756" r="5" />
+            <circle cx="184" cy="766" r="4.4" />
+            <circle cx="202" cy="758" r="4.8" />
+            <circle cx="218" cy="768" r="4" />
+          </g>
+
+          <!-- Mirador (Sitzecke) -->
+          <g filter="url(#wc-rough)">
+            <path d="M204 590 L 232 590" stroke="#8f4c31" stroke-width="5" stroke-linecap="round" />
+            <path d="M210 590 L 210 582 M 226 590 L 226 582" stroke="#8f4c31" stroke-width="3" />
+          </g>
+
+          <!-- Tajamar (Südost-Ecke, wird ausgebaut) -->
+          <path d="M96 838 C 104 818, 150 812, 178 826 C 204 838, 200 866, 172 874 C 140 884, 100 872, 96 852 Z"
+            fill="url(#pg-cielo)" filter="url(#wc-wash)" />
+          <path d="M96 845 C 84 848, 74 854, 68 862" stroke="#7fb0c9" stroke-width="5"
+            stroke-linecap="round" opacity="0.6" filter="url(#ink)" fill="none" />
+
+          <!-- Melis Route -->
+          <path
+            id="finca-path"
+            d="M120 46
+               C 152 72, 178 108, 190 160
+               C 198 196, 202 232, 200 267
+               C 130 280, 108 320, 112 365
+               C 116 420, 158 448, 202 445
+               C 250 442, 288 405, 285 358
+               C 282 315, 252 282, 200 267
+               M202 445
+               C 205 492, 210 534, 216 578
+               C 220 606, 226 620, 222 646
+               C 214 680, 202 692, 200 712
+               C 198 742, 176 764, 162 792
+               C 150 816, 148 834, 150 850"
+            fill="none"
+            stroke="#c9a86a"
+            stroke-width="7"
+            stroke-linecap="round"
+            stroke-dasharray="1 14"
+            opacity="0.85"
+            filter="url(#ink)"
+          />
+
+          <!-- Kompass: Westen oben, Norden rechts -->
+          <g font-family="Outfit Variable, sans-serif" font-size="13" fill="#8a7b68">
+            <text x="200" y="16" text-anchor="middle">W ↑</text>
+            <text x="200" y="936" text-anchor="middle">E ↓</text>
+            <text x="388" y="474" text-anchor="middle" transform="rotate(90 388 474)">N →</text>
+          </g>
+
+          <!-- Meli auf der Karte -->
+          <g id="map-bee">
+            <ellipse cx="0" cy="2" rx="13" ry="9" fill="url(#pg-miel)" filter="url(#wc-rough)" />
+            <path d="M-5 -6 L -4 10 M 3 -7 L 4 11" stroke="#6b4a1f" stroke-width="3" />
+            <ellipse cx="-4" cy="-9" rx="10" ry="5" transform="rotate(-24)" fill="#d9eaf2" opacity="0.85" />
+            <circle cx="13" cy="-1" r="6" fill="#a06a2c" filter="url(#wc-rough)" />
+          </g>
+        </svg>
+
+        <!-- Interaktive Stationen (HTML-Overlay für A11y + Tap-Targets) -->
+        {stations.map((s) => (
+          <button
+            class="station"
+            style={`left:${(s.x / 400) * 100}%; top:${(s.y / 940) * 100}%;`}
+            data-station={s.index}
+            data-name={s.name}
+            data-desc={s.desc}
+            data-status={s.status ?? ''}
+            aria-haspopup="dialog"
+          >
+            <span class="station-dot" aria-hidden="true">{s.index + 1}</span>
+            <span class="station-label">{s.name}</span>
+          </button>
+        ))}
+      </div>
+
+      <p class="map-border-note">{t.map.border}</p>
+    </div>
+  </div>
+
+  <!-- Bottom-Sheet -->
+  <div class="sheet-backdrop" data-sheet-backdrop hidden></div>
+  <aside class="sheet" data-sheet role="dialog" aria-modal="false" aria-live="polite" hidden>
+    <div class="sheet-handle" aria-hidden="true"></div>
+    <div class="sheet-head">
+      <h3 data-sheet-name></h3>
+      <span class="chip" data-sheet-status hidden></span>
+    </div>
+    <p data-sheet-desc></p>
+    <button class="btn btn--sm btn--ghost" data-sheet-close>{t.map.close}</button>
+  </aside>
+</section>
+
+<script>
+  const section = document.getElementById('chacra')!;
+  const sheet = section.querySelector<HTMLElement>('[data-sheet]')!;
+  const backdrop = section.querySelector<HTMLElement>('[data-sheet-backdrop]')!;
+  const nameEl = sheet.querySelector<HTMLElement>('[data-sheet-name]')!;
+  const descEl = sheet.querySelector<HTMLElement>('[data-sheet-desc]')!;
+  const statusEl = sheet.querySelector<HTMLElement>('[data-sheet-status]')!;
+
+  const statusLabels: Record<string, string> = JSON.parse(
+    section.dataset.statusLabels ?? '{}'
+  );
+
+  let openBtn: HTMLElement | null = null;
+
+  function close() {
+    sheet.hidden = true;
+    backdrop.hidden = true;
+    section.querySelectorAll('.station.is-active').forEach((b) => b.classList.remove('is-active'));
+    openBtn?.focus({ preventScroll: true });
+    openBtn = null;
+  }
+
+  section.querySelectorAll<HTMLButtonElement>('.station').forEach((btn) => {
+    btn.addEventListener('click', () => {
+      section.querySelectorAll('.station.is-active').forEach((b) => b.classList.remove('is-active'));
+      btn.classList.add('is-active');
+      openBtn = btn;
+      nameEl.textContent = btn.dataset.name ?? '';
+      descEl.textContent = btn.dataset.desc ?? '';
+      const st = btn.dataset.status ?? '';
+      if (st && statusLabels[st]) {
+        statusEl.textContent = statusLabels[st];
+        statusEl.hidden = false;
+        statusEl.className = `chip ${st === 'listo' ? '' : st === 'enObra' ? 'chip--barro' : 'chip--lavanda'}`;
+      } else {
+        statusEl.hidden = true;
+      }
+      sheet.hidden = false;
+      backdrop.hidden = false;
+    });
+  });
+
+  sheet.querySelector('[data-sheet-close]')!.addEventListener('click', close);
+  backdrop.addEventListener('click', close);
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape' && !sheet.hidden) close();
+  });
+</script>
+
+<style>
+  .finca {
+    background: var(--papel);
+  }
+
+  .map-frame {
+    background: #fffdf8;
+    border-radius: var(--r-lg);
+    box-shadow: var(--shadow-soft);
+    padding: clamp(1rem, 3vw, 2rem);
+  }
+
+  .tap-hint {
+    text-align: center;
+    color: var(--tinta-tenue);
+    font-size: var(--fs-300);
+    font-style: italic;
+    margin-bottom: var(--sp-3);
+  }
+
+  .map-stage {
+    position: relative;
+    max-width: 30rem;
+    margin-inline: auto;
+  }
+
+  .map-svg {
+    width: 100%;
+    height: auto;
+  }
+
+  .station {
+    position: absolute;
+    transform: translate(-50%, -50%);
+    display: grid;
+    justify-items: center;
+    gap: 2px;
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 6px;
+  }
+
+  .station-dot {
+    display: grid;
+    place-items: center;
+    width: 30px;
+    height: 30px;
+    border-radius: var(--r-blob);
+    background: var(--miel-500);
+    color: #fff;
+    font-weight: 700;
+    font-size: 0.8rem;
+    box-shadow: 0 0 0 3px #fffdf8, var(--shadow-soft);
+    transition: transform var(--dur-2) var(--ease-bounce), background var(--dur-1) var(--ease-out);
+  }
+
+  .station:hover .station-dot,
+  .station:focus-visible .station-dot,
+  .station.is-active .station-dot {
+    transform: scale(1.25) rotate(-6deg);
+    background: var(--barro-500);
+  }
+
+  .station-label {
+    display: none;
+    font-size: 0.72rem;
+    font-weight: 600;
+    color: var(--tinta-suave);
+    background: color-mix(in srgb, #fffdf8 80%, transparent);
+    padding: 1px 7px;
+    border-radius: var(--r-full);
+    white-space: nowrap;
+  }
+
+  @media (min-width: 860px) {
+    .station-label {
+      display: block;
+    }
+  }
+
+  .map-border-note {
+    margin-top: var(--sp-4);
+    text-align: center;
+    color: var(--tinta-tenue);
+    font-size: var(--fs-300);
+    margin-inline: auto;
+  }
+
+  .sheet-backdrop {
+    position: fixed;
+    inset: 0;
+    z-index: 240;
+    background: rgba(51, 41, 31, 0.25);
+  }
+
+  .sheet {
+    position: fixed;
+    left: 50%;
+    bottom: 0;
+    transform: translateX(-50%);
+    width: min(100%, 34rem);
+    z-index: 250;
+    background: #fffdf8;
+    border-radius: var(--r-lg) var(--r-lg) 0 0;
+    box-shadow: var(--shadow-modal);
+    padding: var(--sp-4) var(--sp-6) var(--sp-6);
+    display: grid;
+    gap: var(--sp-3);
+    animation: sheet-up var(--dur-3) var(--ease-out);
+  }
+
+  @keyframes sheet-up {
+    from { translate: 0 100%; }
+    to { translate: 0 0; }
+  }
+
+  .sheet-handle {
+    width: 44px;
+    height: 5px;
+    border-radius: 3px;
+    background: var(--miel-200);
+    justify-self: center;
+  }
+
+  .sheet-head {
+    display: flex;
+    align-items: center;
+    gap: var(--sp-3);
+    flex-wrap: wrap;
+  }
+
+  .sheet .btn {
+    justify-self: start;
+  }
+</style>

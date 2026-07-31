@@ -1,0 +1,847 @@
+---
+import type { Dict } from '../i18n';
+
+interface Props {
+  t: Dict;
+}
+
+const { t } = Astro.props;
+const p = t.pistacho;
+const seasonHues = ['cielo', 'lavanda', 'miel', 'barro'] as const;
+---
+
+<section id="pistacho" class="pistacho" data-chapter data-meli-zone>
+  <div class="wrap">
+    <header class="section-head" data-reveal>
+      <h2><span class="swash">{p.title}</span></h2>
+      <p class="lead">{p.intro}</p>
+    </header>
+
+    <!-- Knack-Interaktion + Nährwerte -->
+    <div class="pist-stage">
+      <div class="crack-col" data-reveal>
+        <div class="crack-hero">
+          <div class="crack-meli">
+            <span class="mini-bubble" data-crack-hint>{p.crackHint}</span>
+            <span class="meli-perch" data-meli-perch aria-hidden="true"></span>
+          </div>
+          <button class="crack-btn" data-crack aria-expanded="false" aria-label={p.crackAria}>
+          <svg viewBox="0 0 260 240" aria-hidden="true">
+            <ellipse cx="130" cy="196" rx="72" ry="14" fill="#c9b48c" opacity="0.35" filter="url(#wc-wash)" />
+
+            <!-- Kern (erst nach dem Öffnen sichtbar) -->
+            <g class="kernel">
+              <ellipse cx="130" cy="128" rx="34" ry="52" fill="url(#pg-pistacho-light)" filter="url(#wc-soft)" />
+              <ellipse cx="130" cy="120" rx="26" ry="38" fill="url(#pg-pistacho)" opacity="0.65" filter="url(#wc-rough)" />
+              <ellipse cx="130" cy="168" rx="16" ry="9" fill="#a06478" opacity="0.4" filter="url(#wc-rough)" />
+              <path d="M130 84 C 128 110, 132 140, 130 168" stroke="#3f4f30" stroke-width="2"
+                opacity="0.5" filter="url(#ink)" fill="none" />
+            </g>
+
+            <!-- Krümel -->
+            <g class="crumbs" fill="#d9bd94">
+              <circle class="crumb" style="--dx:-70px; --dy:-46px" cx="118" cy="120" r="5" />
+              <circle class="crumb" style="--dx:64px; --dy:-58px" cx="142" cy="116" r="4" />
+              <circle class="crumb" style="--dx:-52px; --dy:-80px" cx="124" cy="108" r="3.4" />
+              <circle class="crumb" style="--dx:80px; --dy:-30px" cx="146" cy="128" r="3.8" />
+              <circle class="crumb" style="--dx:-84px; --dy:-12px" cx="114" cy="132" r="3" />
+              <circle class="crumb" style="--dx:48px; --dy:-88px" cx="138" cy="104" r="2.8" />
+            </g>
+
+            <!-- Schalenhälften -->
+            <g class="shell shell-l">
+              <path d="M130 44 C 84 52, 62 96, 66 140 C 70 178, 96 202, 130 206 C 118 152, 118 96, 130 44 Z"
+                fill="#e0c9a4" filter="url(#wc-soft)" />
+              <path d="M130 44 C 84 52, 62 96, 66 140 C 70 178, 96 202, 130 206"
+                stroke="#33291f" stroke-width="2.4" opacity="0.6" filter="url(#ink)" fill="none" />
+            </g>
+            <g class="shell shell-r">
+              <path d="M130 44 C 176 52, 198 96, 194 140 C 190 178, 164 202, 130 206 C 142 152, 142 96, 130 44 Z"
+                fill="#d9bd94" filter="url(#wc-soft)" />
+              <path d="M130 44 C 176 52, 198 96, 194 140 C 190 178, 164 202, 130 206"
+                stroke="#33291f" stroke-width="2.4" opacity="0.6" filter="url(#ink)" fill="none" />
+            </g>
+            <circle cx="130" cy="42" r="5" fill="#8f4c31" filter="url(#wc-rough)" />
+          </svg>
+          </button>
+        </div>
+
+        <div class="facts-wrap">
+          <ul class="facts" data-facts>
+            {p.facts.map((f, i) => (
+              <li style={`--i:${i}`}>{f}</li>
+            ))}
+          </ul>
+        </div>
+      </div>
+
+      <div class="benefits" data-reveal>
+        <h3>{p.benefitsTitle}</h3>
+        <ul>
+          {p.benefits.map((b, i) => (
+            <li>
+              <span class={`b-glyph b-glyph--${i}`} aria-hidden="true">
+                {i === 0 && (
+                  <svg viewBox="0 0 40 40"><ellipse cx="20" cy="20" rx="9" ry="14" fill="url(#pg-pistacho)" filter="url(#wc-rough)" /></svg>
+                )}
+                {i === 1 && (
+                  <svg viewBox="0 0 40 40"><path d="M20 34 C 20 22, 18 14, 20 6 M 20 18 C 14 14, 11 10, 10 5 M 20 22 C 26 18, 29 14, 30 9" stroke="#5b6c42" stroke-width="2.6" stroke-linecap="round" fill="none" filter="url(#ink)" /></svg>
+                )}
+                {i === 2 && (
+                  <svg viewBox="0 0 40 40"><path d="M20 6 C 27 16, 31 22, 31 27 C 31 33, 26 36, 20 36 C 14 36, 9 33, 9 27 C 9 22, 13 16, 20 6 Z" fill="url(#pg-miel)" filter="url(#wc-rough)" /></svg>
+                )}
+                {i === 3 && (
+                  <svg viewBox="0 0 40 40"><path d="M6 20 C 12 12, 28 12, 34 20 C 28 28, 12 28, 6 20 Z" fill="none" stroke="#3f4f30" stroke-width="2.4" filter="url(#ink)" /><circle cx="20" cy="20" r="5" fill="url(#pg-pistacho)" filter="url(#wc-rough)" /></svg>
+                )}
+              </span>
+              <div>
+                <strong>{b.t}</strong>
+                <p>{b.d}</p>
+              </div>
+            </li>
+          ))}
+        </ul>
+      </div>
+    </div>
+
+    <!-- Jahreszyklus -->
+    <div class="cycle" data-reveal>
+      <h3>{p.cycleTitle}</h3>
+      <p class="cycle-intro">{p.cycleIntro}</p>
+
+      <div class="season-slider" data-season-slider data-season="0">
+        <div class="season-slider-top">
+          <span class="season-live" data-season-live-name aria-hidden="true">{p.seasons[0].name}</span>
+          <span class="season-live-months" data-season-live-months aria-hidden="true">{p.seasons[0].months}</span>
+          <span class="season-progress" data-season-progress aria-hidden="true">
+            {Math.round((0 / (p.seasons.length - 1)) * 100)}%
+          </span>
+        </div>
+
+        <div class="season-track-wrap">
+          <input
+            type="range"
+            class="season-range"
+            min="0"
+            max={p.seasons.length - 1}
+            step="1"
+            value="0"
+            data-season-range
+            data-season="0"
+            aria-label={p.cycleTitle}
+            aria-valuetext={`${p.seasons[0].name}, ${p.seasons[0].months}`}
+          />
+        </div>
+
+        <div class="season-marks">
+          {p.seasons.map((s, i) => (
+            <button
+              type="button"
+              class={`season-mark season-mark--${seasonHues[i]}`}
+              data-season-mark
+              aria-current={i === 0 ? 'true' : 'false'}
+            >
+              {s.name}
+            </button>
+          ))}
+        </div>
+      </div>
+
+      {p.seasons.map((s, i) => (
+        <div
+          class="season-panel"
+          hidden={i !== 0}
+        >
+          <div class="season-art" aria-hidden="true">
+            {i === 0 && (
+              <svg viewBox="0 0 220 150">
+                <rect x="6" y="8" width="208" height="134" rx="18" fill="#eef5f8" filter="url(#wc-wash)" />
+                <path d="M110 128 C 108 104, 108 88, 110 68 M 110 96 C 96 88, 88 78, 84 64 M 110 84 C 124 76, 132 68, 136 54 M 96 82 C 88 74, 84 68, 82 58 M 124 92 C 132 86, 138 80, 142 72"
+                  stroke="#8a7b68" stroke-width="3.4" stroke-linecap="round" fill="none" filter="url(#ink)" />
+                <g fill="#b1d3e3" filter="url(#wc-rough)">
+                  <circle cx="52" cy="40" r="4" /><circle cx="170" cy="32" r="3.4" /><circle cx="146" cy="112" r="3" /><circle cx="70" cy="118" r="3.6" /><circle cx="184" cy="86" r="2.8" />
+                </g>
+              </svg>
+            )}
+            {i === 1 && (
+              <svg viewBox="0 0 220 150">
+                <rect x="6" y="8" width="208" height="134" rx="18" fill="#f1eef8" filter="url(#wc-wash)" />
+                <path d="M66 128 C 64 108, 64 96, 66 82 M 66 96 C 56 90, 52 82, 50 72 M 66 88 C 76 82, 80 76, 82 66"
+                  stroke="#8a7b68" stroke-width="3" stroke-linecap="round" fill="none" filter="url(#ink)" />
+                <path d="M158 128 C 156 108, 156 96, 158 82 M 158 96 C 148 90, 144 82, 142 72 M 158 88 C 168 82, 172 76, 174 66"
+                  stroke="#8a7b68" stroke-width="3" stroke-linecap="round" fill="none" filter="url(#ink)" />
+                <g fill="#c9a86a" filter="url(#wc-rough)">
+                  <ellipse cx="52" cy="66" rx="4" ry="9" /><ellipse cx="82" cy="60" rx="4" ry="9" /><ellipse cx="66" cy="74" rx="4" ry="8" />
+                </g>
+                <g fill="#dfa98c" filter="url(#wc-rough)">
+                  <circle cx="144" cy="66" r="4.4" /><circle cx="172" cy="60" r="4.4" /><circle cx="158" cy="74" r="4" />
+                </g>
+                <path d="M92 58 C 104 50, 118 50, 130 58 M 96 74 C 106 68, 118 68, 128 74"
+                  stroke="#7fb0c9" stroke-width="2.4" stroke-linecap="round" stroke-dasharray="2 7" fill="none" filter="url(#ink)" />
+                <text x="66" y="142" text-anchor="middle" font-size="12" fill="#8a7b68">♂</text>
+                <text x="158" y="142" text-anchor="middle" font-size="12" fill="#8a7b68">♀</text>
+              </svg>
+            )}
+            {i === 2 && (
+              <svg viewBox="0 0 220 150">
+                <rect x="6" y="8" width="208" height="134" rx="18" fill="#fdf3e0" filter="url(#wc-wash)" />
+                <circle cx="176" cy="38" r="20" fill="url(#pg-sol)" filter="url(#wc-wash)" />
+                <path d="M96 128 C 94 106, 94 92, 96 76" stroke="#8f4c31" stroke-width="4" stroke-linecap="round" filter="url(#ink)" fill="none" />
+                <ellipse cx="96" cy="62" rx="38" ry="26" fill="url(#pg-pistacho)" filter="url(#wc-soft)" />
+                <g filter="url(#wc-rough)">
+                  <ellipse cx="80" cy="76" rx="5.5" ry="7" fill="#dfa98c" />
+                  <ellipse cx="96" cy="82" rx="5.5" ry="7" fill="#dfa98c" />
+                  <ellipse cx="112" cy="74" rx="5.5" ry="7" fill="#dfa98c" />
+                </g>
+                <g stroke="url(#pg-lavanda)" stroke-width="4" stroke-linecap="round" opacity="0.85" filter="url(#wc-rough)">
+                  <path d="M148 126 L 148 112 M 162 128 L 162 110 M 176 126 L 176 114" fill="none" />
+                </g>
+              </svg>
+            )}
+            {i === 3 && (
+              <svg viewBox="0 0 220 150">
+                <rect x="6" y="8" width="208" height="134" rx="18" fill="#f8e9e0" filter="url(#wc-wash)" />
+                <path d="M36 52 C 70 44, 110 42, 150 48" stroke="#8f4c31" stroke-width="4" stroke-linecap="round" filter="url(#ink)" fill="none" />
+                <g filter="url(#wc-rough)">
+                  <g>
+                    <ellipse cx="70" cy="62" rx="9" ry="12" fill="#e0c9a4" />
+                    <ellipse cx="73" cy="63" rx="4" ry="8" fill="#7a8b5a" />
+                  </g>
+                  <g>
+                    <ellipse cx="108" cy="58" rx="9" ry="12" fill="#e0c9a4" />
+                    <ellipse cx="111" cy="59" rx="4" ry="8" fill="#7a8b5a" />
+                  </g>
+                  <g>
+                    <ellipse cx="140" cy="64" rx="9" ry="12" fill="#e0c9a4" />
+                    <ellipse cx="143" cy="65" rx="4" ry="8" fill="#7a8b5a" />
+                  </g>
+                </g>
+                <g filter="url(#wc-soft)">
+                  <path d="M132 128 C 132 142, 176 142, 176 128 L 180 112 L 128 112 Z" fill="url(#pg-miel)" />
+                  <path d="M128 112 L 180 112" stroke="#a06a2c" stroke-width="4" />
+                  <ellipse cx="146" cy="110" rx="6" ry="8" fill="#e0c9a4" />
+                  <ellipse cx="162" cy="108" rx="6" ry="8" fill="#e0c9a4" />
+                </g>
+              </svg>
+            )}
+          </div>
+          <div class="season-copy">
+            <span class="season-months">{s.months}</span>
+            <h4>{s.title}</h4>
+            <p>{s.text}</p>
+          </div>
+        </div>
+      ))}
+    </div>
+  </div>
+
+  <!-- Verwendungen: eine Marquee für die Fülle an Möglichkeiten -->
+  <div class="uses" data-reveal>
+    <h3 class="wrap">{p.usesTitle}</h3>
+    <div class="uses-marquee" aria-hidden="false">
+      <ul class="uses-track">
+        {[...p.uses, ...p.uses].map((u, i) => (
+          <li aria-hidden={i >= p.uses.length ? 'true' : undefined}>
+            <span class="use-dotlet" aria-hidden="true"></span>
+            {u}
+          </li>
+        ))}
+      </ul>
+    </div>
+  </div>
+</section>
+
+<script>
+  const section = document.getElementById('pistacho')!;
+
+  // Knack-Interaktion
+  const btn = section.querySelector<HTMLButtonElement>('[data-crack]');
+  if (btn) {
+    btn.addEventListener('click', () => {
+      const open = btn.getAttribute('aria-expanded') === 'true';
+      btn.setAttribute('aria-expanded', String(!open));
+      section.classList.toggle('is-cracked', !open);
+    });
+  }
+
+  // Jahreszyklus-Slider
+  const slider = section.querySelector<HTMLElement>('[data-season-slider]');
+  const range = section.querySelector<HTMLInputElement>('[data-season-range]');
+  const marks = Array.from(section.querySelectorAll<HTMLButtonElement>('[data-season-mark]'));
+  const panels = Array.from(section.querySelectorAll<HTMLElement>('.season-panel'));
+  const liveName = section.querySelector<HTMLElement>('[data-season-live-name]');
+  const liveMonths = section.querySelector<HTMLElement>('[data-season-live-months]');
+  const progress = section.querySelector<HTMLElement>('[data-season-progress]');
+
+  function select(i: number) {
+    const name = marks[i]?.textContent?.trim() ?? '';
+    const months = panels[i]?.querySelector('.season-months')?.textContent?.trim() ?? '';
+
+    if (range) {
+      range.value = String(i);
+      range.dataset.season = String(i);
+      range.setAttribute('aria-valuetext', months ? `${name}, ${months}` : name);
+    }
+    if (slider) slider.dataset.season = String(i);
+    if (liveName) liveName.textContent = name;
+    if (liveMonths) liveMonths.textContent = months;
+    if (progress) {
+      const pct = marks.length > 1 ? Math.round((i / (marks.length - 1)) * 100) : 0;
+      progress.textContent = `${pct}%`;
+    }
+
+    marks.forEach((m, k) => {
+      if (k === i) m.setAttribute('aria-current', 'true');
+      else m.removeAttribute('aria-current');
+    });
+
+    panels.forEach((panel, k) => {
+      if (k === i) {
+        panel.hidden = false;
+        requestAnimationFrame(() => panel.classList.add('is-in'));
+      } else {
+        panel.hidden = true;
+        panel.classList.remove('is-in');
+      }
+    });
+  }
+
+  range?.addEventListener('input', () => select(Number(range.value)));
+
+  marks.forEach((mark, i) => {
+    mark.addEventListener('click', () => {
+      select(i);
+      range?.focus();
+    });
+  });
+
+  panels[0]?.classList.add('is-in');
+</script>
+
+<style>
+  .pistacho {
+    background: var(--pistacho-100);
+    overflow: hidden;
+  }
+
+  /* ---------- Knack-Interaktion ---------- */
+
+  .pist-stage {
+    display: grid;
+    gap: var(--sp-7);
+    align-items: start;
+    margin-bottom: clamp(3rem, 7vw, 5rem);
+  }
+
+  @media (min-width: 860px) {
+    .pist-stage {
+      grid-template-columns: 1.1fr 1fr;
+    }
+  }
+
+  .crack-col {
+    display: grid;
+    justify-items: center;
+  }
+
+  .crack-hero {
+    position: relative;
+    display: grid;
+    justify-items: center;
+  }
+
+  /* Meli sitzt neben der Nuss und fordert zum Knacken auf */
+  .crack-meli {
+    position: absolute;
+    top: -1.4rem;
+    right: min(-4vw, -2.2rem);
+    z-index: 2;
+    display: grid;
+    justify-items: end;
+    gap: 4px;
+  }
+
+  .mini-bubble {
+    background: #fffdf8;
+    border-radius: var(--r-md);
+    box-shadow: var(--shadow-soft);
+    padding: 0.5em 0.9em;
+    font-family: var(--font-display);
+    font-variation-settings: 'SOFT' 90, 'WONK' 1;
+    font-style: italic;
+    font-size: var(--fs-300);
+    max-width: 11rem;
+    text-align: center;
+    transition: opacity var(--dur-2) ease, transform var(--dur-2) var(--ease-out);
+  }
+
+  .is-cracked .mini-bubble {
+    opacity: 0;
+    transform: translateY(-6px);
+  }
+
+  .crack-btn {
+    width: min(58vw, 240px);
+    background: none;
+    border: none;
+    cursor: pointer;
+    border-radius: var(--r-blob);
+    transition: transform var(--dur-1) var(--ease-out);
+  }
+
+  /* Aufforderndes Wackeln, bis geknackt wurde */
+  .pistacho:not(.is-cracked) .crack-btn svg {
+    animation: nut-nudge 4.6s ease-in-out infinite;
+    transform-origin: 50% 88%;
+  }
+
+  @keyframes nut-nudge {
+    0%, 12%, 100% { transform: rotate(0); }
+    3% { transform: rotate(-3.4deg); }
+    6% { transform: rotate(2.8deg); }
+    9% { transform: rotate(-1.6deg); }
+  }
+
+  .crack-btn:active {
+    transform: scale(0.96);
+  }
+
+  @media (hover: hover) and (pointer: fine) {
+    .crack-btn:hover {
+      transform: rotate(-2deg) scale(1.03);
+    }
+  }
+
+  .crack-btn svg {
+    width: 100%;
+    overflow: visible;
+  }
+
+  .shell {
+    transform-box: fill-box;
+    transition: transform 340ms var(--ease-out);
+  }
+
+  .shell-l { transform-origin: 80% 92%; }
+  .shell-r { transform-origin: 20% 92%; }
+
+  .is-cracked .shell-l { transform: rotate(-24deg) translate(-16px, 4px); }
+  .is-cracked .shell-r { transform: rotate(20deg) translate(14px, 3px); }
+
+  .kernel {
+    transform-box: fill-box;
+    transform-origin: 50% 90%;
+    transform: scale(0.9);
+    opacity: 0;
+    transition: transform 320ms var(--ease-bounce) 90ms, opacity 200ms ease 90ms;
+  }
+
+  .is-cracked .kernel {
+    transform: scale(1);
+    opacity: 1;
+  }
+
+  .crumb {
+    opacity: 0;
+    transform: translate(0, 0);
+  }
+
+  .is-cracked .crumb {
+    animation: crumb-fly 700ms var(--ease-out) forwards;
+  }
+
+  @keyframes crumb-fly {
+    0% { opacity: 0.9; transform: translate(0, 0); }
+    100% { opacity: 0; transform: translate(var(--dx), var(--dy)); }
+  }
+
+  /* Fakten nehmen erst nach dem Knacken Platz ein */
+  .facts-wrap {
+    display: grid;
+    grid-template-rows: 0fr;
+    width: 100%;
+    max-width: 26rem;
+    transition: grid-template-rows 480ms var(--ease-out);
+  }
+
+  .is-cracked .facts-wrap {
+    grid-template-rows: 1fr;
+  }
+
+  .facts {
+    list-style: none;
+    padding: 0;
+    margin-top: var(--sp-4);
+    display: grid;
+    gap: var(--sp-3);
+    overflow: hidden;
+    min-height: 0;
+  }
+
+  .facts li {
+    background: #fffdf8;
+    border-radius: var(--r-md);
+    padding: var(--sp-3) var(--sp-4);
+    box-shadow: var(--shadow-soft);
+    font-size: var(--fs-300);
+    opacity: 0;
+    transform: translateY(14px) rotate(0.4deg);
+    transition:
+      opacity 300ms var(--ease-out) calc(var(--i) * 70ms),
+      transform 300ms var(--ease-out) calc(var(--i) * 70ms);
+  }
+
+  .facts li:nth-child(even) {
+    transform: translateY(14px) rotate(-0.5deg);
+  }
+
+  .is-cracked .facts li {
+    opacity: 1;
+    transform: translateY(0) rotate(0.4deg);
+  }
+
+  .is-cracked .facts li:nth-child(even) {
+    transform: translateY(0) rotate(-0.5deg);
+  }
+
+  /* ---------- Nährwerte ---------- */
+
+  .benefits h3 {
+    margin-bottom: var(--sp-4);
+  }
+
+  .benefits ul {
+    list-style: none;
+    padding: 0;
+    display: grid;
+    gap: var(--sp-4);
+  }
+
+  .benefits li {
+    display: grid;
+    grid-template-columns: 52px 1fr;
+    gap: var(--sp-4);
+    align-items: start;
+  }
+
+  .b-glyph {
+    width: 52px;
+    height: 52px;
+    border-radius: var(--r-blob);
+    display: grid;
+    place-items: center;
+    padding: 8px;
+    background: var(--miel-100);
+  }
+
+  .b-glyph--1 { background: var(--pistacho-200); border-radius: 45% 55% 52% 48% / 58% 44% 56% 42%; }
+  .b-glyph--2 { background: var(--barro-100); border-radius: 52% 48% 40% 60% / 46% 58% 42% 54%; }
+  .b-glyph--3 { background: var(--lavanda-100); border-radius: 40% 60% 55% 45% / 52% 40% 60% 48%; }
+
+  .benefits strong {
+    display: block;
+  }
+
+  .benefits p {
+    font-size: var(--fs-300);
+    color: var(--c-text-soft);
+  }
+
+  /* ---------- Jahreszyklus ---------- */
+
+  .cycle {
+    background: #fffdf8;
+    border-radius: var(--r-lg);
+    box-shadow: var(--shadow-soft);
+    padding: clamp(1.5rem, 4vw, 2.5rem);
+  }
+
+  .cycle-intro {
+    color: var(--c-text-soft);
+    margin-top: var(--sp-1);
+  }
+
+  .season-slider {
+    display: grid;
+    gap: var(--sp-3);
+    margin-block: var(--sp-4) var(--sp-6);
+  }
+
+  .season-slider-top {
+    display: flex;
+    align-items: baseline;
+    flex-wrap: wrap;
+    gap: var(--sp-2) var(--sp-3);
+  }
+
+  .season-live {
+    font-family: var(--font-display);
+    font-size: var(--fs-600);
+    font-weight: 600;
+    color: var(--tinta);
+  }
+
+  .season-live-months {
+    font-size: var(--fs-300);
+    font-style: italic;
+    color: var(--tinta-tenue);
+  }
+
+  .season-progress {
+    margin-left: auto;
+    font-size: var(--fs-300);
+    font-weight: 600;
+    color: var(--tinta-suave);
+    background: var(--papel-warm);
+    border-radius: var(--r-full);
+    padding: 0.2em 0.8em;
+  }
+
+  /* Regler-Spur mit seitlichem Puffer, damit der Thumb nicht abgeschnitten wird */
+  .season-track-wrap {
+    padding-inline: 15px;
+  }
+
+  .season-range {
+    appearance: none;
+    -webkit-appearance: none;
+    width: 100%;
+    height: 28px;
+    background: transparent;
+    margin: 0;
+    cursor: pointer;
+  }
+
+  .season-range:focus-visible {
+    outline: none;
+  }
+
+  .season-range::-webkit-slider-runnable-track {
+    height: 6px;
+    border-radius: var(--r-full);
+    background: linear-gradient(90deg, var(--cielo-500), var(--lavanda-500), var(--miel-500), var(--barro-500));
+  }
+
+  .season-range::-moz-range-track {
+    height: 6px;
+    border-radius: var(--r-full);
+    background: linear-gradient(90deg, var(--cielo-500), var(--lavanda-500), var(--miel-500), var(--barro-500));
+  }
+
+  .season-range::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    width: 30px;
+    height: 30px;
+    margin-top: -12px;
+    border-radius: var(--r-blob);
+    background: var(--miel-500);
+    border: 3px solid #fffdf8;
+    box-shadow: var(--shadow-soft);
+    cursor: grab;
+    transition: transform var(--dur-1) var(--ease-out), background var(--dur-2) ease, box-shadow var(--dur-1) ease;
+  }
+
+  .season-range::-moz-range-thumb {
+    width: 30px;
+    height: 30px;
+    border: 3px solid #fffdf8;
+    border-radius: var(--r-blob);
+    background: var(--miel-500);
+    box-shadow: var(--shadow-soft);
+    cursor: grab;
+    transition: transform var(--dur-1) var(--ease-out), background var(--dur-2) ease, box-shadow var(--dur-1) ease;
+  }
+
+  .season-range:active::-webkit-slider-thumb,
+  .season-range:focus-visible::-webkit-slider-thumb {
+    transform: scale(1.12);
+    cursor: grabbing;
+  }
+
+  .season-range:active::-moz-range-thumb,
+  .season-range:focus-visible::-moz-range-thumb {
+    transform: scale(1.12);
+    cursor: grabbing;
+  }
+
+  .season-range:focus-visible::-webkit-slider-thumb {
+    box-shadow: var(--shadow-lift), 0 0 0 4px var(--miel-200);
+  }
+
+  .season-range:focus-visible::-moz-range-thumb {
+    box-shadow: var(--shadow-lift), 0 0 0 4px var(--miel-200);
+  }
+
+  .season-range[data-season='0']::-webkit-slider-thumb { background: var(--cielo-500); }
+  .season-range[data-season='1']::-webkit-slider-thumb { background: var(--lavanda-500); }
+  .season-range[data-season='2']::-webkit-slider-thumb { background: var(--miel-500); }
+  .season-range[data-season='3']::-webkit-slider-thumb { background: var(--barro-500); }
+
+  .season-range[data-season='0']::-moz-range-thumb { background: var(--cielo-500); }
+  .season-range[data-season='1']::-moz-range-thumb { background: var(--lavanda-500); }
+  .season-range[data-season='2']::-moz-range-thumb { background: var(--miel-500); }
+  .season-range[data-season='3']::-moz-range-thumb { background: var(--barro-500); }
+
+  /* Vier gleich breite Spalten: jede Marke steht über ihrer Reglerposition
+     und bleibt auch bei 375px in einer Zeile. */
+  .season-marks {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 2px;
+    padding-inline: 2px;
+  }
+
+  .season-mark {
+    border: 2px solid transparent;
+    background: transparent;
+    border-radius: var(--r-full);
+    padding: 0.35em 0.2em;
+    min-height: 28px;
+    font-weight: 600;
+    font-size: var(--fs-200);
+    color: var(--tinta-tenue);
+    cursor: pointer;
+    white-space: nowrap;
+    transition:
+      background var(--dur-1) ease,
+      border-color var(--dur-1) ease,
+      color var(--dur-1) ease,
+      transform var(--dur-1) var(--ease-out);
+  }
+
+  @media (min-width: 480px) {
+    .season-mark {
+      font-size: var(--fs-300);
+      padding-inline: 0.6em;
+    }
+  }
+
+  .season-mark:active {
+    transform: scale(0.96);
+  }
+
+  .season-mark--cielo[aria-current='true'] { background: var(--cielo-200); border-color: var(--cielo-500); color: var(--tinta); }
+  .season-mark--lavanda[aria-current='true'] { background: var(--lavanda-100); border-color: var(--lavanda-500); color: var(--tinta); }
+  .season-mark--miel[aria-current='true'] { background: var(--miel-100); border-color: var(--miel-500); color: var(--tinta); }
+  .season-mark--barro[aria-current='true'] { background: var(--barro-100); border-color: var(--barro-500); color: var(--tinta); }
+
+  @media (hover: hover) and (pointer: fine) {
+    .season-mark:hover {
+      color: var(--tinta);
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .season-range,
+    .season-range::-webkit-slider-thumb,
+    .season-range::-moz-range-thumb,
+    .season-mark,
+    .season-panel {
+      transition: none;
+    }
+  }
+
+  .season-panel {
+    display: grid;
+    gap: var(--sp-5);
+    align-items: center;
+    opacity: 0;
+    filter: blur(4px);
+    transform: translateY(8px);
+    transition: opacity 220ms var(--ease-out), filter 220ms var(--ease-out), transform 220ms var(--ease-out);
+  }
+
+  .season-panel.is-in {
+    opacity: 1;
+    filter: blur(0);
+    transform: translateY(0);
+  }
+
+  @media (min-width: 700px) {
+    .season-panel {
+      grid-template-columns: minmax(200px, 300px) 1fr;
+    }
+  }
+
+  .season-months {
+    font-size: var(--fs-300);
+    color: var(--tinta-tenue);
+    font-style: italic;
+  }
+
+  .season-copy h4 {
+    margin-block: var(--sp-1) var(--sp-2);
+  }
+
+  /* ---------- Verwendungen (Marquee) ---------- */
+
+  .uses {
+    margin-top: clamp(3rem, 7vw, 5rem);
+  }
+
+  .uses h3 {
+    margin-bottom: var(--sp-4);
+  }
+
+  .uses-marquee {
+    overflow: hidden;
+    -webkit-mask-image: linear-gradient(90deg, transparent, #000 8%, #000 92%, transparent);
+    mask-image: linear-gradient(90deg, transparent, #000 8%, #000 92%, transparent);
+  }
+
+  .uses-track {
+    display: flex;
+    gap: var(--sp-3);
+    list-style: none;
+    padding: 0 0 var(--sp-2);
+    width: max-content;
+    animation: uses-slide 28s linear infinite;
+  }
+
+  .uses-marquee:hover .uses-track {
+    animation-play-state: paused;
+  }
+
+  @keyframes uses-slide {
+    to { transform: translateX(-50%); }
+  }
+
+  .uses-track li {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.55em;
+    background: #fffdf8;
+    border-radius: var(--r-full);
+    box-shadow: var(--shadow-soft);
+    padding: 0.55em 1.2em;
+    font-weight: 600;
+    font-size: var(--fs-300);
+    white-space: nowrap;
+  }
+
+  .use-dotlet {
+    width: 10px;
+    height: 10px;
+    border-radius: 45% 55% 50% 50% / 55% 45% 55% 45%;
+    background: var(--pistacho-500);
+  }
+
+  .uses-track li:nth-child(4n + 2) .use-dotlet { background: var(--miel-500); }
+  .uses-track li:nth-child(4n + 3) .use-dotlet { background: var(--lavanda-500); }
+  .uses-track li:nth-child(4n) .use-dotlet { background: var(--barro-500); }
+
+  @media (prefers-reduced-motion: reduce) {
+    .uses-track {
+      animation: none;
+      flex-wrap: wrap;
+      width: auto;
+    }
+    .uses-track li[aria-hidden='true'] {
+      display: none;
+    }
+    .uses-marquee {
+      -webkit-mask-image: none;
+      mask-image: none;
+    }
+  }
+</style>

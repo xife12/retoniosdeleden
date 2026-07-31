@@ -1,0 +1,39 @@
+---
+/**
+ * Die mitfliegende Meli: folgt dem Scroll und landet an den
+ * [data-meli-perch]-Ankern der jeweils sichtbaren Sektion.
+ * Steuerung in scroll-story.ts (initCompanion).
+ */
+import BeeMeli from './BeeMeli.astro';
+---
+
+<div id="meli-companion" aria-hidden="true">
+  <div class="companion-inner">
+    <BeeMeli width="62px" />
+  </div>
+</div>
+
+<style>
+  #meli-companion {
+    position: fixed;
+    left: 0;
+    top: 0;
+    z-index: 140;
+    opacity: 0;
+    visibility: hidden;
+    pointer-events: none;
+    will-change: transform;
+  }
+
+  .companion-inner {
+    position: relative;
+    pointer-events: auto;
+    cursor: pointer;
+  }
+
+  /* Ohne JS oder mit reduzierter Bewegung fliegt niemand */
+  html.no-js #meli-companion,
+  html.reduced-motion #meli-companion {
+    display: none;
+  }
+</style>

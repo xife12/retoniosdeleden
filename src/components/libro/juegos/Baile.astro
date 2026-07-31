@@ -1,0 +1,391 @@
+---
+/**
+ * Seite 8 — „Bailá vos el meneo"
+ *
+ * Der spektakulärste Bienenfakt, mit der Rollenteilung, um die es geht:
+ * LINKS die Wiese draußen (Sonne, Stock, Blume) — die sieht im dunklen Stock
+ * niemand. RECHTS die Tanzfläche drinnen, wo „nach oben" schlicht „zur
+ * Sonne" heißt. Das Kind dreht die Tanzachse, Meli tanzt die Acht ab, und
+ * die Arbeiterinnen fliegen draußen genau den getanzten Winkel.
+ */
+import BeeMeli from '../../BeeMeli.astro';
+import { libroUI } from '../../../data/libro';
+import type { Lang } from '../../../i18n';
+
+interface Props {
+  lang: Lang;
+}
+
+const { lang } = Astro.props;
+const j = libroUI[lang].juegos.baile;
+---
+
+<div
+  class="escena"
+  data-bai-escena
+  data-textos={JSON.stringify({
+    win: j.win,
+    miss: j.miss,
+    fact: j.fact,
+    dancing: j.dancing,
+    near: j.near,
+    far: j.far,
+    logro: j.logro,
+  })}
+>
+  <h3 class="escena-titulo">{j.title}</h3>
+  <p class="escena-pista">{j.hint}</p>
+
+  <div class="mesa bai-mesa">
+    <svg viewBox="0 0 320 190">
+      <!-- ---------- draußen: die Wiese ---------- -->
+      <g>
+        <circle cx="80" cy="104" r="66" fill="#eef5f8" stroke="#aebd8a" stroke-width="2.4"
+          filter="url(#wc-rough)" />
+        <circle cx="80" cy="28" r="15" fill="url(#pg-sol)" filter="url(#wc-wash)" />
+        <text x="80" y="10" text-anchor="middle" font-size="11" fill="#8a7b68"
+          font-style="italic">{j.sun}</text>
+        <path d="M80 44 L 80 66" stroke="#e8a13d" stroke-width="2" stroke-dasharray="3 4" />
+        <g>
+          <rect x="68" y="94" width="24" height="18" rx="3" fill="#7a8b5a" filter="url(#wc-rough)" />
+          <rect x="73" y="110" width="14" height="4" fill="#3f4f30" />
+        </g>
+        <g class="bai-flor" data-bai-flor>
+          <circle r="6" fill="#b3761c" />
+          <g fill="#e8892d">
+            <ellipse cy="-9.5" rx="4.4" ry="6.4" /><ellipse cy="9.5" rx="4.4" ry="6.4" />
+            <ellipse cx="-9.5" rx="6.4" ry="4.4" /><ellipse cx="9.5" rx="6.4" ry="4.4" />
+          </g>
+        </g>
+        <g class="bai-obreras" data-bai-obreras>
+          <circle cx="0" cy="0" r="3.4" fill="#4a3308" />
+          <circle cx="-6" cy="5" r="2.8" fill="#4a3308" />
+          <circle cx="6" cy="5" r="2.8" fill="#4a3308" />
+        </g>
+        <text x="80" y="185" text-anchor="middle" font-size="11" font-weight="700"
+          fill="#8a7b68">{j.outside}</text>
+      </g>
+
+      <!-- ---------- drinnen: die Tanzfläche ---------- -->
+      <g class="bai-pista" transform="translate(238 104)">
+        <circle r="66" fill="#4a2b06" opacity="0.85" />
+        <circle r="66" fill="none" stroke="#ffe9b0" stroke-width="2" stroke-dasharray="3 6"
+          opacity="0.75" />
+
+        <!-- „oben = zur Sonne": der ganze Trick des Tanzes -->
+        <g class="bai-sol">
+          <path d="M0 -62 L 0 -76" stroke="#ffd977" stroke-width="2.4" stroke-linecap="round" />
+          <circle cy="-82" r="9" fill="url(#pg-sol)" />
+        </g>
+
+        <!-- Die Tanzachse, die das Kind dreht -->
+        <g class="bai-eje" data-bai-eje>
+          <path d="M0 50 L 0 -50" stroke="#fff3d0" stroke-width="3.4" stroke-linecap="round" />
+          <path d="M-7 -38 L 0 -50 L 7 -38" fill="none" stroke="#fff3d0" stroke-width="3"
+            stroke-linecap="round" stroke-linejoin="round" />
+          <circle class="bai-tirador" cy="-50" r="12" fill="#e8a13d" stroke="#fffdf8"
+            stroke-width="3" />
+        </g>
+
+        <path class="bai-ruta" data-bai-ruta fill="none" stroke="none" />
+        <g class="bai-meli" data-bai-meli>
+          <ellipse rx="10" ry="6.6" fill="#e8b23d" />
+          <path d="M-5 -6 L -3.6 6 M 1.4 -6.4 L 2.6 6.4" stroke="#4a3308" stroke-width="2.6" />
+          <ellipse cx="-1.4" cy="-7.2" rx="8.6" ry="3.2" fill="#eef5f8" opacity="0.9" />
+          <circle cx="10.6" cy="-0.8" r="4.4" fill="#8a5a22" />
+        </g>
+
+        <circle class="bai-tocar" data-bai-tocar r="66" fill="transparent" />
+      </g>
+      <text x="238" y="185" text-anchor="middle" font-size="11" font-weight="700"
+        fill="#8a7b68">{j.inside}</text>
+    </svg>
+  </div>
+
+  <div class="bai-mandos">
+    <label class="regla">
+      <span>{j.angle}: <b data-bai-ang>0°</b></span>
+      <input type="range" min="0" max="355" step="5" value="0" data-bai-range-ang
+        aria-label={j.angle} />
+    </label>
+    <label class="regla">
+      <span>{j.distance}: <b data-bai-dis>1</b></span>
+      <input type="range" min="1" max="5" step="1" value="1" data-bai-range-dis
+        aria-label={j.distance} />
+    </label>
+  </div>
+
+  <div class="escena-mandos">
+    <button class="boton boton--grande" data-bai-send>{j.send}</button>
+  </div>
+
+  <div class="dice">
+    <span class="dice-meli" aria-hidden="true"><BeeMeli width="100%" /></span>
+    <p class="dice-texto" data-bai-dice aria-live="polite"></p>
+  </div>
+</div>
+
+<script>
+  import { datos, decir, logro, quieto, tin } from '../../../scripts/juego';
+
+  const escena = document.querySelector<HTMLElement>('[data-bai-escena]');
+
+  if (escena) {
+    const t = datos(escena, 'textos', {
+      win: '',
+      miss: '',
+      fact: '',
+      dancing: '',
+      near: '',
+      far: '',
+      logro: '',
+    });
+
+    const svg = escena.querySelector<SVGSVGElement>('.bai-mesa svg')!;
+    const eje = escena.querySelector<SVGGElement>('[data-bai-eje]')!;
+    const zona = escena.querySelector<SVGCircleElement>('[data-bai-tocar]')!;
+    const ruta = escena.querySelector<SVGPathElement>('[data-bai-ruta]')!;
+    const meli = escena.querySelector<SVGGElement>('[data-bai-meli]')!;
+    const flor = escena.querySelector<SVGGElement>('[data-bai-flor]')!;
+    const obreras = escena.querySelector<SVGGElement>('[data-bai-obreras]')!;
+    const rAng = escena.querySelector<HTMLInputElement>('[data-bai-range-ang]')!;
+    const rDis = escena.querySelector<HTMLInputElement>('[data-bai-range-dis]')!;
+    const outAng = escena.querySelector<HTMLElement>('[data-bai-ang]')!;
+    const outDis = escena.querySelector<HTMLElement>('[data-bai-dis]')!;
+    const send = escena.querySelector<HTMLButtonElement>('[data-bai-send]')!;
+    const dice = escena.querySelector<HTMLElement>('[data-bai-dice]');
+
+    // Koordinaten im viewBox-Raum 320 x 190
+    const PISTA = { x: 238, y: 104 };
+    const CAMPO = { x: 80, y: 104 };
+
+    let angulo = 0;
+    let distancia = 1;
+    let metaAng = 0;
+    let metaDis = 1;
+    let ganado = false;
+    let bailando = false;
+
+    const nuevaMeta = () => {
+      metaAng = Math.floor(Math.random() * 24) * 15;
+      metaDis = 1 + Math.floor(Math.random() * 5);
+      const rad = ((metaAng - 90) * Math.PI) / 180;
+      const d = 16 + metaDis * 8;
+      flor.setAttribute(
+        'transform',
+        `translate(${(CAMPO.x + Math.cos(rad) * d).toFixed(1)} ${(CAMPO.y + Math.sin(rad) * d).toFixed(1)})`
+      );
+    };
+
+    function dibujarRuta() {
+      const L = 34 + distancia * 4;
+      ruta.setAttribute(
+        'd',
+        `M 0 ${L} L 0 ${-L} C -26 ${-L - 12}, -38 ${L * 0.2}, 0 ${L} L 0 ${-L} C 26 ${-L - 12}, 38 ${L * 0.2}, 0 ${L}`
+      );
+      ruta.setAttribute('transform', `rotate(${angulo})`);
+      if (!bailando) colocarMeli(0);
+    }
+
+    function colocarMeli(dist: number) {
+      const total = ruta.getTotalLength();
+      if (!total) return;
+      const p = ruta.getPointAtLength(Math.min(dist, total));
+      const q = ruta.getPointAtLength(Math.min(dist + 5, total));
+      const rot = (Math.atan2(q.y - p.y, q.x - p.x) * 180) / Math.PI;
+      const rad = (angulo * Math.PI) / 180;
+      // getPointAtLength liefert unrotierte Punkte — selbst nachdrehen.
+      const x = p.x * Math.cos(rad) - p.y * Math.sin(rad);
+      const y = p.x * Math.sin(rad) + p.y * Math.cos(rad);
+      meli.setAttribute(
+        'transform',
+        `translate(${(PISTA.x + x).toFixed(1)} ${(PISTA.y + y).toFixed(1)}) rotate(${(rot + angulo).toFixed(1)})`
+      );
+    }
+
+    const pintar = () => {
+      eje.setAttribute('transform', `rotate(${angulo})`);
+      outAng.textContent = `${angulo}°`;
+      outDis.textContent = `${distancia} · ${distancia <= 2 ? t.near : t.far}`;
+      rAng.value = String(angulo);
+      rDis.value = String(distancia);
+      dibujarRuta();
+    };
+
+    /* Ziehen auf der Tanzfläche */
+    const desdeEvento = (e: PointerEvent) => {
+      const r = svg.getBoundingClientRect();
+      const vx = ((e.clientX - r.left) / r.width) * 320;
+      const vy = ((e.clientY - r.top) / r.height) * 190;
+      const a = (Math.atan2(vx - PISTA.x, -(vy - PISTA.y)) * 180) / Math.PI;
+      angulo = (((Math.round(a / 5) * 5) % 360) + 360) % 360;
+      pintar();
+    };
+
+    let arrastrando = false;
+    zona.addEventListener('pointerdown', (e) => {
+      if (bailando) return;
+      arrastrando = true;
+      zona.setPointerCapture(e.pointerId);
+      desdeEvento(e);
+    });
+    zona.addEventListener('pointermove', (e) => {
+      if (arrastrando) desdeEvento(e);
+    });
+    ['pointerup', 'pointercancel'].forEach((ev) =>
+      zona.addEventListener(ev, () => {
+        arrastrando = false;
+      })
+    );
+
+    rAng.addEventListener('input', () => {
+      angulo = Number(rAng.value);
+      pintar();
+    });
+    rDis.addEventListener('input', () => {
+      distancia = Number(rDis.value);
+      pintar();
+    });
+
+    send.addEventListener('click', () => {
+      if (bailando) return;
+      bailando = true;
+      send.disabled = true;
+      decir(dice, t.dancing);
+
+      const total = ruta.getTotalLength();
+      const dur = quieto() ? 300 : 2600;
+      const t0 = performance.now();
+      const paso = (ahora: number) => {
+        const p = Math.min(1, (ahora - t0) / dur);
+        colocarMeli(total * ((p * 2) % 1));
+        if (p < 1) requestAnimationFrame(paso);
+        else {
+          bailando = false;
+          send.disabled = false;
+          volar();
+        }
+      };
+      requestAnimationFrame(paso);
+    });
+
+    function volar() {
+      const rad = ((angulo - 90) * Math.PI) / 180;
+      const d = 16 + distancia * 8;
+      const x = CAMPO.x + Math.cos(rad) * d;
+      const y = CAMPO.y + Math.sin(rad) * d;
+
+      obreras.animate(
+        [
+          { transform: `translate(${CAMPO.x}px, ${CAMPO.y}px)` },
+          { transform: `translate(${x}px, ${y}px)` },
+        ],
+        { duration: quieto() ? 1 : 950, easing: 'cubic-bezier(0.23,1,0.32,1)', fill: 'forwards' }
+      );
+
+      const dif = Math.min(Math.abs(angulo - metaAng), 360 - Math.abs(angulo - metaAng));
+      const bien = dif <= 18 && distancia === metaDis;
+
+      window.setTimeout(
+        () => {
+          if (bien) {
+            flor.classList.add('is-hallada');
+            decir(dice, `${t.win} ${t.fact}`);
+            tin(1.5);
+            if (!ganado) {
+              ganado = true;
+              logro('baile', t.logro);
+            }
+          } else {
+            decir(dice, t.miss);
+            window.setTimeout(() => {
+              obreras.getAnimations().forEach((a) => a.cancel());
+              obreras.setAttribute('transform', `translate(${CAMPO.x} ${CAMPO.y})`);
+            }, 950);
+          }
+        },
+        quieto() ? 10 : 950
+      );
+    }
+
+    obreras.setAttribute('transform', `translate(${CAMPO.x} ${CAMPO.y})`);
+    nuevaMeta();
+    pintar();
+  }
+</script>
+
+<style>
+  .bai-mesa {
+    max-width: 34rem;
+  }
+
+  .bai-tocar {
+    cursor: grab;
+    touch-action: none;
+  }
+
+  .bai-tocar:active {
+    cursor: grabbing;
+  }
+
+  .bai-eje {
+    transition: transform 160ms var(--ease-out);
+  }
+
+  .bai-tirador {
+    filter: drop-shadow(0 0 6px rgba(232, 161, 61, 0.95));
+    animation: bai-tira 2.6s ease-in-out infinite;
+    transform-box: fill-box;
+    transform-origin: 50% 50%;
+  }
+
+  @keyframes bai-tira {
+    0%,
+    100% {
+      scale: 1;
+    }
+    50% {
+      scale: 1.16;
+    }
+  }
+
+  .bai-meli {
+    filter: drop-shadow(0 1px 3px rgba(40, 20, 4, 0.6));
+  }
+
+  .bai-flor {
+    transform-box: view-box;
+  }
+
+  .bai-flor.is-hallada {
+    animation: bai-florece 900ms var(--ease-bounce);
+  }
+
+  @keyframes bai-florece {
+    0% {
+      scale: 1;
+    }
+    45% {
+      scale: 1.6;
+    }
+    100% {
+      scale: 1;
+    }
+  }
+
+  .bai-mandos {
+    display: grid;
+    gap: var(--sp-2);
+    width: min(100%, 26rem);
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .bai-tirador,
+    .bai-flor.is-hallada {
+      animation: none !important;
+    }
+    .bai-eje {
+      transition: none;
+    }
+  }
+</style>

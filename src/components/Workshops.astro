@@ -1,0 +1,1405 @@
+---
+import type { Dict, Lang } from '../i18n';
+import { workshops, workshopDetailUI, formatDate } from '../data/workshops';
+
+interface Props {
+  t: Dict;
+  lang: Lang;
+}
+
+const { t, lang } = Astro.props;
+const b = t.workshops.booking;
+const ui = workshopDetailUI[lang];
+
+const chipClass: Record<string, string> = {
+  miel: 'chip--miel',
+  lavanda: 'chip--lavanda',
+  pistacho: '',
+  barro: 'chip--barro',
+};
+
+/** Termine als JSON für den Buchungsdialog (Karte und Detailansicht teilen sich das Format). */
+const datesAttr = (dates: string[]) =>
+  JSON.stringify(dates.map((d) => ({ iso: d, label: formatDate(d, lang) })));
+---
+
+<section id="talleres" class="workshops" data-chapter data-meli-zone>
+  <div class="wrap">
+    <header class="section-head" data-reveal>
+      <p class="kicker">{t.workshops.kicker}</p>
+      <h2>
+        <span class="swash">{t.workshops.title}</span>
+        <span class="meli-perch" data-meli-perch aria-hidden="true"></span>
+      </h2>
+      <p class="lead">{t.workshops.intro}</p>
+    </header>
+
+    <div class="ws-grid">
+      {workshops.map((w) => {
+        const wt = w.text[lang];
+        return (
+          <article class={`card ws-card ws-card--${w.accent}`} data-reveal>
+            <h3 class="ws-head">
+              <button type="button" class="ws-head-btn" data-ws-detail={w.id} aria-haspopup="dialog">
+                <span class="ws-icon" aria-hidden="true">
+                  {w.icon === 'bee' && (
+                    <svg viewBox="0 0 90 90">
+                      <ellipse cx="42" cy="52" rx="24" ry="17" fill="url(#pg-miel)" filter="url(#wc-rough)" />
+                      <path d="M32 36 L 34 68 M 46 34 L 48 70" stroke="#6b4a1f" stroke-width="6" filter="url(#wc-rough)" />
+                      <ellipse cx="36" cy="28" rx="17" ry="8" transform="rotate(-26 36 28)" fill="#d9eaf2" opacity="0.85" />
+                      <circle cx="66" cy="44" r="11" fill="#a06a2c" filter="url(#wc-rough)" />
+                      <circle cx="69" cy="42" r="2" fill="#33291f" />
+                    </svg>
+                  )}
+                  {w.icon === 'lavender' && (
+                    <svg viewBox="0 0 90 90">
+                      <path d="M45 76 C 46 58, 44 44, 46 26" stroke="#5b6c42" stroke-width="3.4" stroke-linecap="round" filter="url(#ink)" fill="none" />
+                      <ellipse cx="46" cy="24" rx="9" ry="17" fill="url(#pg-lavanda)" filter="url(#wc-rough)" />
+                      <ellipse cx="34" cy="46" rx="6" ry="11" transform="rotate(-28 34 46)" fill="url(#pg-lavanda)" opacity="0.8" filter="url(#wc-rough)" />
+                      <ellipse cx="58" cy="42" rx="6" ry="11" transform="rotate(24 58 42)" fill="url(#pg-lavanda)" opacity="0.8" filter="url(#wc-rough)" />
+                    </svg>
+                  )}
+                  {w.icon === 'pistachio' && (
+                    <svg viewBox="0 0 90 90">
+                      <ellipse cx="45" cy="48" rx="24" ry="29" fill="#e8d5b8" filter="url(#wc-soft)" />
+                      <path d="M45 19 C 31 25, 25 38, 26 52 C 27 65, 34 74, 45 77 Z" fill="#d9bd94" filter="url(#wc-rough)" />
+                      <ellipse cx="50" cy="48" rx="11" ry="20" fill="url(#pg-pistacho)" filter="url(#wc-rough)" />
+                    </svg>
+                  )}
+                  {w.icon === 'organic' && (
+                    <svg viewBox="0 0 90 90">
+                      <path d="M22 66 C 34 60, 56 60, 68 66 L 64 74 L 26 74 Z" fill="url(#pg-barro)" opacity="0.7" filter="url(#wc-rough)" />
+                      <path d="M45 64 C 45 50, 44 42, 45 32" stroke="#5b6c42" stroke-width="3.4" stroke-linecap="round" filter="url(#ink)" fill="none" />
+                      <ellipse cx="36" cy="32" rx="12" ry="7" transform="rotate(-32 36 32)" fill="url(#pg-pistacho)" filter="url(#wc-rough)" />
+                      <ellipse cx="55" cy="26" rx="12" ry="7" transform="rotate(28 55 26)" fill="url(#pg-pistacho)" filter="url(#wc-rough)" />
+                      <circle cx="45" cy="45" r="26" fill="none" stroke="#7a8b5a" stroke-width="2.4" stroke-dasharray="5 6" opacity="0.6" filter="url(#ink)" />
+                    </svg>
+                  )}
+                  {w.icon === 'clay' && (
+                    <svg viewBox="0 0 90 90">
+                      <path d="M26 70 L 26 44 C 26 30, 64 30, 64 44 L 64 70 Z" fill="url(#pg-barro)" filter="url(#wc-soft)" />
+                      <path d="M20 46 C 34 28, 56 28, 70 46" stroke="#5b6c42" stroke-width="6" stroke-linecap="round" fill="none" opacity="0.85" filter="url(#wc-rough)" />
+                      <rect x="40" y="54" width="12" height="16" rx="5" fill="#5c3a26" opacity="0.8" filter="url(#wc-rough)" />
+                      <path d="M66 64 L 78 52 M 74 48 L 82 56" stroke="#8a7b68" stroke-width="3" stroke-linecap="round" filter="url(#ink)" />
+                    </svg>
+                  )}
+                </span>
+
+                <span class="ws-head-text">
+                  <span class="ws-name">{wt.title}</span>
+                  <span class="ws-more">
+                    {ui.more}
+                    <svg class="ws-arrow" viewBox="0 0 12 12" aria-hidden="true">
+                      <path d="M2 6 H 10 M 6.4 2.6 L 10 6 L 6.4 9.4" stroke="currentColor" stroke-width="1.8" fill="none" stroke-linecap="round" stroke-linejoin="round" filter="url(#ink)" />
+                    </svg>
+                  </span>
+                </span>
+              </button>
+            </h3>
+
+            <div class="ws-body">
+              <span class={`chip ${chipClass[w.accent]}`}>{wt.audience}</span>
+              <p>{wt.desc}</p>
+
+              <dl class="ws-meta">
+                <div>
+                  <dt>{t.workshops.duration}</dt>
+                  <dd>{w.hours} {t.workshops.hours}</dd>
+                </div>
+                <div>
+                  <dt>{t.workshops.group}</dt>
+                  <dd>{w.maxPeople} {t.workshops.people}</dd>
+                </div>
+                <div>
+                  <dt>US$ {w.priceUSD}</dt>
+                  <dd>{t.workshops.perPerson}</dd>
+                </div>
+              </dl>
+
+              <p class="ws-dates">
+                <strong>{t.workshops.nextDates}:</strong>{' '}
+                {w.dates.map((d) => formatDate(d, lang)).join(', ')}
+              </p>
+
+              <button
+                class="btn book-btn"
+                data-ws-id={w.id}
+                data-ws-title={wt.title}
+                data-ws-price={w.priceUSD}
+                data-ws-max={w.maxPeople}
+                data-ws-dates={datesAttr(w.dates)}
+              >
+                {t.workshops.book}
+              </button>
+            </div>
+          </article>
+        );
+      })}
+    </div>
+
+    <p class="demo-note" data-reveal>{t.workshops.demoNote}</p>
+  </div>
+
+  <!-- Detail-Dialog: alle Panels serverseitig gerendert, JS blendet nur um -->
+  <div class="modal-backdrop" data-detail-backdrop hidden></div>
+  <div
+    class="modal modal--detail"
+    data-detail-modal
+    role="dialog"
+    aria-modal="true"
+    aria-labelledby={`wd-title-${workshops[0].id}`}
+    hidden
+  >
+    <button class="modal-close" data-detail-close aria-label={ui.close}>×</button>
+
+    {workshops.map((w) => {
+      const wt = w.text[lang];
+      return (
+        <article class={`wd wd--${w.accent}`} data-detail-panel={w.id} hidden>
+          <div class="wd-hero" aria-hidden="true">
+            {w.id === 'abejas' && (
+              <svg viewBox="0 0 320 150">
+                <rect width="320" height="150" fill="url(#pg-cielo)" opacity="0.5" />
+                <circle cx="268" cy="32" r="24" fill="url(#pg-sol)" filter="url(#wc-wash)" />
+                <g filter="url(#wc-wash)">
+                  <ellipse cx="26" cy="62" rx="36" ry="30" fill="#5b6c42" opacity="0.5" />
+                  <ellipse cx="84" cy="54" rx="32" ry="34" fill="#6d7f4d" opacity="0.55" />
+                  <ellipse cx="142" cy="62" rx="34" ry="28" fill="#5b6c42" opacity="0.45" />
+                  <ellipse cx="200" cy="56" rx="30" ry="31" fill="#6d7f4d" opacity="0.5" />
+                  <ellipse cx="258" cy="66" rx="34" ry="26" fill="#5b6c42" opacity="0.4" />
+                </g>
+                <path d="M0 88 C 72 80, 148 94, 226 86 C 268 82, 296 90, 320 84 L 320 150 L 0 150 Z" fill="#aebd8a" opacity="0.55" filter="url(#wc-wash)" />
+                <g filter="url(#wc-rough)">
+                  <rect x="46" y="86" width="42" height="36" rx="4" fill="url(#pg-miel)" />
+                  <rect x="41" y="78" width="52" height="10" rx="4" fill="#b3761c" />
+                  <rect x="54" y="112" width="26" height="4" rx="2" fill="#8a5c14" opacity="0.65" />
+                  <rect x="112" y="94" width="34" height="28" rx="4" fill="url(#pg-miel)" opacity="0.92" />
+                  <rect x="108" y="87" width="42" height="9" rx="4" fill="#b3761c" opacity="0.92" />
+                </g>
+                <g filter="url(#wc-rough)">
+                  <ellipse cx="196" cy="112" rx="7" ry="16" fill="url(#pg-lavanda)" opacity="0.9" />
+                  <ellipse cx="218" cy="120" rx="6" ry="14" fill="url(#pg-lavanda)" opacity="0.8" />
+                  <ellipse cx="240" cy="110" rx="7" ry="17" fill="url(#pg-lavanda)" opacity="0.85" />
+                  <ellipse cx="262" cy="122" rx="6" ry="13" fill="url(#pg-lavanda)" opacity="0.75" />
+                  <ellipse cx="286" cy="112" rx="7" ry="16" fill="url(#pg-lavanda)" opacity="0.8" />
+                </g>
+                <g stroke="#5b6c42" stroke-width="2.4" stroke-linecap="round" filter="url(#ink)" opacity="0.65" fill="none">
+                  <path d="M196 150 C 197 134, 195 124, 196 116" />
+                  <path d="M218 150 C 219 138, 217 130, 218 124" />
+                  <path d="M240 150 C 241 132, 239 122, 240 114" />
+                  <path d="M262 150 C 263 140, 261 132, 262 126" />
+                  <path d="M286 150 C 287 134, 285 124, 286 116" />
+                </g>
+                <g stroke="#8a7b68" stroke-width="1.6" stroke-dasharray="3 5" fill="none" opacity="0.6" filter="url(#ink)">
+                  <path d="M104 66 C 124 48, 148 60, 168 42" />
+                  <path d="M156 96 C 176 84, 190 96, 208 84" />
+                </g>
+                <g>
+                  <g transform="translate(170,40) rotate(-12)">
+                    <ellipse cx="0" cy="0" rx="8" ry="5.4" fill="url(#pg-miel)" filter="url(#wc-rough)" />
+                    <path d="M-3 -4 L -2 4 M 2 -4 L 3 4" stroke="#6b4a1f" stroke-width="1.8" />
+                    <ellipse cx="-2" cy="-6.4" rx="6.4" ry="2.8" transform="rotate(-24 -2 -6.4)" fill="#d9eaf2" opacity="0.85" />
+                  </g>
+                  <g transform="translate(210,82) rotate(9)">
+                    <ellipse cx="0" cy="0" rx="6.4" ry="4.4" fill="url(#pg-miel)" filter="url(#wc-rough)" />
+                    <path d="M-2.4 -3.2 L -1.6 3.2 M 1.6 -3.2 L 2.4 3.2" stroke="#6b4a1f" stroke-width="1.5" />
+                    <ellipse cx="-1.6" cy="-5.2" rx="5.2" ry="2.2" transform="rotate(-22 -1.6 -5.2)" fill="#d9eaf2" opacity="0.85" />
+                  </g>
+                  <g transform="translate(100,64) rotate(-20)">
+                    <ellipse cx="0" cy="0" rx="5.6" ry="3.8" fill="url(#pg-miel)" filter="url(#wc-rough)" opacity="0.9" />
+                    <path d="M-2 -2.8 L -1.4 2.8 M 1.4 -2.8 L 2 2.8" stroke="#6b4a1f" stroke-width="1.4" />
+                    <ellipse cx="-1.4" cy="-4.6" rx="4.6" ry="2" transform="rotate(-22 -1.4 -4.6)" fill="#d9eaf2" opacity="0.8" />
+                  </g>
+                </g>
+              </svg>
+            )}
+
+            {w.id === 'lavanda' && (
+              <svg viewBox="0 0 320 150">
+                <rect width="320" height="150" fill="url(#pg-cielo)" opacity="0.32" />
+                <path d="M0 72 C 80 64, 150 78, 230 68 C 272 63, 298 72, 320 66 L 320 150 L 0 150 Z" fill="#dde4c8" opacity="0.7" filter="url(#wc-wash)" />
+                <g filter="url(#wc-soft)" opacity="0.8">
+                  <ellipse cx="42" cy="52" rx="25" ry="19" fill="url(#pg-pistacho)" />
+                  <ellipse cx="106" cy="46" rx="22" ry="17" fill="url(#pg-pistacho)" />
+                  <ellipse cx="168" cy="52" rx="20" ry="16" fill="url(#pg-pistacho)" />
+                </g>
+                <g stroke="#6b5335" stroke-width="4" stroke-linecap="round" filter="url(#ink)">
+                  <path d="M42 74 L 42 56 M 106 70 L 106 50 M 168 74 L 168 56" />
+                </g>
+                <g filter="url(#wc-rough)">
+                  <path d="M0 104 C 60 96, 130 100, 198 92 L 198 104 C 130 112, 60 108, 0 116 Z" fill="url(#pg-lavanda)" opacity="0.8" />
+                  <path d="M0 130 C 70 122, 140 126, 206 116 L 206 130 C 140 140, 70 136, 0 144 Z" fill="url(#pg-lavanda)" opacity="0.65" />
+                </g>
+                <g stroke="#5b6c42" stroke-width="2" stroke-linecap="round" opacity="0.55" filter="url(#ink)" fill="none">
+                  <path d="M24 118 L 24 108 M 62 116 L 62 106 M 100 113 L 100 103 M 138 110 L 138 100" />
+                </g>
+                <g filter="url(#wc-rough)" transform="translate(232,68)">
+                  <path d="M0 48 L 0 20 C 0 7, 42 7, 42 20 L 42 48 Z" fill="url(#pg-barro)" />
+                  <ellipse cx="21" cy="20" rx="21" ry="7.5" fill="#dfa98c" />
+                  <path d="M21 12 C 21 1, 33 -1, 36 -10" stroke="#b3761c" stroke-width="4.5" fill="none" stroke-linecap="round" />
+                  <path d="M4 34 L 38 34" stroke="#9e5636" stroke-width="2.4" opacity="0.7" />
+                </g>
+                <g stroke="#f7efdd" stroke-width="2.4" stroke-linecap="round" opacity="0.7" fill="none" filter="url(#ink)">
+                  <path d="M264 52 C 270 44, 262 38, 268 30" />
+                  <path d="M278 56 C 284 48, 276 42, 282 34" />
+                </g>
+                <g filter="url(#wc-rough)" transform="translate(272,116)">
+                  <rect x="0" y="4" width="30" height="18" rx="5" fill="#f1eef8" />
+                  <rect x="8" y="-6" width="28" height="16" rx="5" fill="#e0dbf0" />
+                  <path d="M14 2 C 18 -2, 24 -2, 28 2" stroke="#9b8ec4" stroke-width="1.8" fill="none" stroke-linecap="round" />
+                </g>
+              </svg>
+            )}
+
+            {w.id === 'pistacho' && (
+              <svg viewBox="0 0 320 150">
+                <rect width="320" height="150" fill="url(#pg-cielo)" opacity="0.32" />
+                <path d="M0 60 C 60 52, 120 64, 190 56 C 240 50, 280 60, 320 54 L 320 150 L 0 150 Z" fill="#dde4c8" opacity="0.72" filter="url(#wc-wash)" />
+                <g stroke="#aebd8a" stroke-width="3" opacity="0.65" filter="url(#ink)" fill="none">
+                  <path d="M0 96 C 90 88, 200 92, 320 80" />
+                  <path d="M0 120 C 90 112, 200 116, 320 102" />
+                </g>
+                <g filter="url(#wc-soft)" opacity="0.8">
+                  <ellipse cx="52" cy="58" rx="22" ry="17" fill="url(#pg-pistacho)" />
+                  <ellipse cx="120" cy="54" rx="19" ry="15" fill="url(#pg-pistacho)" />
+                  <ellipse cx="180" cy="58" rx="17" ry="13" fill="url(#pg-pistacho)" />
+                  <ellipse cx="232" cy="54" rx="15" ry="12" fill="url(#pg-pistacho)" />
+                </g>
+                <g stroke="#6b5335" stroke-width="3.4" stroke-linecap="round" filter="url(#ink)">
+                  <path d="M52 76 L 52 60 M 120 70 L 120 56 M 180 72 L 180 59 M 232 66 L 232 54" />
+                </g>
+                <ellipse cx="88" cy="132" rx="36" ry="12" fill="url(#pg-barro)" opacity="0.5" filter="url(#wc-wash)" />
+                <path d="M88 132 C 89 118, 87 108, 88 96" stroke="#5b6c42" stroke-width="3.4" stroke-linecap="round" filter="url(#ink)" fill="none" />
+                <g filter="url(#wc-rough)">
+                  <ellipse cx="72" cy="98" rx="13" ry="6.4" transform="rotate(-26 72 98)" fill="url(#pg-pistacho)" />
+                  <ellipse cx="104" cy="94" rx="13" ry="6.4" transform="rotate(22 104 94)" fill="url(#pg-pistacho)" />
+                  <ellipse cx="88" cy="84" rx="10" ry="6" fill="url(#pg-pistacho-light)" />
+                </g>
+                <g filter="url(#wc-rough)" transform="translate(100,108) rotate(8)">
+                  <rect x="0" y="0" width="36" height="17" rx="4" fill="#fdf3e0" stroke="#b3761c" stroke-width="1.6" />
+                  <path d="M7 6 H 28 M 7 11.5 H 21" stroke="#8a7b68" stroke-width="1.6" stroke-linecap="round" />
+                </g>
+                <g transform="translate(226,72)">
+                  <path d="M8 0 L 8 44" stroke="#8a6a3f" stroke-width="5" stroke-linecap="round" filter="url(#ink)" />
+                  <path d="M0 44 L 16 44 L 13 62 L 3 62 Z" fill="#b8b3a6" filter="url(#wc-rough)" />
+                  <path d="M2 -1 C 2 -9, 14 -9, 14 -1" stroke="#8a6a3f" stroke-width="5" fill="none" stroke-linecap="round" filter="url(#ink)" />
+                </g>
+                <g transform="translate(258,104)" filter="url(#wc-rough)">
+                  <rect x="0" y="8" width="30" height="26" rx="6" fill="url(#pg-miel)" />
+                  <path d="M30 14 L 48 8 L 52 12 L 34 22 Z" fill="url(#pg-miel)" />
+                  <path d="M6 8 C 10 -2, 22 -2, 26 8" stroke="#b3761c" stroke-width="4" fill="none" stroke-linecap="round" />
+                </g>
+              </svg>
+            )}
+
+            {w.id === 'organico' && (
+              <svg viewBox="0 0 320 150">
+                <rect width="320" height="150" fill="url(#pg-cielo)" opacity="0.28" />
+                <path d="M0 56 C 70 50, 150 60, 230 52 C 268 48, 296 56, 320 52 L 320 80 L 0 80 Z" fill="#aebd8a" opacity="0.6" filter="url(#wc-wash)" />
+                <path d="M0 76 C 80 70, 180 82, 320 72 L 320 100 L 0 104 Z" fill="#6b5335" opacity="0.7" filter="url(#wc-wash)" />
+                <path d="M0 100 C 90 94, 190 106, 320 96 L 320 124 L 0 128 Z" fill="url(#pg-barro)" opacity="0.65" filter="url(#wc-wash)" />
+                <path d="M0 124 C 90 118, 190 130, 320 120 L 320 150 L 0 150 Z" fill="#8f4c31" opacity="0.5" filter="url(#wc-wash)" />
+                <g stroke="#f7efdd" stroke-width="2" opacity="0.55" fill="none" filter="url(#ink)" stroke-linecap="round">
+                  <path d="M74 78 C 72 92, 66 100, 58 112 M 74 78 C 78 94, 84 102, 92 114 M 74 88 C 68 94, 62 96, 56 98" />
+                  <path d="M198 76 C 196 90, 190 98, 184 110 M 198 76 C 204 90, 210 98, 216 108" />
+                </g>
+                <path d="M118 110 C 130 104, 138 116, 150 110 C 160 105, 166 112, 172 108" stroke="#dfa98c" stroke-width="7" stroke-linecap="round" fill="none" filter="url(#wc-rough)" />
+                <circle cx="172" cy="106" r="1.4" fill="#8f4c31" />
+                <g stroke="#5b6c42" stroke-width="3" stroke-linecap="round" fill="none" filter="url(#ink)">
+                  <path d="M74 78 C 72 64, 76 54, 74 42" />
+                  <path d="M198 76 C 200 62, 196 52, 198 40" />
+                  <path d="M136 80 C 134 68, 138 60, 136 50" />
+                </g>
+                <g filter="url(#wc-rough)">
+                  <circle cx="74" cy="38" r="11" fill="url(#pg-miel)" />
+                  <circle cx="74" cy="38" r="4" fill="#b3761c" />
+                  <circle cx="198" cy="36" r="10" fill="url(#pg-miel)" opacity="0.9" />
+                  <circle cx="198" cy="36" r="3.6" fill="#b3761c" />
+                  <ellipse cx="126" cy="48" rx="11" ry="6" transform="rotate(-28 126 48)" fill="url(#pg-pistacho)" />
+                  <ellipse cx="147" cy="44" rx="11" ry="6" transform="rotate(24 147 44)" fill="url(#pg-pistacho)" />
+                </g>
+                <g filter="url(#wc-rough)" opacity="0.8">
+                  <ellipse cx="250" cy="52" rx="6" ry="14" fill="url(#pg-lavanda)" />
+                  <ellipse cx="272" cy="58" rx="5" ry="12" fill="url(#pg-lavanda)" opacity="0.85" />
+                  <ellipse cx="294" cy="50" rx="6" ry="13" fill="url(#pg-lavanda)" opacity="0.8" />
+                </g>
+                <g transform="translate(24,48)">
+                  <path d="M6 0 L 6 40" stroke="#8a6a3f" stroke-width="5" stroke-linecap="round" filter="url(#ink)" />
+                  <path d="M-2 40 L 14 40 L 11 62 L 1 62 Z" fill="#b8b3a6" filter="url(#wc-rough)" />
+                </g>
+              </svg>
+            )}
+
+            {w.id === 'barro' && (
+              <svg viewBox="0 0 320 150">
+                <rect width="320" height="150" fill="url(#pg-cielo)" opacity="0.38" />
+                <circle cx="44" cy="32" r="20" fill="url(#pg-sol)" filter="url(#wc-wash)" />
+                <g filter="url(#wc-wash)" opacity="0.45">
+                  <ellipse cx="96" cy="46" rx="30" ry="30" fill="#5b6c42" />
+                  <ellipse cx="148" cy="40" rx="26" ry="28" fill="#6d7f4d" />
+                  <ellipse cx="290" cy="48" rx="32" ry="28" fill="#5b6c42" />
+                </g>
+                <path d="M0 100 C 80 94, 170 104, 250 96 C 286 92, 304 100, 320 96 L 320 150 L 0 150 Z" fill="#dde4c8" opacity="0.7" filter="url(#wc-wash)" />
+                <path d="M122 62 L 186 32 L 250 62 Z" fill="#7a8b5a" opacity="0.9" filter="url(#wc-rough)" />
+                <path d="M116 64 L 256 64" stroke="#5b6c42" stroke-width="5" stroke-linecap="round" filter="url(#ink)" />
+                <path d="M132 100 L 132 78 C 158 73, 214 73, 240 78 L 240 100 Z" fill="url(#pg-barro)" filter="url(#wc-rough)" />
+                <path d="M136 78 C 160 72, 208 72, 234 76 L 234 69 C 208 65, 162 65, 136 71 Z" fill="#dfa98c" opacity="0.92" filter="url(#wc-rough)" />
+                <g fill="#8a6a3f" filter="url(#wc-rough)">
+                  <rect x="127" y="58" width="8" height="44" rx="2" />
+                  <rect x="181" y="56" width="8" height="46" rx="2" />
+                  <rect x="235" y="58" width="8" height="44" rx="2" />
+                </g>
+                <rect x="196" y="82" width="18" height="18" rx="3" fill="#5c3a26" opacity="0.6" filter="url(#wc-rough)" />
+                <ellipse cx="62" cy="120" rx="48" ry="21" fill="#8a7b68" opacity="0.4" filter="url(#wc-wash)" />
+                <ellipse cx="62" cy="115" rx="35" ry="14" fill="url(#pg-barro)" filter="url(#wc-rough)" />
+                <g stroke="#e8a13d" stroke-width="2" stroke-linecap="round" opacity="0.75" filter="url(#ink)">
+                  <path d="M42 112 L 56 107 M 60 119 L 76 112 M 48 121 L 62 123 M 70 106 L 82 111" />
+                </g>
+                <g transform="translate(256,102)" filter="url(#wc-rough)">
+                  <path d="M0 0 L 26 0 L 22 28 L 4 28 Z" fill="#7fb0c9" opacity="0.85" />
+                  <path d="M2 0 C 6 -11, 20 -11, 24 0" stroke="#5c4f40" stroke-width="2.6" fill="none" />
+                </g>
+                <g transform="translate(296,98)">
+                  <path d="M0 0 L 14 8 L 4 20 L -6 12 Z" fill="#b8b3a6" filter="url(#wc-rough)" />
+                  <path d="M3 -2 L 9 -12" stroke="#8a6a3f" stroke-width="4" stroke-linecap="round" filter="url(#ink)" />
+                </g>
+              </svg>
+            )}
+          </div>
+
+          <header class="wd-head">
+            <span class={`chip ${chipClass[w.accent]}`}>{wt.audience}</span>
+            <h3 id={`wd-title-${w.id}`}>{wt.title}</h3>
+            <p class="wd-lead">{wt.longDesc}</p>
+          </header>
+
+          <h4 class="visually-hidden">{ui.atAGlance}</h4>
+          <dl class="wd-glance">
+            <div>
+              <dt>{t.workshops.duration}</dt>
+              <dd>{w.hours} {t.workshops.hours}</dd>
+            </div>
+            <div>
+              <dt>{t.workshops.group}</dt>
+              <dd>{w.maxPeople} {t.workshops.people}</dd>
+            </div>
+            <div>
+              <dt>US$ {w.priceUSD}</dt>
+              <dd>{t.workshops.perPerson}</dd>
+            </div>
+          </dl>
+
+          <section class="wd-block">
+            <h4>{ui.programme}</h4>
+            <ol class="wd-steps">
+              {wt.programme.map((s, i) => (
+                <li>
+                  <span class="wd-step-n" aria-hidden="true">{i + 1}</span>
+                  <div class="wd-step-body">
+                    <strong>{s.title}</strong>
+                    <p>{s.text}</p>
+                  </div>
+                </li>
+              ))}
+            </ol>
+          </section>
+
+          <div class="wd-cols">
+            <section class="wd-block">
+              <h4>{ui.included}</h4>
+              <ul class="wd-list wd-list--yes">
+                {wt.included.map((x) => <li>{x}</li>)}
+              </ul>
+            </section>
+            <section class="wd-block">
+              <h4>{ui.bring}</h4>
+              <ul class="wd-list wd-list--bring">
+                {wt.bring.map((x) => <li>{x}</li>)}
+              </ul>
+            </section>
+          </div>
+
+          <div class="wd-block">
+            <dl class="wd-facts">
+              <div>
+                <dt>{ui.forWhom}</dt>
+                <dd>{wt.forWhom}</dd>
+              </div>
+              <div>
+                <dt>{ui.languages}</dt>
+                <dd>{wt.languages}</dd>
+              </div>
+              <div>
+                <dt>{ui.meetingPoint}</dt>
+                <dd>{wt.meetingPoint}</dd>
+              </div>
+            </dl>
+          </div>
+
+          <section class="wd-block">
+            <h4>{t.workshops.nextDates}</h4>
+            <ul class="wd-dates">
+              {w.dates.map((d) => (
+                <li class={`chip ${chipClass[w.accent]}`}>{formatDate(d, lang)}</li>
+              ))}
+            </ul>
+          </section>
+
+          <div class="wd-cta">
+            <p class="wd-price">
+              US$ {w.priceUSD}
+              <span>{t.workshops.perPerson}</span>
+            </p>
+            <button
+              type="button"
+              class="btn wd-book"
+              data-detail-book
+              data-ws-id={w.id}
+              data-ws-title={wt.title}
+              data-ws-price={w.priceUSD}
+              data-ws-max={w.maxPeople}
+              data-ws-dates={datesAttr(w.dates)}
+            >
+              {t.workshops.book}
+            </button>
+          </div>
+        </article>
+      );
+    })}
+  </div>
+
+  <!-- Buchungs-Dialog (Demo) -->
+  <div class="modal-backdrop" data-booking-backdrop hidden></div>
+  <div
+    class="modal"
+    data-booking-modal
+    role="dialog"
+    aria-modal="true"
+    aria-labelledby="booking-title"
+    hidden
+  >
+    <button class="modal-close" data-booking-close aria-label={b.close}>×</button>
+
+    <h3 id="booking-title">
+      {b.title}: <span data-bk-title></span>
+    </h3>
+
+    <ol class="steps" aria-hidden="true">
+      {b.steps.map((s, i) => (
+        <li class="step" data-step-dot={i + 1}>{s}</li>
+      ))}
+    </ol>
+
+    <!-- Schritt 1: Fecha & Personen -->
+    <form class="bk-panel" data-bk-step="1">
+      <div class="field">
+        <label for="bk-date">{b.date}</label>
+        <select id="bk-date" required></select>
+      </div>
+      <div class="field">
+        <label for="bk-people">{b.people}</label>
+        <input id="bk-people" type="number" min="1" value="2" required inputmode="numeric" />
+      </div>
+      <div class="bk-actions">
+        <button type="submit" class="btn">{b.next}</button>
+      </div>
+    </form>
+
+    <!-- Schritt 2: Daten -->
+    <form class="bk-panel" data-bk-step="2" hidden>
+      <div class="field">
+        <label for="bk-name">{b.name}</label>
+        <input id="bk-name" type="text" required autocomplete="name" />
+        <p class="err" data-err-name hidden>{b.errRequired}</p>
+      </div>
+      <div class="field">
+        <label for="bk-email">{b.email}</label>
+        <input id="bk-email" type="email" required autocomplete="email" />
+        <p class="err" data-err-email hidden>{b.errEmail}</p>
+      </div>
+      <div class="bk-actions">
+        <button type="button" class="btn btn--ghost" data-bk-back>{b.back}</button>
+        <button type="submit" class="btn">{b.next}</button>
+      </div>
+    </form>
+
+    <!-- Schritt 3: Zusammenfassung -->
+    <div class="bk-panel" data-bk-step="3" hidden>
+      <h4>{b.summary}</h4>
+      <dl class="bk-summary">
+        <div><dt>{b.date}</dt><dd data-sum-date></dd></div>
+        <div><dt>{b.people}</dt><dd data-sum-people></dd></div>
+        <div><dt>{b.name}</dt><dd data-sum-name></dd></div>
+        <div><dt>{b.email}</dt><dd data-sum-email></dd></div>
+        <div class="bk-total"><dt>{b.total}</dt><dd data-sum-total></dd></div>
+      </dl>
+      <div class="bk-actions">
+        <button type="button" class="btn btn--ghost" data-bk-back>{b.back}</button>
+        <button type="button" class="btn btn--secondary" data-bk-confirm>{b.confirm}</button>
+      </div>
+    </div>
+
+    <!-- Erfolg -->
+    <div class="bk-panel bk-success" data-bk-step="4" hidden>
+      <div class="bk-party" aria-hidden="true"></div>
+      <svg class="bk-bee" viewBox="0 0 90 90" aria-hidden="true">
+        <ellipse cx="42" cy="52" rx="24" ry="17" fill="url(#pg-miel)" filter="url(#wc-rough)" />
+        <path d="M32 36 L 34 68 M 46 34 L 48 70" stroke="#6b4a1f" stroke-width="6" filter="url(#wc-rough)" />
+        <ellipse cx="36" cy="28" rx="17" ry="8" transform="rotate(-26 36 28)" fill="#d9eaf2" opacity="0.85" />
+        <circle cx="66" cy="44" r="11" fill="#a06a2c" filter="url(#wc-rough)" />
+        <circle cx="69" cy="42" r="2" fill="#33291f" />
+        <path d="M64 50 C 67 53, 71 53, 74 50" stroke="#33291f" stroke-width="1.6" stroke-linecap="round" fill="none" />
+      </svg>
+      <h4>{b.successTitle}</h4>
+      <p>{b.successText}</p>
+      <button type="button" class="btn" data-booking-close>{b.close}</button>
+    </div>
+  </div>
+</section>
+
+<script>
+  /* ---------------- gemeinsame Helfer ---------------- */
+
+  const FOCUSABLE = 'button, input, select, textarea, [href], [tabindex]:not([tabindex="-1"])';
+
+  function trapFocus(modal: HTMLElement) {
+    modal.addEventListener('keydown', (e) => {
+      if (e.key !== 'Tab') return;
+      const focusables = Array.from(modal.querySelectorAll<HTMLElement>(FOCUSABLE)).filter(
+        (el) => !el.hasAttribute('hidden') && el.offsetParent !== null
+      );
+      if (focusables.length === 0) return;
+      const first = focusables[0];
+      const last = focusables[focusables.length - 1];
+      if (e.shiftKey && document.activeElement === first) {
+        last.focus();
+        e.preventDefault();
+      } else if (!e.shiftKey && document.activeElement === last) {
+        first.focus();
+        e.preventDefault();
+      }
+    });
+  }
+
+  /* ---------------- Detailansicht ---------------- */
+
+  const detail = document.querySelector<HTMLElement>('[data-detail-modal]')!;
+  const detailBackdrop = document.querySelector<HTMLElement>('[data-detail-backdrop]')!;
+  const detailCloseBtn = detail.querySelector<HTMLElement>('[data-detail-close]')!;
+
+  /** Karte, von der aus die Detailansicht geöffnet wurde. */
+  let detailOrigin: HTMLElement | null = null;
+
+  function openDetail(trigger: HTMLElement) {
+    const id = trigger.dataset.wsDetail ?? '';
+    detail.querySelectorAll<HTMLElement>('[data-detail-panel]').forEach((panel) => {
+      panel.hidden = panel.dataset.detailPanel !== id;
+    });
+    detail.setAttribute('aria-labelledby', `wd-title-${id}`);
+
+    detailOrigin = trigger;
+    detail.hidden = false;
+    detailBackdrop.hidden = false;
+    document.body.style.overflow = 'hidden';
+    detail.scrollTop = 0;
+    detailCloseBtn.focus();
+  }
+
+  function closeDetail(restoreFocus = true) {
+    detail.hidden = true;
+    detailBackdrop.hidden = true;
+    document.body.style.overflow = '';
+    if (restoreFocus) {
+      detailOrigin?.focus({ preventScroll: true });
+      detailOrigin = null;
+    }
+  }
+
+  document.querySelectorAll<HTMLElement>('[data-ws-detail]').forEach((trigger) => {
+    trigger.addEventListener('click', () => openDetail(trigger));
+  });
+
+  detailCloseBtn.addEventListener('click', () => closeDetail());
+  detailBackdrop.addEventListener('click', () => closeDetail());
+  trapFocus(detail);
+
+  /* ---------------- Buchungsdialog ---------------- */
+
+  const modal = document.querySelector<HTMLElement>('[data-booking-modal]')!;
+  const backdrop = document.querySelector<HTMLElement>('[data-booking-backdrop]')!;
+  const titleEl = modal.querySelector<HTMLElement>('[data-bk-title]')!;
+  const dateSel = modal.querySelector<HTMLSelectElement>('#bk-date')!;
+  const peopleInp = modal.querySelector<HTMLInputElement>('#bk-people')!;
+  const nameInp = modal.querySelector<HTMLInputElement>('#bk-name')!;
+  const emailInp = modal.querySelector<HTMLInputElement>('#bk-email')!;
+
+  let price = 0;
+  /** Element, das nach dem Schließen der Buchung den Fokus zurückbekommt. */
+  let bookingReturn: HTMLElement | null = null;
+
+  function showStep(n: number) {
+    modal.querySelectorAll<HTMLElement>('[data-bk-step]').forEach((p) => {
+      p.hidden = p.dataset.bkStep !== String(n);
+    });
+    modal.querySelectorAll<HTMLElement>('[data-step-dot]').forEach((d) => {
+      const k = Number(d.dataset.stepDot);
+      d.classList.toggle('is-done', k < n);
+      d.classList.toggle('is-current', k === n);
+    });
+  }
+
+  /** src trägt die data-ws-*-Attribute, returnTo bekommt danach den Fokus. */
+  function open(src: HTMLElement, returnTo: HTMLElement | null) {
+    bookingReturn = returnTo;
+    titleEl.textContent = src.dataset.wsTitle ?? '';
+    price = Number(src.dataset.wsPrice ?? 0);
+    peopleInp.max = src.dataset.wsMax ?? '12';
+    peopleInp.value = '2';
+    nameInp.value = '';
+    emailInp.value = '';
+    modal.querySelector<HTMLElement>('[data-err-name]')!.hidden = true;
+    modal.querySelector<HTMLElement>('[data-err-email]')!.hidden = true;
+
+    const dates: { iso: string; label: string }[] = JSON.parse(src.dataset.wsDates ?? '[]');
+    dateSel.innerHTML = '';
+    for (const d of dates) {
+      const opt = document.createElement('option');
+      opt.value = d.iso;
+      opt.textContent = d.label;
+      dateSel.append(opt);
+    }
+
+    showStep(1);
+    modal.hidden = false;
+    backdrop.hidden = false;
+    document.body.style.overflow = 'hidden';
+    modal.scrollTop = 0;
+    dateSel.focus();
+  }
+
+  function close() {
+    modal.hidden = true;
+    backdrop.hidden = true;
+    document.body.style.overflow = '';
+    modal.querySelector('.bk-party')!.innerHTML = '';
+    bookingReturn?.focus({ preventScroll: true });
+    bookingReturn = null;
+  }
+
+  document.querySelectorAll<HTMLElement>('.book-btn').forEach((btn) => {
+    btn.addEventListener('click', () => open(btn, btn));
+  });
+
+  /* Übergabe: Detail schließen, Buchung mit demselben Workshop öffnen. */
+  detail.querySelectorAll<HTMLElement>('[data-detail-book]').forEach((btn) => {
+    btn.addEventListener('click', () => {
+      const origin = detailOrigin;
+      closeDetail(false);
+      detailOrigin = null;
+      open(btn, origin);
+    });
+  });
+
+  modal.querySelectorAll('[data-booking-close]').forEach((el) => el.addEventListener('click', close));
+  backdrop.addEventListener('click', close);
+  trapFocus(modal);
+
+  document.addEventListener('keydown', (e) => {
+    if (e.key !== 'Escape') return;
+    if (!modal.hidden) close();
+    else if (!detail.hidden) closeDetail();
+  });
+
+  // Schritt 1 → 2
+  modal.querySelector<HTMLFormElement>('[data-bk-step="1"]')!.addEventListener('submit', (e) => {
+    e.preventDefault();
+    showStep(2);
+    nameInp.focus();
+  });
+
+  // Schritt 2 → 3 (mit Validierung)
+  modal.querySelector<HTMLFormElement>('[data-bk-step="2"]')!.addEventListener('submit', (e) => {
+    e.preventDefault();
+    const errName = modal.querySelector<HTMLElement>('[data-err-name]')!;
+    const errEmail = modal.querySelector<HTMLElement>('[data-err-email]')!;
+    const nameOk = nameInp.value.trim().length > 1;
+    const emailOk = /.+@.+\..+/.test(emailInp.value);
+    errName.hidden = nameOk;
+    errEmail.hidden = emailOk;
+    if (!nameOk || !emailOk) return;
+
+    const people = Math.max(1, Number(peopleInp.value || 1));
+    modal.querySelector('[data-sum-date]')!.textContent =
+      dateSel.selectedOptions[0]?.textContent ?? '';
+    modal.querySelector('[data-sum-people]')!.textContent = String(people);
+    modal.querySelector('[data-sum-name]')!.textContent = nameInp.value.trim();
+    modal.querySelector('[data-sum-email]')!.textContent = emailInp.value.trim();
+    modal.querySelector('[data-sum-total]')!.textContent = `US$ ${price * people}`;
+    showStep(3);
+  });
+
+  modal.querySelectorAll('[data-bk-back]').forEach((el) =>
+    el.addEventListener('click', () => {
+      const cur = modal.querySelector<HTMLElement>('[data-bk-step]:not([hidden])')!;
+      showStep(Number(cur.dataset.bkStep) - 1);
+    })
+  );
+
+  // Bestätigen → Pollen-Konfetti + Erfolg
+  modal.querySelector('[data-bk-confirm]')!.addEventListener('click', () => {
+    showStep(4);
+    const party = modal.querySelector<HTMLElement>('.bk-party')!;
+    const colors = ['#e8a13d', '#f3c87f', '#9b8ec4', '#7a8b5a', '#c1714f'];
+    for (let i = 0; i < 36; i++) {
+      const p = document.createElement('i');
+      const size = 5 + Math.random() * 8;
+      p.style.cssText = `
+        left:${8 + Math.random() * 84}%;
+        width:${size}px; height:${size}px;
+        background:${colors[i % colors.length]};
+        animation-delay:${Math.random() * 0.5}s;
+        animation-duration:${1.4 + Math.random() * 1.4}s;
+      `;
+      party.append(p);
+    }
+  });
+</script>
+
+<style>
+  .workshops {
+    background: var(--miel-100);
+  }
+
+  /* Akzentfarben pro Workshop: Karte und Detailansicht teilen sich die Variablen */
+  .ws-card,
+  .wd {
+    --ws-accent: var(--miel-500);
+    --ws-accent-deep: var(--miel-700);
+    --ws-accent-soft: var(--miel-100);
+    --ws-accent-line: var(--miel-300);
+  }
+
+  .ws-card--lavanda,
+  .wd--lavanda {
+    --ws-accent: var(--lavanda-500);
+    --ws-accent-deep: var(--lavanda-700);
+    --ws-accent-soft: var(--lavanda-100);
+    --ws-accent-line: var(--lavanda-300);
+  }
+
+  .ws-card--pistacho,
+  .wd--pistacho {
+    --ws-accent: var(--pistacho-500);
+    --ws-accent-deep: var(--pistacho-700);
+    --ws-accent-soft: var(--pistacho-100);
+    --ws-accent-line: var(--pistacho-300);
+  }
+
+  .ws-card--barro,
+  .wd--barro {
+    --ws-accent: var(--barro-500);
+    --ws-accent-deep: var(--barro-700);
+    --ws-accent-soft: var(--barro-100);
+    --ws-accent-line: var(--barro-300);
+  }
+
+  .ws-grid {
+    display: grid;
+    gap: var(--sp-5);
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 19rem), 1fr));
+  }
+
+  .ws-card {
+    display: grid;
+    grid-template-rows: auto 1fr;
+    gap: var(--sp-4);
+    border-top: 6px solid var(--ws-accent-line);
+  }
+
+  /* leichte Handarbeit statt Rasterperfektion */
+  .ws-card:nth-child(odd) { rotate: -0.4deg; }
+  .ws-card:nth-child(even) { rotate: 0.35deg; }
+
+  /* ---------- Kartenkopf als Trigger ---------- */
+
+  .ws-head {
+    margin: 0;
+    font-size: inherit;
+  }
+
+  .ws-head-btn {
+    display: grid;
+    grid-template-columns: auto 1fr;
+    align-items: center;
+    gap: var(--sp-4);
+    width: 100%;
+    padding: 0;
+    border: none;
+    background: none;
+    text-align: start;
+    cursor: pointer;
+    color: inherit;
+  }
+
+  .ws-icon {
+    width: 76px;
+    height: 76px;
+    border-radius: var(--r-blob);
+    background: var(--papel-warm);
+    display: grid;
+    place-items: center;
+    padding: 6px;
+    transition: transform var(--dur-2) var(--ease-bounce);
+  }
+
+  .ws-icon svg { width: 100%; height: auto; }
+
+  .ws-head-text {
+    display: grid;
+    gap: 0.25em;
+    justify-items: start;
+  }
+
+  .ws-name {
+    font-family: var(--font-display);
+    font-size: var(--fs-700);
+    line-height: var(--lh-snug);
+    text-decoration-line: underline;
+    text-decoration-style: solid;
+    text-decoration-thickness: 2px;
+    text-decoration-color: transparent;
+    text-underline-offset: 5px;
+    transition: text-decoration-color var(--dur-2) var(--ease-out);
+  }
+
+  .ws-more {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4em;
+    font-family: var(--font-body);
+    font-size: var(--fs-200);
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--ws-accent-deep);
+  }
+
+  .ws-arrow {
+    width: 0.85em;
+    height: 0.85em;
+    transition: transform var(--dur-2) var(--ease-out);
+  }
+
+  .ws-head-btn:focus-visible .ws-name,
+  .ws-head-btn:hover .ws-name {
+    text-decoration-color: var(--ws-accent);
+  }
+
+  .ws-head-btn:active .ws-icon {
+    transform: scale(0.97) rotate(4deg);
+    transition-duration: var(--dur-1);
+  }
+
+  @media (hover: hover) and (pointer: fine) {
+    .ws-head-btn:hover .ws-icon,
+    .ws-head-btn:focus-visible .ws-icon {
+      transform: rotate(8deg) scale(1.08);
+    }
+
+    .ws-head-btn:hover .ws-arrow,
+    .ws-head-btn:focus-visible .ws-arrow {
+      transform: translateX(3px);
+    }
+  }
+
+  .ws-body {
+    display: grid;
+    gap: var(--sp-3);
+    align-content: start;
+    justify-items: start;
+  }
+
+  .ws-body p {
+    color: var(--c-text-soft);
+    font-size: var(--fs-300);
+  }
+
+  .ws-meta {
+    display: flex;
+    gap: var(--sp-5);
+    flex-wrap: wrap;
+    margin: 0;
+    padding: var(--sp-3) 0;
+    border-block: 1.5px dashed var(--miel-300);
+    width: 100%;
+  }
+
+  .ws-meta div { display: grid; }
+
+  .ws-meta dt {
+    font-size: var(--fs-200);
+    color: var(--tinta-tenue);
+    font-weight: 600;
+  }
+
+  .ws-meta dd {
+    margin: 0;
+    font-weight: 700;
+    font-size: var(--fs-400);
+  }
+
+  .ws-dates {
+    font-size: var(--fs-300);
+    color: var(--c-text-soft);
+  }
+
+  .demo-note {
+    margin-top: var(--sp-6);
+    text-align: center;
+    font-size: var(--fs-300);
+    color: var(--tinta-tenue);
+    font-style: italic;
+    margin-inline: auto;
+  }
+
+  /* ---------- Modal (Basis, für beide Dialoge) ---------- */
+
+  .modal-backdrop {
+    position: fixed;
+    inset: 0;
+    z-index: 280;
+    background: rgba(51, 41, 31, 0.45);
+    backdrop-filter: blur(3px);
+  }
+
+  .modal {
+    position: fixed;
+    z-index: 290;
+    left: 50%;
+    top: 50%;
+    transform: translate(-50%, -50%);
+    width: min(100% - 1.5rem, 30rem);
+    max-height: min(88svh, 44rem);
+    overflow-y: auto;
+    background: #fffdf8;
+    border-radius: var(--r-lg);
+    box-shadow: var(--shadow-modal);
+    padding: var(--sp-6);
+    display: grid;
+    gap: var(--sp-4);
+    animation: modal-in var(--dur-3) var(--ease-bounce);
+  }
+
+  @keyframes modal-in {
+    from { opacity: 0; transform: translate(-50%, -46%) scale(0.95); }
+    to { opacity: 1; transform: translate(-50%, -50%) scale(1); }
+  }
+
+  .modal-close {
+    position: absolute;
+    top: 0.7rem;
+    right: 0.9rem;
+    background: none;
+    border: none;
+    font-size: 1.7rem;
+    line-height: 1;
+    cursor: pointer;
+    color: var(--tinta-tenue);
+    border-radius: var(--r-full);
+    padding: 0.15em 0.4em;
+    transition: color var(--dur-1) var(--ease-out), background var(--dur-1) var(--ease-out);
+  }
+
+  .modal-close:active {
+    transform: scale(0.97);
+  }
+
+  @media (hover: hover) and (pointer: fine) {
+    .modal-close:hover { color: var(--tinta); background: var(--miel-100); }
+  }
+
+  .steps {
+    display: flex;
+    gap: var(--sp-2);
+    list-style: none;
+    padding: 0;
+  }
+
+  .step {
+    flex: 1;
+    text-align: center;
+    font-size: var(--fs-200);
+    font-weight: 600;
+    color: var(--tinta-tenue);
+    padding-bottom: 6px;
+    border-bottom: 3px solid var(--miel-200);
+    transition: border-color var(--dur-2), color var(--dur-2);
+  }
+
+  .step.is-current { color: var(--miel-700); border-color: var(--miel-500); }
+  .step.is-done { color: var(--pistacho-500); border-color: var(--pistacho-300); }
+
+  .bk-panel {
+    display: grid;
+    gap: var(--sp-4);
+  }
+
+  .bk-actions {
+    display: flex;
+    gap: var(--sp-3);
+    justify-content: flex-end;
+    flex-wrap: wrap;
+  }
+
+  .err {
+    color: var(--barro-700);
+    font-size: var(--fs-300);
+    font-weight: 600;
+  }
+
+  .bk-summary {
+    display: grid;
+    gap: var(--sp-2);
+    margin: 0;
+    background: var(--papel-warm);
+    border-radius: var(--r-md);
+    padding: var(--sp-4);
+  }
+
+  .bk-summary div {
+    display: flex;
+    justify-content: space-between;
+    gap: var(--sp-3);
+  }
+
+  .bk-summary dt { color: var(--tinta-tenue); font-size: var(--fs-300); }
+  .bk-summary dd { margin: 0; font-weight: 600; text-align: right; }
+
+  .bk-total {
+    border-top: 1.5px dashed var(--miel-300);
+    padding-top: var(--sp-2);
+  }
+
+  .bk-total dd { font-size: var(--fs-600); color: var(--miel-700); }
+
+  .bk-success {
+    position: relative;
+    justify-items: center;
+    text-align: center;
+    padding-block: var(--sp-4);
+  }
+
+  .bk-bee {
+    width: 92px;
+    animation: bee-hover 2.6s var(--ease-in-out) infinite;
+  }
+
+  .bk-party {
+    position: absolute;
+    inset: 0;
+    overflow: hidden;
+    pointer-events: none;
+    border-radius: var(--r-lg);
+  }
+
+  .bk-party :global(i) {
+    position: absolute;
+    top: -12px;
+    border-radius: 50% 40% 55% 45%;
+    animation: pollen-fall linear forwards;
+  }
+
+  @keyframes pollen-fall {
+    to {
+      transform: translateY(30rem) rotate(540deg);
+      opacity: 0;
+    }
+  }
+
+  /* ---------- Detailansicht ---------- */
+
+  .modal--detail {
+    --wd-pad: clamp(1.1rem, 5vw, 2rem);
+    width: min(100% - 1.5rem, 40rem);
+    max-height: min(90svh, 52rem);
+    padding: 0;
+    gap: 0;
+    align-content: start;
+  }
+
+  .modal--detail .modal-close {
+    z-index: 3;
+    background: rgba(255, 253, 248, 0.85);
+    color: var(--tinta);
+    box-shadow: var(--shadow-soft);
+  }
+
+  .wd {
+    display: grid;
+    gap: var(--sp-5);
+    align-content: start;
+  }
+
+  .wd > * {
+    padding-inline: var(--wd-pad);
+  }
+
+  .wd > .wd-hero {
+    padding-inline: 0;
+  }
+
+  .wd-hero {
+    position: relative;
+    background: var(--ws-accent-soft);
+    line-height: 0;
+  }
+
+  .wd-hero svg {
+    width: 100%;
+    height: auto;
+  }
+
+  .wd-hero::after {
+    content: '';
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: -1px;
+    height: 20px;
+    background: linear-gradient(to top, #fffdf8, rgba(255, 253, 248, 0));
+    pointer-events: none;
+  }
+
+  .wd-head {
+    display: grid;
+    gap: var(--sp-2);
+    justify-items: start;
+    margin-top: calc(var(--sp-2) * -1);
+  }
+
+  .wd-head h3 {
+    font-size: var(--fs-800);
+    line-height: var(--lh-snug);
+  }
+
+  .wd-lead {
+    color: var(--c-text-soft);
+    font-size: var(--fs-400);
+  }
+
+  .wd-glance {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--sp-5);
+    margin: 0;
+    padding-block: var(--sp-3);
+    background: var(--papel-warm);
+    border-block: 1.5px dashed var(--ws-accent-line);
+  }
+
+  .wd-glance div { display: grid; }
+
+  .wd-glance dt {
+    font-size: var(--fs-200);
+    color: var(--tinta-tenue);
+    font-weight: 600;
+  }
+
+  .wd-glance dd {
+    margin: 0;
+    font-weight: 700;
+    font-size: var(--fs-400);
+  }
+
+  .wd-block h4 {
+    font-size: var(--fs-600);
+    margin-bottom: var(--sp-3);
+  }
+
+  /* Ablauf */
+
+  .wd-steps {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: grid;
+    gap: var(--sp-4);
+  }
+
+  .wd-steps li {
+    position: relative;
+    display: grid;
+    grid-template-columns: 2rem 1fr;
+    gap: var(--sp-3);
+  }
+
+  .wd-steps li:not(:last-child)::before {
+    content: '';
+    position: absolute;
+    left: calc(1rem - 1px);
+    top: 2.35rem;
+    bottom: calc(var(--sp-4) * -1 - 0.15rem);
+    width: 2px;
+    background-image: linear-gradient(var(--ws-accent-line) 55%, rgba(0, 0, 0, 0) 0);
+    background-size: 2px 9px;
+  }
+
+  .wd-step-n {
+    width: 2rem;
+    height: 2rem;
+    border-radius: var(--r-blob);
+    display: grid;
+    place-items: center;
+    background: var(--ws-accent-soft);
+    color: var(--ws-accent-deep);
+    font-family: var(--font-display);
+    font-weight: 700;
+    font-size: var(--fs-300);
+    line-height: 1;
+  }
+
+  .wd-step-body strong {
+    display: block;
+    font-family: var(--font-display);
+    font-size: var(--fs-500);
+    line-height: var(--lh-snug);
+  }
+
+  .wd-step-body p {
+    color: var(--c-text-soft);
+    font-size: var(--fs-300);
+    line-height: var(--lh-snug);
+    margin-top: 0.2em;
+  }
+
+  /* Inbegriffen / Mitbringen */
+
+  .wd-cols {
+    display: grid;
+    gap: var(--sp-5);
+  }
+
+  .wd-cols > * {
+    padding-inline: 0;
+  }
+
+  @media (min-width: 34rem) {
+    .wd-cols {
+      grid-template-columns: 1fr 1fr;
+      align-items: start;
+    }
+  }
+
+  .wd-list {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: grid;
+    gap: var(--sp-2);
+  }
+
+  .wd-list li {
+    position: relative;
+    padding-left: 1.7em;
+    font-size: var(--fs-300);
+    line-height: var(--lh-snug);
+    color: var(--c-text-soft);
+  }
+
+  .wd-list li::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 0.35em;
+    width: 0.72em;
+    height: 0.72em;
+    border-radius: var(--r-blob);
+  }
+
+  .wd-list--yes li::before {
+    background: var(--ws-accent);
+    opacity: 0.85;
+  }
+
+  .wd-list--bring li::before {
+    box-shadow: inset 0 0 0 2px var(--ws-accent);
+    opacity: 0.75;
+  }
+
+  /* Fakten */
+
+  .wd-facts {
+    display: grid;
+    gap: var(--sp-3);
+    margin: 0;
+    background: var(--papel-warm);
+    border-radius: var(--r-md);
+    padding: var(--sp-4);
+  }
+
+  .wd-facts div { display: grid; gap: 0.15em; }
+
+  .wd-facts dt {
+    font-size: var(--fs-200);
+    font-weight: 700;
+    letter-spacing: 0.07em;
+    text-transform: uppercase;
+    color: var(--tinta-tenue);
+  }
+
+  .wd-facts dd {
+    margin: 0;
+    font-size: var(--fs-300);
+    line-height: var(--lh-snug);
+  }
+
+  .wd-dates {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--sp-2);
+  }
+
+  /* Abschluss mit Übergang in die Buchung */
+
+  .wd-cta {
+    position: sticky;
+    bottom: 0;
+    z-index: 2;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--sp-3);
+    padding-block: var(--sp-4);
+    background: #fffdf8;
+    border-top: 1.5px dashed var(--ws-accent-line);
+    box-shadow: 0 -10px 20px rgba(255, 253, 248, 0.9);
+  }
+
+  .wd-price {
+    font-family: var(--font-display);
+    font-size: var(--fs-700);
+    line-height: 1;
+    color: var(--ws-accent-deep);
+  }
+
+  .wd-price span {
+    display: block;
+    font-family: var(--font-body);
+    font-size: var(--fs-200);
+    font-weight: 600;
+    color: var(--tinta-tenue);
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .ws-icon,
+    .ws-arrow,
+    .ws-head-btn:active .ws-icon,
+    .modal-close:active {
+      transform: none;
+    }
+  }
+</style>
