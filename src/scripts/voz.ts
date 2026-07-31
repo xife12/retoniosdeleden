@@ -163,7 +163,14 @@ export function crearLector(): Lector | null {
   let manifiestoListo = false;
   const esperandoManifiesto: (() => void)[] = [];
 
-  fetch('/voz/manifest.json', { cache: 'force-cache' })
+  // `no-cache`, nicht `force-cache`: Force-Cache übernimmt eine einmal
+  // gespeicherte Antwort auf Dauer, auch wenn es ein 404 war. Genau das
+  // passierte live — wer die Seite vor den ersten Aufnahmen besucht hatte,
+  // blieb danach für immer auf der Browserstimme hängen, weil der Browser
+  // das alte „nicht gefunden" nie neu abfragte. `no-cache` fragt bei jedem
+  // Laden beim Server nach (billig: eine bedingte Anfrage, meist 304 ohne
+  // Datenübertragung), sperrt sich also nie gegen neu erzeugte Aufnahmen.
+  fetch('/voz/manifest.json', { cache: 'no-cache' })
     .then((r) => (r.ok ? r.json() : null))
     .then((d) => {
       if (d && d.paginas) manifiesto = d.paginas;
