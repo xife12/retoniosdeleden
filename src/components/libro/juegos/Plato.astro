@@ -24,7 +24,14 @@ const total = j.items.filter((i) => i.poliniza).length;
 <div
     class="escena"
     data-plato-escena
-    data-textos={JSON.stringify({ done: j.done, fact: j.fact, logro: j.logro, total })}
+    data-textos={JSON.stringify({
+      done: j.done,
+      fact: j.fact,
+      logro: j.logro,
+      stays: j.stays,
+      goes: j.goes,
+      total,
+    })}
   >
     <h3 class="escena-titulo">{j.title}</h3>
     <p class="escena-pista">{j.hint}</p>
@@ -32,7 +39,10 @@ const total = j.items.filter((i) => i.poliniza).length;
     <div class="plato-mesa" data-plato-mesa>
       <ul class="plato-lista" data-plato-lista>
         {j.items.map((it, i) => (
-          <li>
+          <li class="plato-sitio">
+            {/* Der leere Platz bleibt stehen, wenn etwas verschwindet — sonst
+                rutscht der Tisch zusammen und man sieht nicht, WIE leer er wird. */}
+            <span class="plato-hueco" aria-hidden="true"></span>
             <button
               class="plato-item"
               data-plato-item={i}
@@ -122,15 +132,16 @@ const total = j.items.filter((i) => i.poliniza).length;
               </span>
               <span class="plato-nombre">{it.name}</span>
             </button>
+            <span class="plato-sello" data-plato-sello aria-hidden="true"></span>
           </li>
         ))}
       </ul>
-      <div class="plato-marca" aria-hidden="true">
+      <span class="plato-dobladillo" aria-hidden="true">
         <svg viewBox="0 0 300 10" preserveAspectRatio="none">
           <path d="M0 4 C 60 1, 120 8, 180 3 C 232 -1, 268 7, 300 4" stroke="#c9a86a"
             stroke-width="3" fill="none" stroke-linecap="round" opacity="0.7" filter="url(#ink)" />
         </svg>
-      </div>
+      </span>
     </div>
 
     <div class="escena-mandos">
@@ -150,12 +161,20 @@ const total = j.items.filter((i) => i.poliniza).length;
   const escena = document.querySelector<HTMLElement>('[data-plato-escena]');
 
   if (escena) {
-    const t = datos(escena, 'textos', { done: '', fact: '', logro: '', total: 0 });
+    const t = datos(escena, 'textos', {
+      done: '',
+      fact: '',
+      logro: '',
+      stays: '',
+      goes: '',
+      total: 0,
+    });
     const items = [...escena.querySelectorAll<HTMLButtonElement>('[data-plato-item]')];
     const dice = escena.querySelector<HTMLElement>('[data-plato-dice]');
     const cuenta = escena.querySelector<HTMLElement>('[data-plato-n]')!;
     const reset = escena.querySelector<HTMLButtonElement>('[data-plato-reset]')!;
     const mesa = escena.querySelector<HTMLElement>('[data-plato-mesa]');
+    const quieto = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
     let fuera = 0;
 
@@ -163,6 +182,33 @@ const total = j.items.filter((i) => i.poliniza).length;
       // Der Tisch verliert Farbe, während er sich leert.
       const p = t.total ? fuera / t.total : 0;
       mesa?.style.setProperty('--desvaido', String(p));
+    };
+
+    /* „se queda" / „desaparece" — die beiden Wörter standen schon in den
+       Texten, waren aber nirgends zu sehen. Sie sagen in einem Blick, was
+       der Griff bewirkt hat; Melis Satz erklärt dann das Warum. */
+    const sellar = (btn: HTMLElement, texto: string, clase: string) => {
+      const sello = btn.parentElement?.querySelector<HTMLElement>('[data-plato-sello]');
+      if (!sello) return;
+      sello.textContent = texto;
+      sello.className = `plato-sello ${clase}`;
+      void sello.offsetWidth;
+      sello.classList.add('is-viendo');
+      window.setTimeout(() => sello.classList.remove('is-viendo'), 1500);
+    };
+
+    /* Ein kleiner Pollenstaub bleibt zurück, wo etwas verschwunden ist. */
+    const polvillo = (sitio: HTMLElement) => {
+      if (quieto) return;
+      for (let i = 0; i < 6; i++) {
+        const mota = document.createElement('i');
+        mota.className = 'plato-mota';
+        mota.style.setProperty('--dx', `${(i - 2.5) * 9}px`);
+        mota.style.setProperty('--dy', `${-26 - (i % 3) * 12}px`);
+        mota.style.animationDelay = `${i * 35}ms`;
+        sitio.appendChild(mota);
+        window.setTimeout(() => mota.remove(), 900 + i * 35);
+      }
     };
 
     items.forEach((btn) => {
@@ -174,12 +220,16 @@ const total = j.items.filter((i) => i.poliniza).length;
           btn.classList.remove('is-firme');
           void btn.offsetWidth;
           btn.classList.add('is-firme');
+          sellar(btn, t.stays ?? '', 'plato-sello--queda');
           return;
         }
         if (btn.classList.contains('is-fuera')) return;
 
         btn.classList.add('is-fuera');
+        btn.parentElement?.classList.add('is-vacio');
         btn.disabled = true;
+        sellar(btn, t.goes ?? '', 'plato-sello--va');
+        if (btn.parentElement) polvillo(btn.parentElement);
         fuera += 1;
         cuenta.textContent = String(fuera);
         pintarMundo();
@@ -203,6 +253,7 @@ const total = j.items.filter((i) => i.poliniza).length;
       reset.hidden = true;
       items.forEach((b) => {
         b.classList.remove('is-fuera', 'is-firme');
+        b.parentElement?.classList.remove('is-vacio');
         b.disabled = false;
       });
       pintarMundo();
@@ -212,36 +263,97 @@ const total = j.items.filter((i) => i.poliniza).length;
 </script>
 
 <style>
-  /* Je leerer der Tisch, desto blasser wird er — die Welt wird ärmer. */
+  /* ---------- Der gedeckte Tisch ----------
+     Vorher war die „mesa" ein bernsteinfarbenes Rechteck mit acht kleinen
+     Kacheln darin, die sich per Flexbox mittig zusammendrängten — auf dem
+     Handy wirkte das wie eine verrutschte Icon-Leiste, nicht wie ein
+     gedeckter Tisch. Jetzt liegt ein karierter Mantel auf einer Holzkante,
+     und die acht Plätze stehen in einem festen 4er-Raster, das die volle
+     Breite nutzt. Je leerer der Tisch, desto blasser wird alles — die Welt
+     wird ärmer. */
   .plato-mesa {
     position: relative;
     width: min(100%, 34rem);
-    padding: var(--sp-3) var(--sp-3) var(--sp-2);
-    border-radius: 18px 22px 20px 24px;
-    background: rgba(232, 161, 61, calc(0.14 - var(--desvaido, 0) * 0.1));
+    margin-bottom: 9px;
+    padding: clamp(0.7rem, 2.6vw, 1rem) clamp(0.6rem, 2.4vw, 0.9rem) 0.35rem;
+    border-radius: 14px 18px 6px 8px;
+    background-color: #fdf6e6;
+    /* Gingham: zwei Waschungen über Rahm ergeben drei Töne, wie ein
+       gewebtes Küchentuch. Das Verblassen liegt bewusst nur auf dem
+       `filter` — Verlaufsbilder lassen sich nicht weich überblenden,
+       eine Sättigung schon. */
+    background-image:
+      repeating-linear-gradient(90deg, rgba(232, 161, 61, 0.15) 0 15px, transparent 15px 30px),
+      repeating-linear-gradient(0deg, rgba(232, 161, 61, 0.15) 0 15px, transparent 15px 30px);
+    box-shadow: 0 2px 10px rgba(122, 90, 30, 0.1);
     filter: saturate(calc(1 - var(--desvaido, 0) * 0.65));
-    transition: filter 700ms var(--ease-out), background 700ms var(--ease-out);
+    transition: filter 700ms var(--ease-out);
+  }
+
+  /* Die Tischkante schaut unter dem Tuch hervor. */
+  .plato-mesa::after {
+    content: '';
+    position: absolute;
+    top: 100%;
+    left: 3%;
+    right: 3%;
+    height: 9px;
+    border-radius: 0 0 7px 9px;
+    background: linear-gradient(180deg, #c08d4d, #8f6329);
+    box-shadow: 0 3px 9px rgba(74, 51, 8, 0.22);
+  }
+
+  /* Der Saum des Tuchs — dieselbe zittrige Tuschelinie wie im Buch. */
+  .plato-dobladillo {
+    display: block;
+    opacity: 0.8;
+  }
+
+  .plato-dobladillo svg {
+    width: 100%;
+    height: 9px;
   }
 
   .plato-lista {
     list-style: none;
     padding: 0;
-    display: flex;
-    flex-wrap: wrap;
-    gap: var(--sp-2);
-    justify-content: center;
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: clamp(5px, 1.6vw, 10px);
+  }
+
+  .plato-sitio {
+    position: relative;
+    display: grid;
+  }
+
+  /* Der leere Platz: bleibt als gestrichelter Umriss zurück, damit die
+     Lücke sichtbar ist statt einfach zu verschwinden. */
+  .plato-hueco {
+    position: absolute;
+    inset: 0;
+    border: 2px dashed rgba(143, 92, 20, 0.34);
+    border-radius: 16px 12px 18px 14px;
+    opacity: 0;
+    transition: opacity 420ms var(--ease-out) 220ms;
+    pointer-events: none;
+  }
+
+  .plato-sitio.is-vacio .plato-hueco {
+    opacity: 1;
   }
 
   .plato-item {
     display: grid;
+    align-content: start;
     justify-items: center;
-    gap: 2px;
-    width: clamp(62px, 15vw, 82px);
-    padding: 6px 4px 5px;
+    gap: 3px;
+    width: 100%;
+    padding: clamp(7px, 2vw, 10px) 4px clamp(6px, 1.6vw, 9px);
     border: 2px solid transparent;
     border-radius: 16px 12px 18px 14px;
-    background: rgba(255, 253, 248, 0.75);
-    box-shadow: 0 2px 8px rgba(122, 90, 30, 0.1);
+    background: rgba(255, 253, 248, 0.9);
+    box-shadow: 0 2px 8px rgba(122, 90, 30, 0.12);
     cursor: pointer;
     transition:
       transform 320ms var(--ease-out),
@@ -262,7 +374,7 @@ const total = j.items.filter((i) => i.poliniza).length;
   }
 
   .plato-glifo {
-    width: clamp(30px, 7vw, 38px);
+    width: clamp(34px, 9.5vw, 44px);
   }
 
   .plato-glifo svg {
@@ -271,16 +383,17 @@ const total = j.items.filter((i) => i.poliniza).length;
   }
 
   .plato-nombre {
-    font-size: 0.66rem;
+    font-size: clamp(0.68rem, 2.1vw, 0.78rem);
     font-weight: 600;
     line-height: 1.15;
     color: var(--tinta-suave);
     text-align: center;
+    text-wrap: balance;
   }
 
   .plato-item.is-fuera {
     opacity: 0;
-    transform: translateY(-34px) scale(0.6) rotate(-8deg);
+    transform: translateY(-40px) scale(0.6) rotate(-8deg);
     filter: blur(3px);
     pointer-events: none;
   }
@@ -303,20 +416,77 @@ const total = j.items.filter((i) => i.poliniza).length;
     }
   }
 
-  .plato-marca {
-    margin-top: 2px;
-    opacity: 0.8;
+  /* ---------- „se queda" / „desaparece" ---------- */
+
+  .plato-sello {
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    z-index: 3;
+    translate: -50% -50%;
+    padding: 0.2em 0.55em;
+    border-radius: 999px 8px 999px 8px;
+    font-size: 0.63rem;
+    font-weight: 700;
+    line-height: 1.2;
+    white-space: nowrap;
+    opacity: 0;
+    scale: 0.8;
+    pointer-events: none;
+    transition: opacity 240ms ease, scale 240ms var(--ease-bounce);
   }
 
-  .plato-marca svg {
-    width: 100%;
-    height: 9px;
+  .plato-sello.is-viendo {
+    opacity: 1;
+    scale: 1;
+  }
+
+  .plato-sello--queda {
+    background: var(--pistacho-500);
+    color: #fffdf8;
+  }
+
+  .plato-sello--va {
+    background: var(--barro-500);
+    color: #fffdf8;
+  }
+
+  /* Pollenstaub, der zurückbleibt, wo etwas vom Tisch verschwunden ist. */
+  .plato-sitio :global(.plato-mota) {
+    position: absolute;
+    left: 50%;
+    top: 55%;
+    width: 5px;
+    height: 5px;
+    border-radius: 50%;
+    background: var(--miel-300);
+    pointer-events: none;
+    animation: plato-mota 760ms var(--ease-out) both;
+  }
+
+  @keyframes plato-mota {
+    from {
+      opacity: 0.9;
+      translate: 0 0;
+      scale: 1;
+    }
+    to {
+      opacity: 0;
+      translate: var(--dx) var(--dy);
+      scale: 0.4;
+    }
   }
 
   .plato-cuenta {
+    display: inline-flex;
+    align-items: baseline;
+    gap: 0.1em;
+    padding: 0.25em 0.85em;
+    border-radius: 999px;
+    background: var(--miel-100);
     font-size: var(--fs-300);
     font-weight: 600;
-    color: var(--tinta-suave);
+    color: var(--miel-800);
   }
 
   .plato-cuenta b {

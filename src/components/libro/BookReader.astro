@@ -483,6 +483,38 @@ const vueloD = vueloSegs
     reader.querySelectorAll('[data-acto]').forEach((s) => io.observe(s));
     aplicarZona(reader.querySelector<HTMLElement>('[data-acto]')?.dataset.zona);
 
+    /* ---------- Auftritt: der Takt steigt herein ----------
+       Dasselbe Gefühl wie auf der Startseite ([data-reveal] in
+       scroll-story.ts), aber ohne GSAP — das Buch bringt die Bibliothek
+       nicht mit. Der Beobachter setzt nur `is-dentro`; welche Teile in
+       welcher Reihenfolge steigen, steht in libro.css.
+
+       Bewusst ein ZWEITER Beobachter neben dem oben: der obere feuert
+       erst, wenn ein Takt den mittleren Streifen erreicht (-45 %) — das
+       ist richtig für Zone und Wabe, aber viel zu spät für einen
+       Auftritt. Dieser hier löst aus, sobald der Takt zu einem Achtel
+       im Bild ist, wie `start: 'top 88%'` auf der Startseite. */
+    const actos = [...reader.querySelectorAll<HTMLElement>('[data-acto]')];
+    if (suave || !('IntersectionObserver' in window)) {
+      actos.forEach((a) => a.classList.add('is-dentro'));
+    } else {
+      const entra = new IntersectionObserver(
+        (entradas) => {
+          for (const e of entradas) {
+            if (!e.isIntersecting) continue;
+            e.target.classList.add('is-dentro');
+            entra.unobserve(e.target);
+          }
+        },
+        /* Unten 12 % Vorlauf, oben bewusst unbegrenzt: Sonst bliebe ein
+           Takt, der beim Neuladen schon über dem Fenster liegt (der
+           Browser stellt die Scrollposition wieder her), für immer
+           unsichtbar — er tritt ja nie mehr von unten ein. */
+        { rootMargin: '9999px 0px -12% 0px', threshold: 0 }
+      );
+      actos.forEach((a) => entra.observe(a));
+    }
+
     celdas.forEach((c) => {
       c.addEventListener('click', () => {
         reader
