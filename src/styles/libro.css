@@ -130,6 +130,9 @@
   gap: clamp(1rem, 3vh, 1.8rem);
   padding: clamp(3.4rem, 8vh, 5rem) clamp(0.9rem, 4vw, 3.5rem) clamp(1.6rem, 5vh, 3rem);
   scroll-snap-align: center;
+  /* Die Kopfleiste liegt fest über allem. Ohne diesen Rand landet ein
+     Sprung aus der Wabennavigation mit dem Kopf des Taktes darunter. */
+  scroll-margin-top: 4.5rem;
 }
 
 /* ---------- Takt A: die Buchseite ---------- */
@@ -166,6 +169,35 @@
   .lamina-marco {
     border-radius: 0;
     box-shadow: 0 12px 34px rgba(74, 51, 8, calc(0.1 + var(--hondura) * 0.3));
+  }
+}
+
+/* ---------- Die Höhe eines Taktes auf dem Handy ----------
+   Am Schreibtisch füllt eine Buchseite den Schirm: das Bild darf dort bis
+   44rem hoch werden. Am Handy ist die Illustration durch die Breite
+   gedeckelt — 3:2 auf 390 px sind rund 260 px. Ein Takt mit `min-height:
+   100svh` und `align-content: center` war deshalb zu zwei Dritteln leeres
+   Papier, und zwei Takte hintereinander (Seite 1 → 2, Melis Szene → Seite
+   5) rissen ein Loch von über 600 px auf.
+
+   Unter 46rem kommt die Höhe deshalb vom Inhalt, der Abstand allein aus
+   dem Innenrand. Die Werte sind nicht symmetrisch, sondern folgen der
+   Erzählung:
+     Seitenwechsel      2rem + 2rem   — spürbar, aber ohne Leerlauf
+     zur Fluglinie hin  1.1rem        — der Text soll in die Linie laufen
+     von ihr weg        0.7rem        — Melis Szene beginnt sofort danach
+                                        (steht weiter unten bei .acto--taller,
+                                        das dort später gesetzt wird) */
+@media (max-width: 46rem) {
+  .acto {
+    min-height: 0;
+    gap: clamp(0.75rem, 2.2vh, 1.1rem);
+    padding-block: var(--sp-6) var(--sp-6);
+  }
+
+  /* Die Buchseite endet dicht über der Fluglinie … */
+  .acto--lamina {
+    padding-bottom: 1.1rem;
   }
 }
 
@@ -326,9 +358,21 @@
   height: var(--vuelo-alto);
   width: auto;
   aspect-ratio: 84 / 260;
-  /* Die Tusche läuft oben und unten aus, statt hart an die Takte zu stoßen. */
-  -webkit-mask-image: linear-gradient(180deg, transparent 0, #000 8%, #000 92%, transparent 100%);
-  mask-image: linear-gradient(180deg, transparent 0, #000 8%, #000 92%, transparent 100%);
+  /* Die Tusche läuft oben und unten aus, statt hart an die Takte zu stoßen.
+     Der Auslauf ist kurz gehalten (4 %): Auf dem Handy fraß die frühere
+     Fassung mit 8 % zusammen mit dem Leerraum der Takte fast ein Drittel
+     der Naht weg — die Linie schien lange vor Melis Szene aufzuhören. */
+  -webkit-mask-image: linear-gradient(180deg, transparent 0, #000 4%, #000 96%, transparent 100%);
+  mask-image: linear-gradient(180deg, transparent 0, #000 4%, #000 96%, transparent 100%);
+}
+
+/* Am Handy ist die Naht kürzer — sie überbrückt jetzt nur noch den Weg von
+   der letzten Textzeile zur Szene, nicht mehr zusätzlich den Leerraum
+   zweier bildschirmhoher Takte. */
+@media (max-width: 46rem) {
+  .vuelo {
+    --vuelo-alto: clamp(150px, 21vh, 200px);
+  }
 }
 
 /* Derselbe Ton wie die Punktlinien der Startseite (Abejas.astro: 1.6/2.4 mit
@@ -375,6 +419,18 @@
   padding-bottom: clamp(1rem, 3vh, 2rem);
 }
 
+/* … und am Handy fängt Melis Szene direkt unter der Fluglinie an. Diese
+   Regel muss NACH der obigen stehen: beide wiegen gleich schwer, dann
+   entscheidet die Reihenfolge — sonst hielte der Standardwert oben die
+   Szene wieder 38 px von ihrer eigenen Naht fern. Der Fuß entspricht dem
+   Seitenwechsel aus dem Block bei .acto weiter oben. */
+@media (max-width: 46rem) {
+  .acto--taller {
+    padding-top: 0.7rem;
+    padding-bottom: var(--sp-6);
+  }
+}
+
 .taller {
   width: min(100%, 52rem);
   display: grid;
@@ -414,6 +470,15 @@
   padding: 0.6em 0.95em;
   box-shadow: 0 3px 14px rgba(122, 90, 30, 0.12);
   min-height: 1em;
+}
+
+/* Solange Meli nichts gesagt hat, steht auch keine Blase da — und vor
+   allem keine Biene, die eine unsichtbare Blase anschaut. Genau das sah
+   auf Seite 4 aus wie ein verrutschtes Element: eine kleine Biene allein
+   unter dem Spiel, ohne erkennbaren Bezug. Browser ohne `:has()` fallen
+   auf den alten Zustand zurück (Blase unsichtbar, Biene sichtbar). */
+.dice:has(.dice-texto:empty) {
+  display: none;
 }
 
 .dice-texto:empty {
@@ -1204,6 +1269,42 @@
   opacity: 0.6;
 }
 
+/* Am Handy legt sich die Wabe quer an den unteren Rand.
+   Senkrecht an der rechten Kante nahm sie rund 9 % der Breite dauerhaft
+   in Beschlag und lag dabei ÜBER dem Inhalt: der Seitentext lief unter
+   ihr durch, „Ver de cerca" verschwand halb dahinter und beim Spiel auf
+   Seite 4 deckte sie die rechte Spalte des Tisches zu. Unten quer teilt
+   sie sich die Zeile mit dem Sammelheft (rechts) und lässt die volle
+   Blattbreite frei. */
+@media (max-width: 46rem) {
+  .panal {
+    top: auto;
+    right: auto;
+    bottom: calc(clamp(0.6rem, 2.5vh, 1.4rem) + env(safe-area-inset-bottom, 0px));
+    left: clamp(0.5rem, 2vw, 1.2rem);
+    translate: none;
+    grid-auto-flow: column;
+    align-items: center;
+    gap: 2px;
+    padding: 5px 9px;
+  }
+
+  .panal-celda {
+    width: 19px;
+    height: 22px;
+  }
+
+  .panal-n {
+    font-size: 0.5rem;
+  }
+
+  .panal-sigue {
+    width: 15px;
+    height: 22px;
+    margin-top: 0;
+  }
+}
+
 /* ---------- Sammelheft ---------- */
 
 .carnet-abre {
@@ -1324,9 +1425,99 @@
   font-size: var(--fs-300);
 }
 
+/* ---------- Der Auftritt eines Taktes ----------
+   Auf der Startseite steigt jeder Abschnitt beim Scrollen herein
+   (`[data-reveal]`, GSAP in scroll-story.ts). Im Buch lief nichts davon:
+   Bild, Text und Spiel standen einfach schon da, sobald man sie erreichte.
+   Dieselbe Geste, nur ohne GSAP — das Buch lädt die Bibliothek nicht.
+
+   Angesteuert wird der Takt (`.acto.is-dentro`, gesetzt von einem
+   IntersectionObserver in BookReader.astro), nicht das einzelne Element:
+   So bekommen auch die acht Spielkomponenten ihren Auftritt, ohne dass
+   in jeder einzelnen ein Marker stehen muss. Die Reihenfolge ergibt sich
+   aus der Stellung im Takt — Bild zuerst, dann die Zeilen, dann das Spiel.
+
+   Der Anfangszustand hängt an `html.js`: ohne JavaScript (und damit ohne
+   den Beobachter, der `is-dentro` setzt) bleibt alles sichtbar. */
+
+html.js .libro .lamina,
+html.js .libro .relato > *,
+html.js .libro .escena > *,
+html.js .libro .apunte,
+html.js .libro .fin-inner > * {
+  opacity: 0;
+  translate: 0 22px;
+}
+
+html.js .libro .acto.is-dentro .lamina,
+html.js .libro .acto.is-dentro .relato > *,
+html.js .libro .acto.is-dentro .escena > *,
+html.js .libro .acto.is-dentro .apunte,
+html.js .libro .acto.is-dentro .fin-inner > * {
+  opacity: 1;
+  translate: 0 0;
+  transition:
+    opacity 640ms var(--ease-out) var(--espera, 0ms),
+    translate 760ms var(--ease-out) var(--espera, 0ms);
+}
+
+/* Das Bild kommt zuerst und eine Spur langsamer — es ist die Bühne, der
+   Rest tritt darauf. */
+html.js .libro .lamina {
+  translate: 0 26px;
+}
+
+.acto .relato > *:nth-child(2) {
+  --espera: 90ms;
+}
+
+.acto .relato > *:nth-child(3) {
+  --espera: 170ms;
+}
+
+/* Melis Szene: Titel, Hinweis, Spielfeld, Bedienung, Sprechblase folgen
+   im selben Takt aufeinander wie die Zeilen der Buchseite. */
+.acto .escena > *:nth-child(2),
+.acto .fin-inner > *:nth-child(2) {
+  --espera: 80ms;
+}
+
+.acto .escena > *:nth-child(3),
+.acto .fin-inner > *:nth-child(3) {
+  --espera: 160ms;
+}
+
+.acto .escena > *:nth-child(4),
+.acto .fin-inner > *:nth-child(4) {
+  --espera: 240ms;
+}
+
+.acto .escena > *:nth-child(n + 5),
+.acto .fin-inner > *:nth-child(n + 5) {
+  --espera: 320ms;
+}
+
+/* Melis Zettel liegt hinter dem Spiel und kommt zuletzt. */
+.acto .apunte {
+  --espera: 260ms;
+}
+
 /* ---------- Rücksicht auf ruhige Nutzer ---------- */
 
 @media (prefers-reduced-motion: reduce) {
+  /* Kein Auftritt, aber auch kein Verstecken: alles steht fertig da.
+     (Der Beobachter in BookReader.astro setzt `is-dentro` in diesem Fall
+     ohnehin sofort — das hier ist der Gürtel zum Hosenträger.) */
+  html.js .libro .lamina,
+  html.js .libro .relato > *,
+  html.js .libro .escena > *,
+  html.js .libro .apunte,
+  html.js .libro .fin-inner > * {
+    opacity: 1;
+    translate: none;
+    transition: none;
+  }
+
   .lamina-img,
   .luz-halo,
   .luz-anillo,

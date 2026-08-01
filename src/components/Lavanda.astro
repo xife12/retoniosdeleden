@@ -66,9 +66,13 @@ const l = t.lavanda;
       <h3>{l.processTitle}</h3>
       <p class="process-hint">{l.processHint}</p>
 
-      <ol class="process-path">
+      {/* `role`: Am Handy stehen die Stationen quer nebeneinander und ihre
+          Beschreibung darunter — dafür löst sich das <li> per
+          `display: contents` ins Raster auf. Das nimmt der Liste in manchen
+          Browsern ihre Semantik; die Rollen geben sie ausdrücklich zurück. */}
+      <ol class="process-path" role="list" data-process-path>
         {l.process.map((step, i) => (
-          <li>
+          <li role="listitem">
             <button
               class="process-node"
               data-process={i}
@@ -150,14 +154,24 @@ const l = t.lavanda;
   }
 
   // Prozess-Schritte
+  const path = section.querySelector<HTMLElement>('[data-process-path]');
   const nodes = Array.from(section.querySelectorAll<HTMLButtonElement>('[data-process]'));
   const descs = Array.from(section.querySelectorAll<HTMLElement>('.node-desc'));
+
+  // Wie weit auf dem Weg man ist: färbt den gestrichelten Faden bis zur
+  // gewählten Station ein. Erst dadurch liest sich die Reihe als Ablauf
+  // und nicht als vier Knöpfe nebeneinander.
+  const avanzar = (i: number) =>
+    path?.style.setProperty('--avance', String(nodes.length > 1 ? i / (nodes.length - 1) : 1));
+
   nodes.forEach((node, i) => {
     node.addEventListener('click', () => {
       nodes.forEach((n, k) => n.setAttribute('aria-expanded', String(k === i)));
       descs.forEach((d, k) => (d.hidden = k !== i));
+      avanzar(i);
     });
   });
+  avanzar(0);
 </script>
 
 <style>
@@ -282,46 +296,75 @@ const l = t.lavanda;
     margin-top: var(--sp-1);
   }
 
+  /* ---------- Der Weg von der Blüte zur Seife ----------
+     Auch am Handy ist es EIN Weg von links nach rechts, nicht vier
+     Einträge untereinander. Vorher lag die Reihenfolge allein in den
+     Zahlen: Die Stationen standen als Liste da, jede mit ihrem Text, und
+     nichts daran las sich als Ablauf. Jetzt liegen die vier Stationen
+     nebeneinander auf demselben gestrichelten Faden wie am Schreibtisch,
+     der Faden färbt sich bis zur gewählten Station ein, und darunter
+     steht — quer über alle vier Spalten — was dort geschieht.
+
+     Möglich macht das `display: contents` am <li>: Knopf und Beschreibung
+     werden dadurch selbst zu Rasterfeldern, der Knopf in Zeile 1, die
+     Beschreibung in Zeile 2 über die volle Breite. */
   .process-path {
-    --node-icon: 64px;
+    --node-icon: clamp(46px, 13.5vw, 64px);
     list-style: none;
     padding: 0;
     margin-top: var(--sp-5);
     display: grid;
-    gap: var(--sp-5);
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    align-items: start;
+    gap: var(--sp-4) var(--sp-2);
     position: relative;
-  }
-
-  /* Mobil: gestrichelter Faden läuft senkrecht durch die Icon-Spalte,
-     ununterbrochen über alle Stationen hinweg (wie beim Herbario-Timeline-Faden). */
-  .process-path::before {
-    content: '';
-    position: absolute;
-    top: var(--sp-2);
-    bottom: var(--sp-2);
-    left: calc(var(--node-icon) / 2 - 1.25px);
-    border-left: 2.5px dashed var(--lavanda-300);
-    border-top: none;
-    z-index: 0;
   }
 
   .process-path li {
-    position: relative;
-    z-index: 1;
+    display: contents;
+  }
+
+  /* Der gestrichelte Faden auf Höhe der Icon-Mitte … */
+  .process-path::before,
+  .process-path::after {
+    content: '';
+    position: absolute;
+    top: calc(var(--sp-2) + var(--node-icon) / 2 - 1.25px);
+    left: 12%;
+    right: 12%;
+    border-top: 2.5px dashed var(--lavanda-300);
+    z-index: 0;
+  }
+
+  /* … und darüber der bereits zurückgelegte Teil, durchgezogen. */
+  .process-path::after {
+    right: auto;
+    width: calc(var(--avance, 0) * 76%);
+    border-top-style: solid;
+    border-top-color: var(--lavanda-500);
+    transition: width var(--dur-3) var(--ease-out);
   }
 
   .process-node {
-    display: flex;
-    align-items: center;
-    gap: var(--sp-3);
+    position: relative;
+    z-index: 1;
+    grid-row: 1;
+    display: grid;
+    justify-items: center;
+    align-content: start;
+    gap: var(--sp-1);
     width: 100%;
-    min-height: 44px;
     background: none;
     border: none;
     cursor: pointer;
     padding: var(--sp-2) 0;
-    text-align: left;
+    text-align: center;
   }
+
+  .process-path li:nth-child(1) .process-node { grid-column: 1; }
+  .process-path li:nth-child(2) .process-node { grid-column: 2; }
+  .process-path li:nth-child(3) .process-node { grid-column: 3; }
+  .process-path li:nth-child(4) .process-node { grid-column: 4; }
 
   .node-art {
     position: relative;
@@ -371,72 +414,76 @@ const l = t.lavanda;
   .node-title {
     font-weight: 700;
     font-size: var(--fs-300);
+    line-height: 1.2;
+    text-wrap: balance;
+  }
+
+  /* Auf sehr schmalen Geräten stehen vier Namen nebeneinander; „Destilación"
+     ist ein Wort und kann nicht umbrechen. Eine Stufe kleiner, damit die
+     Stationen nicht aneinanderstoßen. */
+  @media (max-width: 26rem) {
+    .node-title {
+      font-size: var(--fs-200);
+    }
   }
 
   .process-node[aria-expanded='true'] .node-title {
     color: var(--lavanda-700);
   }
 
-  /* Mobil: alle Beschreibungen bleiben sichtbar (kein Akkordeon), damit der
-     ganze Ablauf auf einen Blick verständlich ist. Der Klick hebt nur visuell
-     hervor (siehe aria-expanded oben). Das überschreibt bewusst die UA-Regel
-     für [hidden], die weiter unten für Desktop reaktiviert wird. */
-  .node-desc,
-  .node-desc[hidden] {
-    /* !important kontert die globale [hidden]-Regel aus global.css */
-    display: block !important;
+  /* Was an der gewählten Station geschieht: ein Zettel unter dem Weg, über
+     alle vier Spalten. Nur einer ist sichtbar — welcher, sagt `hidden`. */
+  .node-desc {
+    grid-row: 2;
+    grid-column: 1 / -1;
+    margin: 0;
+    padding: var(--sp-3) var(--sp-4);
+    border-radius: 4px 16px 16px 16px;
+    background: var(--lavanda-100);
     font-size: var(--fs-300);
     color: var(--c-text-soft);
     text-align: left;
     max-width: none;
-    margin: var(--sp-1) 0 0 calc(var(--node-icon) + var(--sp-3));
+    animation: paso-abre var(--dur-2) var(--ease-out);
+  }
+
+  @keyframes paso-abre {
+    from {
+      opacity: 0;
+      translate: 0 -6px;
+    }
   }
 
   @media (min-width: 700px) {
     .process-path {
       --node-icon: 76px;
-      grid-template-columns: repeat(4, 1fr);
-      align-items: start;
-      gap: var(--sp-8);
+      gap: var(--sp-5) var(--sp-8);
     }
 
-    /* Desktop: gestrichelter Faden liegt horizontal auf Höhe der Icons */
-    .process-path::before {
+    .process-path::before,
+    .process-path::after {
       top: 44px;
-      bottom: auto;
-      left: 12%;
-      right: 12%;
-      border-left: none;
-      border-top: 2.5px dashed var(--lavanda-300);
-    }
-
-    .process-path li {
-      display: grid;
-      justify-items: center;
-      gap: var(--sp-2);
-      text-align: center;
     }
 
     .process-node {
-      display: grid;
-      justify-items: center;
-      align-items: start;
-      gap: var(--sp-1);
       width: auto;
-      min-height: auto;
+      justify-self: center;
       padding: var(--sp-2);
-      text-align: center;
     }
 
-    /* Desktop: nur die aktive Beschreibung ist sichtbar (Akkordeon) */
+    /* Am Schreibtisch ist Platz genug: der Zettel steht unter SEINER
+       Station, nicht als Band über die ganze Breite — so bleibt sichtbar,
+       zu welchem Schritt er gehört. */
     .node-desc {
+      grid-column: auto;
+      max-width: 16rem;
+      margin-inline: auto;
       text-align: center;
-      max-width: 15rem;
-      margin: 0;
     }
 
-    .node-desc[hidden] {
-      display: none !important;
-    }
+    .process-path li:nth-child(1) .node-desc { grid-column: 1; }
+    .process-path li:nth-child(2) .node-desc { grid-column: 2; }
+    .process-path li:nth-child(3) .node-desc { grid-column: 3; }
+    .process-path li:nth-child(4) .node-desc { grid-column: 4; }
   }
 </style>
