@@ -1,42 +1,28 @@
 /**
- * Scroll-Choreografie: Reveals, Parallax, Melis Kartenflug,
- * Vignetten-Animationen und die mitfliegende Begleit-Meli.
+ * Scroll-Choreografie: Parallax, Melis Kartenflug, Vignetten-Animationen
+ * und die mitfliegende Begleit-Meli.
+ *
+ * Geladen wird das hier erst, wenn die Apertura durch ist — `arranque.ts`
+ * entscheidet wann und warum. Zwei Dinge sind deshalb ausgelagert und
+ * gehören nicht mehr hierher:
+ *
+ *  · die Reveals (`aparicion.ts` + `global.css`), damit der Hero nicht auf
+ *    GSAP wartet,
+ *  · die Klasse `reduced-motion`, die jetzt im Kopf von `Base.astro` fällt.
+ *
+ * Wer wenig Bewegung will, bekommt dieses Modul gar nicht erst.
  */
 import gsap from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
-import { MotionPathPlugin } from 'gsap/MotionPathPlugin';
 
-const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+gsap.registerPlugin(ScrollTrigger);
+initParallax();
+initMapBee();
+initVignettes();
+initCompanion();
 
-if (reduced) {
-  document.documentElement.classList.add('reduced-motion');
-} else {
-  gsap.registerPlugin(ScrollTrigger, MotionPathPlugin);
-  initReveals();
-  initParallax();
-  initMapBee();
-  initVignettes();
-  initCompanion();
-
-  // Positionen nachziehen, sobald Fonts geladen sind (Layout-Shift)
-  document.fonts?.ready.then(() => ScrollTrigger.refresh());
-}
-
-function initReveals() {
-  gsap.utils.toArray<HTMLElement>('[data-reveal]').forEach((el) => {
-    gsap.fromTo(
-      el,
-      { y: 44, autoAlpha: 0 },
-      {
-        y: 0,
-        autoAlpha: 1,
-        duration: 0.9,
-        ease: 'power3.out',
-        scrollTrigger: { trigger: el, start: 'top 88%', once: true },
-      }
-    );
-  });
-}
+// Positionen nachziehen, sobald Fonts geladen sind (Layout-Shift)
+document.fonts?.ready.then(() => ScrollTrigger.refresh());
 
 function initParallax() {
   gsap.utils.toArray<SVGGElement>('.hero-scene .par').forEach((layer) => {
@@ -65,6 +51,38 @@ function initMapBee() {
   const stage = document.querySelector<HTMLElement>('.map-stage');
   if (!path || !bee || !stage) return;
 
+  /* MotionPathPlugin wird nur für diesen einen Flug gebraucht, und die Karte
+     liegt weit unten. Als eigenes Stück geladen, sobald sie in die Nähe
+     kommt — ein Sichtfeld Vorlauf reicht dafür mehr als aus. */
+  const preparar = () => {
+    import('gsap/MotionPathPlugin')
+      .then(({ MotionPathPlugin }) => {
+        gsap.registerPlugin(MotionPathPlugin);
+        volar(bee, stage);
+      })
+      .catch(() => {
+        /* Ohne Plugin bleibt die Biene stehen, wo sie steht. Die Karte
+           selbst ist davon unberührt. */
+      });
+  };
+
+  if (typeof IntersectionObserver === 'undefined') {
+    preparar();
+    return;
+  }
+
+  const observador = new IntersectionObserver(
+    (entradas) => {
+      if (!entradas.some((e) => e.isIntersecting)) return;
+      observador.disconnect();
+      preparar();
+    },
+    { rootMargin: '100% 0px' },
+  );
+  observador.observe(stage);
+}
+
+function volar(bee: HTMLElement, stage: HTMLElement) {
   gsap.set(bee, { xPercent: 0, transformOrigin: '50% 50%' });
   gsap.to(bee, {
     motionPath: {
@@ -129,6 +147,9 @@ function initVignettes() {
       ease: 'power3.out',
       scrollTrigger: trig('vig-crecer'),
     });
+    /* Endlosschleife mitten im Dokument: ohne Fessel summte sie auch dann
+       weiter, wenn die Vignette neun Bildschirme entfernt war. `reposo.ts`
+       sieht nur CSS-Animationen, GSAP-Tweens muss ScrollTrigger anhalten. */
     gsap.to('#vig-crecer .v-mini-bees circle', {
       y: -6,
       duration: 1.4,
@@ -136,6 +157,12 @@ function initVignettes() {
       yoyo: true,
       repeat: -1,
       stagger: 0.3,
+      scrollTrigger: {
+        trigger: '#vig-crecer',
+        start: 'top bottom',
+        end: 'bottom top',
+        toggleActions: 'play pause resume pause',
+      },
     });
   }
 
@@ -183,8 +210,17 @@ function initCompanion() {
   const quickX = gsap.quickTo(el, 'x', { duration: 0.7, ease: 'power3.out' });
   const quickY = gsap.quickTo(el, 'y', { duration: 0.7, ease: 'power3.out' });
 
-  // sanftes Auf und Ab plus Blickrichtung liegen auf dem inneren Element
-  gsap.to(inner, { y: -7, duration: 1.5, ease: 'sine.inOut', yoyo: true, repeat: -1 });
+  /* Sanftes Auf und Ab plus Blickrichtung liegen auf dem inneren Element.
+     Das Schweben beginnt angehalten: Bis die erste Zone sie ruft, hängt die
+     Begleit-Meli unsichtbar am Rand — sie soll dort nicht schon fliegen. */
+  const flotar = gsap.to(inner, {
+    y: -7,
+    duration: 1.5,
+    ease: 'sine.inOut',
+    yoyo: true,
+    repeat: -1,
+    paused: true,
+  });
   let facing = 1;
   gsap.set(inner, { scaleX: 1, transformOrigin: '50% 50%' });
 
@@ -192,6 +228,19 @@ function initCompanion() {
   let curX = window.innerWidth * 0.5;
   let curY = window.innerHeight * 0.5;
   gsap.set(el, { x: curX, y: curY });
+
+  /* Ihre eigene Größe ändert sich nur beim Umbau des Fensters. Früher stand
+     `el.offsetWidth` im Ticker: ein Layout-Lesen in jedem Bild, direkt
+     hinter GSAPs Schreiben — genau die Reihenfolge, die ein erzwungenes
+     Layout auslöst. Einmal messen reicht. */
+  let bw = 62;
+  let bh = 48;
+
+  const medir = () => {
+    bw = el.offsetWidth || 62;
+    bh = el.offsetHeight || 48;
+  };
+  medir();
 
   const pickZone = (): HTMLElement | null => {
     if (active.size === 0) return null;
@@ -209,19 +258,35 @@ function initCompanion() {
     return best;
   };
 
+  /* Das Ziel hängt allein am Scrollstand (und an der Fenstergröße). Steht
+     beides still, steht auch das Ziel — `quickTo` fliegt von selbst weiter
+     dorthin. Ohne diese Sperre las der Ticker in jedem einzelnen Bild
+     Rechtecke aus und erzwang dabei ein volles Layout, auch wenn sich gar
+     nichts bewegt hatte. */
+  let ultimoScroll = -1;
+
+  const recalcular = () => {
+    ultimoScroll = -1;
+    medir();
+  };
+  addEventListener('resize', recalcular, { passive: true });
+
   const follow = () => {
+    if (window.scrollY === ultimoScroll) return;
+    ultimoScroll = window.scrollY;
+
     const zone = pickZone();
 
     if (!zone) {
       if (shown) {
         shown = false;
+        el.classList.remove('esta-volando');
+        flotar.pause();
         gsap.to(el, { autoAlpha: 0, duration: 0.4, ease: 'power2.out' });
       }
       return;
     }
 
-    const bw = el.offsetWidth || 62;
-    const bh = el.offsetHeight || 48;
     let tx: number;
     let ty: number;
 
@@ -241,6 +306,11 @@ function initCompanion() {
 
     if (!shown) {
       shown = true;
+      /* Erst jetzt darf sie fliegen. Bis hierher hing sie unsichtbar am
+         Rand — `global.css` hält den Flügelschlag so lange an, `flotar`
+         das Schweben. */
+      el.classList.add('esta-volando');
+      flotar.resume();
       gsap.to(el, { autoAlpha: 1, duration: 0.5, ease: 'power2.out' });
     }
 

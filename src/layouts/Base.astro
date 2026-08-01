@@ -36,12 +36,31 @@ const altLang = lang === 'es' ? 'en' : 'es';
     <meta property="og:title" content={title} />
     <meta property="og:description" content={description} />
     <meta property="og:type" content="website" />
+    {/* Beides muss stehen, bevor das erste Bild gezeichnet wird.
+
+        `js` schaltet die Grundzustände scharf, die ohne Skript nichts
+        verdecken dürfen (Reveals, Apertura). `reduced-motion` war früher in
+        scroll-story.ts gesetzt — seit das Modul erst nach der Apertura
+        geladen wird, käme die Klasse zu spät, und wer wenig Bewegung will,
+        sähe die Seite bis dahin leer. */}
     <script is:inline>
-      document.documentElement.classList.replace('no-js', 'js');
+      var raiz = document.documentElement;
+      raiz.classList.replace('no-js', 'js');
+      if (matchMedia('(prefers-reduced-motion: reduce)').matches) {
+        raiz.classList.add('reduced-motion');
+      }
     </script>
   </head>
   <body>
     <WatercolorDefs />
     <slot />
+
+    {/* Auf jeder Seite: was sich endlos wiederholt, ruht außerhalb des
+        Bildes. Steht hier und nicht in `arranque.ts`, weil das Buch kein
+        `arranque` hat — aber die meisten Bienen. */}
+    <script>
+      import { iniciarReposo } from '../scripts/reposo';
+      iniciarReposo();
+    </script>
   </body>
 </html>

@@ -67,7 +67,10 @@ const t = getDict(lang);
   <MeliCompanion />
   <Footer t={t} lang={lang} />
 
+  {/* Nicht direkt die Choreografie: `arranque.ts` entscheidet, was sofort
+      läuft (Reveals, Flügelschlag) und was auf das Ende der Apertura wartet
+      (GSAP). Siehe den Kopf der Datei. */}
   <script>
-    import '../scripts/scroll-story';
+    import '../scripts/arranque';
   </script>
 </Base>
