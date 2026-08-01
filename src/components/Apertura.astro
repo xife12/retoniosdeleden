@@ -350,6 +350,13 @@ const { saltar } = Astro.props;
       if (cerrado) return;
       cerrado = true;
       capa.classList.add('esta-cerrando');
+
+      /* Das Zeichen für `arranque.ts`, die Scroll-Choreografie zu holen.
+         Solange das Papier liegt, darf nichts Schweres laufen — GSAP
+         auszuwerten kostet auf einem langsamen Gerät ~350 ms am Stück, und
+         die fielen früher mitten in den Ring. Jetzt liegen sie dahinter. */
+      dispatchEvent(new Event('apertura:fin'));
+
       /* Erst wenn das Vorspulen durch ist, aus dem DOM nehmen — sonst
          springt das Papier weg statt abzublenden. */
       setTimeout(() => capa.remove(), 300);
