@@ -1,9 +1,34 @@
 import type { Lang } from '../i18n';
+import type { ThemeAccent, ThemeId } from './workshop-themes';
+
+/**
+ * Themen-Schlüssel und Akzentfarbe kommen aus dem Katalog in
+ * `workshop-themes.ts` (dort liegen auch Karten-Icon und Kopfbild).
+ * Bewusst nur re-exportiert statt hier dupliziert -- der Katalog ist die
+ * einzige Quelle, sonst laufen Katalog und Typ auseinander.
+ */
+export type { ThemeAccent, ThemeId };
+
+/** Währungen, die im Backend wählbar sind (siehe supabase/schema.sql). */
+export type WorkshopCurrency = 'USD' | 'UYU' | 'EUR' | 'ARS';
 
 /** Eine Station im Ablauf eines Workshops. */
 export interface ProgrammeStep {
   title: string;
   text: string;
+}
+
+/**
+ * Schalter für die Detail-Blöcke: die Nutzerin blendet im Backend einzelne
+ * Abschnitte aus, statt sie leer zu lassen.
+ */
+export interface WorkshopShow {
+  programme: boolean;
+  included: boolean;
+  bring: boolean;
+  forWhom: boolean;
+  languages: boolean;
+  meetingPoint: boolean;
 }
 
 export interface WorkshopText {
@@ -27,14 +52,38 @@ export interface WorkshopText {
 }
 
 export interface Workshop {
+  /** Slug aus der Datenbank -- zugleich Anker-/Dialog-Id auf der Website. */
   id: string;
-  icon: 'bee' | 'lavender' | 'pistachio' | 'organic' | 'clay';
-  accent: 'miel' | 'lavanda' | 'pistacho' | 'barro';
-  priceUSD: number;
+  themeId: ThemeId;
+  /** Redundant zu `workshopThemes[themeId].accent`, aber bequem im Markup. */
+  accent: ThemeAccent;
+  price: number;
+  currency: WorkshopCurrency;
   hours: number;
   maxPeople: number;
-  dates: string[]; // ISO, Demo-Termine
+  instructorFirstName: string;
+  instructorLastName: string;
+  dates: string[]; // ISO-Datumsstrings
+  show: WorkshopShow;
   text: Record<Lang, WorkshopText>;
+}
+
+/** Währungszeichen so, wie sie auf der Website vor dem Betrag stehen. */
+export const currencyPrefix: Record<WorkshopCurrency, string> = {
+  USD: 'US$',
+  UYU: '$U',
+  EUR: '€',
+  ARS: 'AR$',
+};
+
+/**
+ * Preis für die Anzeige: ganze Beträge ohne Nachkommastellen
+ * (`US$ 25`), krumme mit zweien (`US$ 45,50` bleibt `US$ 45.50` --
+ * bewusst Punkt, weil die Beträge aus dem Backend so eingegeben werden).
+ */
+export function formatPrice(price: number, currency: WorkshopCurrency): string {
+  const amount = Number.isInteger(price) ? String(price) : price.toFixed(2);
+  return `${currencyPrefix[currency]} ${amount}`;
 }
 
 /**
@@ -80,15 +129,37 @@ export const workshopDetailUI: Record<Lang, WorkshopDetailUI> = {
   },
 };
 
+/** Alle Detail-Blöcke sichtbar -- der Zustand, den ein neuer Workshop erbt. */
+const showAll: WorkshopShow = {
+  programme: true,
+  included: true,
+  bring: true,
+  forWhom: true,
+  languages: true,
+  meetingPoint: true,
+};
+
+/**
+ * Ausgangsbestand der fünf Workshops.
+ *
+ * Die Website liest diese Liste NICHT mehr -- sie kommt über
+ * `src/lib/fetch-workshops.ts` aus Supabase. Das Array ist die lesbare
+ * Vorlage, aus der `supabase/seed.sql` erzeugt wurde, und bleibt als
+ * Referenz stehen (z. B. um ein zweites Projekt zu befüllen).
+ */
 export const workshops: Workshop[] = [
   {
     id: 'abejas',
-    icon: 'bee',
+    themeId: 'bee',
     accent: 'miel',
-    priceUSD: 25,
+    price: 25,
+    currency: 'USD',
     hours: 2,
     maxPeople: 12,
+    instructorFirstName: '',
+    instructorLastName: '',
     dates: ['2026-08-08', '2026-08-22', '2026-09-05'],
+    show: showAll,
     text: {
       es: {
         title: 'El mundo de las abejas',
@@ -190,12 +261,16 @@ export const workshops: Workshop[] = [
   },
   {
     id: 'lavanda',
-    icon: 'lavender',
+    themeId: 'lavender',
     accent: 'lavanda',
-    priceUSD: 45,
+    price: 45,
+    currency: 'USD',
     hours: 3,
     maxPeople: 10,
+    instructorFirstName: '',
+    instructorLastName: '',
     dates: ['2026-08-15', '2026-09-12', '2026-10-03'],
+    show: showAll,
     text: {
       es: {
         title: 'Lavanda y jabones naturales',
@@ -297,12 +372,16 @@ export const workshops: Workshop[] = [
   },
   {
     id: 'pistacho',
-    icon: 'pistachio',
+    themeId: 'pistachio',
     accent: 'pistacho',
-    priceUSD: 60,
+    price: 60,
+    currency: 'USD',
     hours: 2.5,
     maxPeople: 8,
+    instructorFirstName: '',
+    instructorLastName: '',
     dates: ['2026-08-29', '2026-09-19', '2026-10-10'],
+    show: showAll,
     text: {
       es: {
         title: 'Plantá tu pistacho',
@@ -404,12 +483,16 @@ export const workshops: Workshop[] = [
   },
   {
     id: 'organico',
-    icon: 'organic',
+    themeId: 'organic',
     accent: 'pistacho',
-    priceUSD: 50,
+    price: 50,
+    currency: 'USD',
     hours: 4,
     maxPeople: 12,
+    instructorFirstName: '',
+    instructorLastName: '',
     dates: ['2026-09-26', '2026-10-17', '2026-10-31'],
+    show: showAll,
     text: {
       es: {
         title: 'Cultivar orgánico',
@@ -510,12 +593,16 @@ export const workshops: Workshop[] = [
   },
   {
     id: 'barro',
-    icon: 'clay',
+    themeId: 'clay',
     accent: 'barro',
-    priceUSD: 80,
+    price: 80,
+    currency: 'USD',
     hours: 7,
     maxPeople: 10,
+    instructorFirstName: '',
+    instructorLastName: '',
     dates: ['2026-09-06', '2026-10-04', '2026-11-01'],
+    show: showAll,
     text: {
       es: {
         title: 'Construir con barro',

@@ -1,44 +1,32 @@
 -- ============================================================================
--- Retoños del Edén — Schema für Workshops & Lehmhäuser
+-- Migration 001 — Entwurf/Veröffentlichen, einheitlicher Status, Slug ohne
+-- Zufallssuffix, fraktionale Sortierung.
 --
--- Vollständige Referenz für ein FRISCHES Supabase-Projekt.
--- Im SQL Editor einmalig ausführen, danach seed.sql.
--- Für eine BESTEHENDE Installation stattdessen
--- supabase/migrations/001_draft_publish.sql laufen lassen.
+-- Für BESTEHENDE Installationen. Im Supabase SQL Editor als Ganzes
+-- ausführen. Das Skript ist idempotent: ein zweiter Lauf ändert nichts
+-- mehr und macht nichts kaputt.
 --
--- Sicherheitsmodell
--- -----------------
--- anon (der öffentliche Website-Build) liest AUSSCHLIESSLICH die beiden
--- Views workshops_public / casas_public. Auf die Basistabellen hat anon
--- gar keine Rechte mehr -- sonst könnten Autosave-Zwischenstände aus dem
--- Backend auf der Website landen.
--- authenticated (die Nutzerin, eingeloggt über Supabase Auth) darf alles
--- lesen und schreiben. Weitere Rollenabstufungen gibt es bewusst nicht.
---
--- Entwurf vs. veröffentlicht
--- --------------------------
--- Jede Zeile trägt ihren Arbeitsstand in den normalen Spalten und ihren
--- veröffentlichten Stand als Schnappschuss in `published_payload`.
--- Die Views lesen nur den Schnappschuss. Veröffentlichen und Verwerfen
--- laufen über die RPC-Funktionen weiter unten -- immer in EINEM Aufruf,
--- damit der Browser keinen halbfertigen Mehrschritt-Schreibvorgang
--- hinterlassen kann.
+-- Was passiert:
+--  1. casas.status trug bisher den Baufortschritt. Der zieht nach
+--     casas.build_status um; casas.status wird -- wie bei workshops --
+--     der Veröffentlichungszustand (draft/published/archived).
+--     casas.archived entfällt und geht in status auf.
+--  2. Neue Spalten published_payload / has_unpublished_changes /
+--     published_at plus Trigger.
+--  3. sort_order wird numeric (Drag & Drop schreibt Mittelwerte).
+--  4. Views workshops_public / casas_public; anon verliert jeden Zugriff
+--     auf die Basistabellen.
+--  5. Alles, was bisher öffentlich war, bekommt sofort seinen
+--     veröffentlichten Schnappschuss -- die Website bleibt also
+--     unverändert, sobald der nächste Build läuft.
 -- ============================================================================
 
 create extension if not exists pgcrypto;
 
 -- ----------------------------------------------------------------------------
--- Gemeinsame Helfer
+-- 0. Gemeinsame Helfer (create or replace => beliebig oft ausführbar)
 -- ----------------------------------------------------------------------------
 
-/**
- * Inhaltsteil einer Zeile: alles außer den Verwaltungsspalten.
- * Genau das wird veröffentlicht und genau das entscheidet, ob es
- * unveröffentlichte Änderungen gibt.
- *
- * `sort_order` und `status` sind bewusst NICHT Inhalt: Umsortieren und
- * Archivieren sind Sofortaktionen aus der Liste, keine Editor-Änderungen.
- */
 create or replace function public.content_snapshot(p_row jsonb)
 returns jsonb
 language sql
@@ -50,12 +38,6 @@ as $$
   ]::text[];
 $$;
 
-/**
- * Setzt bei jeder inhaltlichen Änderung has_unpublished_changes = true.
- * Publizieren und Verwerfen schalten den Trigger über die
- * Transaktions-Variable app.publishing kurz ab, weil sie die Marker
- * selbst setzen.
- */
 create or replace function public.mark_unpublished_changes()
 returns trigger
 language plpgsql
@@ -76,7 +58,6 @@ begin
 end;
 $$;
 
-/** Slug aus einem Titel: Kleinbuchstaben, ohne Akzente, ohne Zufallssuffix. */
 create or replace function public.slugify(p_text text)
 returns text
 language sql
@@ -103,11 +84,6 @@ as $$
   );
 $$;
 
-/**
- * Freier Slug für `p_table`: der Slug aus dem Titel, bei Kollision
- * -2, -3, -4 ... `p_id` schließt die eigene Zeile von der Prüfung aus.
- * Bewusst ohne dynamisches SQL, damit die Rechteprüfung eindeutig bleibt.
- */
 create or replace function public.unique_slug(
   p_table text,
   p_title text,
@@ -151,131 +127,134 @@ end;
 $$;
 
 -- ----------------------------------------------------------------------------
--- workshops
+-- 1. Neue Spalten
 -- ----------------------------------------------------------------------------
-create table if not exists public.workshops (
-  id uuid primary key default gen_random_uuid(),
-  slug text not null unique,
-  -- Katalog-Schlüssel aus src/data/workshop-themes.ts (Header-Illustration,
-  -- Karten-Icon und Akzentfarbe sind darüber im Code definiert, nicht in der DB).
-  theme_id text not null default 'clay'
-    constraint workshops_theme_id_check
-    check (theme_id in ('bee','lavender','pistachio','organic','clay','cielo','semilla')),
-  status text not null default 'draft'
-    constraint workshops_status_check
-    check (status in ('draft','published','archived')),
-  -- numeric statt integer: Umsortieren per Drag & Drop schreibt den
-  -- Mittelwert der Nachbarn und braucht damit nur EIN Update.
-  sort_order numeric not null default 0,
-  price numeric(10,2) not null default 0 check (price >= 0),
-  currency text not null default 'USD'
-    constraint workshops_currency_check
-    check (currency in ('USD','UYU','EUR','ARS')),
-  hours numeric(4,1) not null default 1 check (hours > 0),
-  max_people integer not null default 1 check (max_people > 0),
-  instructor_first_name text not null default '',
-  instructor_last_name text not null default '',
-  -- Einzeltermine, ISO-Datumsstrings, z. B. ["2026-08-08","2026-08-22"]
-  dates jsonb not null default '[]'::jsonb,
-  -- Sichtbarkeit der Detail-Blöcke
-  show_programme boolean not null default true,
-  show_included boolean not null default true,
-  show_bring boolean not null default true,
-  show_for_whom boolean not null default true,
-  show_languages boolean not null default true,
-  show_meeting_point boolean not null default true,
-  -- { es: { title, summary, longDesc, audience, forWhom, languages,
-  --         meetingPoint, programme:[{title,text}], included:[], bring:[] }, en: {...} }
-  translations jsonb not null default '{}'::jsonb,
-  -- Schnappschuss der veröffentlichten Fassung (nur Inhaltsspalten)
-  published_payload jsonb,
-  has_unpublished_changes boolean not null default false,
-  published_at timestamptz,
-  created_at timestamptz not null default now(),
-  updated_at timestamptz not null default now()
-);
+alter table public.workshops add column if not exists published_payload jsonb;
+alter table public.workshops add column if not exists has_unpublished_changes boolean not null default false;
+alter table public.workshops add column if not exists published_at timestamptz;
+
+alter table public.casas add column if not exists published_payload jsonb;
+alter table public.casas add column if not exists has_unpublished_changes boolean not null default false;
+alter table public.casas add column if not exists published_at timestamptz;
+
+-- ----------------------------------------------------------------------------
+-- 2. workshops.status: 'draft' ergänzen
+-- ----------------------------------------------------------------------------
+alter table public.workshops drop constraint if exists workshops_status_check;
+alter table public.workshops alter column status set default 'draft';
+alter table public.workshops add constraint workshops_status_check
+  check (status in ('draft','published','archived'));
+
+-- Themenkatalog und Währungen bei der Gelegenheit auf den Stand von
+-- src/data/workshop-themes.ts bringen (benannte Constraints, damit ein
+-- zweiter Lauf sie sauber ersetzen kann).
+alter table public.workshops drop constraint if exists workshops_theme_id_check;
+alter table public.workshops add constraint workshops_theme_id_check
+  check (theme_id in ('bee','lavender','pistachio','organic','clay','cielo','semilla'));
+
+alter table public.workshops drop constraint if exists workshops_currency_check;
+alter table public.workshops add constraint workshops_currency_check
+  check (currency in ('USD','UYU','EUR','ARS'));
+
+-- ----------------------------------------------------------------------------
+-- 3. casas: Baufortschritt nach build_status, status wird Veröffentlichungszustand
+-- ----------------------------------------------------------------------------
+alter table public.casas add column if not exists build_status text;
+
+-- Alte Prüfung muss weg, bevor 'published' in status geschrieben werden kann.
+alter table public.casas drop constraint if exists casas_status_check;
+
+update public.casas
+   set build_status = status
+ where build_status is null
+   and status in ('listo','enObra','planeado');
+
+update public.casas set build_status = 'planeado' where build_status is null;
+
+alter table public.casas alter column build_status set default 'planeado';
+alter table public.casas alter column build_status set not null;
+alter table public.casas drop constraint if exists casas_build_status_check;
+alter table public.casas add constraint casas_build_status_check
+  check (build_status in ('listo','enObra','planeado'));
+
+-- archived -> status, danach fällt die Spalte weg.
+do $$
+begin
+  if exists (
+    select 1 from information_schema.columns
+     where table_schema = 'public' and table_name = 'casas' and column_name = 'archived'
+  ) then
+    update public.casas
+       set status = case when archived then 'archived' else 'published' end
+     where status in ('listo','enObra','planeado');
+
+    drop index if exists public.casas_archived_sort_idx;
+    alter table public.casas drop column archived;
+  end if;
+end
+$$;
+
+-- Sicherheitsnetz, falls archived schon vorher entfernt wurde.
+update public.casas set status = 'published' where status in ('listo','enObra','planeado');
+
+alter table public.casas alter column status set default 'draft';
+alter table public.casas add constraint casas_status_check
+  check (status in ('draft','published','archived'));
+
+create index if not exists casas_status_sort_idx on public.casas (status, sort_order);
+create index if not exists workshops_status_sort_idx on public.workshops (status, sort_order);
+
+-- ----------------------------------------------------------------------------
+-- 4. sort_order auf numeric (fraktionale Reihenfolge)
+-- ----------------------------------------------------------------------------
+do $$
+begin
+  if (select data_type from information_schema.columns
+       where table_schema = 'public' and table_name = 'workshops'
+         and column_name = 'sort_order') is distinct from 'numeric' then
+    alter table public.workshops alter column sort_order type numeric;
+  end if;
+
+  if (select data_type from information_schema.columns
+       where table_schema = 'public' and table_name = 'casas'
+         and column_name = 'sort_order') is distinct from 'numeric' then
+    alter table public.casas alter column sort_order type numeric;
+  end if;
+
+  if (select data_type from information_schema.columns
+       where table_schema = 'public' and table_name = 'casa_images'
+         and column_name = 'sort_order') is distinct from 'numeric' then
+    alter table public.casa_images alter column sort_order type numeric;
+  end if;
+end
+$$;
+
+-- ----------------------------------------------------------------------------
+-- 5. Trigger: alter updated_at-Trigger raus, neuer Änderungsmarker rein
+-- ----------------------------------------------------------------------------
+drop trigger if exists workshops_set_updated_at on public.workshops;
+drop trigger if exists casas_set_updated_at on public.casas;
+
+-- Aufräumen, aber nicht auf Kosten der Migration: falls die Funktion noch
+-- irgendwo hängt, bleibt sie einfach stehen.
+do $$
+begin
+  drop function if exists public.set_updated_at();
+exception
+  when dependent_objects_still_exist then null;
+end
+$$;
 
 drop trigger if exists workshops_mark_changes on public.workshops;
 create trigger workshops_mark_changes
   before update on public.workshops
   for each row execute function public.mark_unpublished_changes();
 
-create index if not exists workshops_status_sort_idx
-  on public.workshops (status, sort_order);
-
--- ----------------------------------------------------------------------------
--- casas
--- ----------------------------------------------------------------------------
-create table if not exists public.casas (
-  id uuid primary key default gen_random_uuid(),
-  slug text not null unique,
-  -- Veröffentlichungszustand, wie bei workshops.
-  status text not null default 'draft'
-    constraint casas_status_check
-    check (status in ('draft','published','archived')),
-  -- Baufortschritt, siehe Karten-Legende auf der Website. Früher lag der
-  -- in `status`; seit dem Entwurf/Veröffentlichen-Umbau hat er eine
-  -- eigene Spalte.
-  build_status text not null default 'planeado'
-    constraint casas_build_status_check
-    check (build_status in ('listo','enObra','planeado')),
-  sort_order numeric not null default 0,
-  airbnb_url text,
-  beds integer not null default 0 check (beds >= 0),
-  guests integer not null default 0 check (guests >= 0),
-  area numeric(6,1) not null default 0 check (area >= 0),
-  bedrooms integer not null default 0 check (bedrooms >= 0),
-  bathrooms integer not null default 0 check (bathrooms >= 0),
-  -- [{ glyph, label: { es, en } }] — glyph-Schlüssel aus src/data/casa-glyphs.ts
-  amenities jsonb not null default '[]'::jsonb,
-  -- [{ glyph, label: { es, en }, note: { es, en } }]
-  highlights jsonb not null default '[]'::jsonb,
-  -- { es: { title, tagline, body: [...], bookNote }, en: {...} }
-  translations jsonb not null default '{}'::jsonb,
-  -- Schnappschuss inkl. der Fotos (Schlüssel "images"), siehe publish_casa
-  published_payload jsonb,
-  has_unpublished_changes boolean not null default false,
-  published_at timestamptz,
-  created_at timestamptz not null default now(),
-  updated_at timestamptz not null default now()
-);
-
 drop trigger if exists casas_mark_changes on public.casas;
 create trigger casas_mark_changes
   before update on public.casas
   for each row execute function public.mark_unpublished_changes();
 
-create index if not exists casas_status_sort_idx
-  on public.casas (status, sort_order);
-
--- ----------------------------------------------------------------------------
--- casa_images — eigene Tabelle statt jsonb, weil jedes Bild ein echtes
--- Storage-Objekt ist (Löschen/Neuordnen muss Datei + Zeile zusammenhalten).
--- Leer für eine Casa => Frontend zeigt eine Aquarell-Platzhalter-Illustration.
---
--- WICHTIG: Beim Löschen einer Casa räumt `on delete cascade` nur die Zeilen
--- ab. Die Dateien im Bucket muss der Client vorher löschen -- Reihenfolge
--- immer: erst Storage, dann Zeile. Sonst bleiben verwaiste Dateien liegen.
--- ----------------------------------------------------------------------------
-create table if not exists public.casa_images (
-  id uuid primary key default gen_random_uuid(),
-  casa_id uuid not null references public.casas (id) on delete cascade,
-  storage_path text not null,
-  url text not null,
-  alt_es text not null default '',
-  alt_en text not null default '',
-  sort_order numeric not null default 0,
-  created_at timestamptz not null default now()
-);
-
-create index if not exists casa_images_casa_id_sort_idx
-  on public.casa_images (casa_id, sort_order);
-
-/**
- * Fotos sind Sofortaktionen (Hochladen/Löschen wirken direkt), gehören aber
- * zum veröffentlichten Stand. Deshalb markiert jede Fotoänderung das Haus
- * als "geändert, noch nicht veröffentlicht".
- */
 create or replace function public.casa_images_touch_casa()
 returns trigger
 language plpgsql
@@ -309,10 +288,9 @@ create trigger casa_images_touch_casa
   for each row execute function public.casa_images_touch_casa();
 
 -- ----------------------------------------------------------------------------
--- Veröffentlichen & Verwerfen (je EIN Aufruf aus dem Browser)
+-- 6. Veröffentlichen & Verwerfen
 -- ----------------------------------------------------------------------------
 
-/** Aktuellen Arbeitsstand eines Workshops zum veröffentlichten machen. */
 create or replace function public.publish_workshop(p_id uuid)
 returns void
 language plpgsql
@@ -347,11 +325,6 @@ begin
 end;
 $$;
 
-/**
- * Wie publish_workshop, nur dass die Fotos aus casa_images
- * mit in den Schnappschuss wandern -- die Views lesen ausschließlich
- * den Schnappschuss, dürfen also nicht live auf casa_images schauen.
- */
 create or replace function public.publish_casa(p_id uuid)
 returns void
 language plpgsql
@@ -401,7 +374,6 @@ begin
 end;
 $$;
 
-/** Entwurf auf den zuletzt veröffentlichten Stand zurücksetzen. */
 create or replace function public.discard_workshop_changes(p_id uuid)
 returns void
 language plpgsql
@@ -445,12 +417,6 @@ begin
 end;
 $$;
 
-/**
- * Wie discard_workshop_changes. Die Fotos bleiben unangetastet:
- * Hochladen und Löschen wirken sofort auf den Storage, ein Zurückrollen
- * würde entweder Dateien verwaisen lassen oder gelöschte nicht
- * zurückbringen. Auf der Website zählt ohnehin nur der Schnappschuss.
- */
 create or replace function public.discard_casa_changes(p_id uuid)
 returns void
 language plpgsql
@@ -489,7 +455,6 @@ begin
 end;
 $$;
 
-/** Bequeme Weiche für den generischen Store im Backend. */
 create or replace function public.publish_entity(p_table text, p_id uuid)
 returns void
 language plpgsql
@@ -521,7 +486,52 @@ end;
 $$;
 
 -- ----------------------------------------------------------------------------
--- Öffentliche Views — die einzige Datenquelle des Website-Builds
+-- 7. Bestand veröffentlichen: alles, was vorher live war, bleibt live
+-- ----------------------------------------------------------------------------
+do $$
+begin
+  perform set_config('app.publishing', 'on', true);
+
+  update public.workshops w
+     set published_payload       = (select public.content_snapshot(to_jsonb(x))
+                                      from public.workshops x where x.id = w.id),
+         published_at            = coalesce(w.published_at, w.updated_at, now()),
+         has_unpublished_changes = false
+   where w.status = 'published'
+     and w.published_payload is null;
+
+  update public.casas c
+     set published_payload = (select public.content_snapshot(to_jsonb(y))
+                                from public.casas y where y.id = c.id)
+           || jsonb_build_object(
+                'images',
+                coalesce(
+                  (select jsonb_agg(
+                            jsonb_build_object(
+                              'id',         i.id,
+                              'url',        i.url,
+                              'alt_es',     i.alt_es,
+                              'alt_en',     i.alt_en,
+                              'sort_order', i.sort_order
+                            )
+                            order by i.sort_order, i.created_at
+                          )
+                     from public.casa_images i
+                    where i.casa_id = c.id),
+                  '[]'::jsonb
+                )
+              ),
+         published_at            = coalesce(c.published_at, c.updated_at, now()),
+         has_unpublished_changes = false
+   where c.status = 'published'
+     and c.published_payload is null;
+
+  perform set_config('app.publishing', 'off', true);
+end
+$$;
+
+-- ----------------------------------------------------------------------------
+-- 8. Öffentliche Views
 -- ----------------------------------------------------------------------------
 drop view if exists public.workshops_public;
 create view public.workshops_public as
@@ -570,12 +580,7 @@ where c.status = 'published'
   and c.published_payload is not null;
 
 -- ----------------------------------------------------------------------------
--- Row Level Security & Rechte
---
--- Die Views laufen bewusst OHNE security_invoker: sie gehören postgres und
--- umgehen damit die RLS der Basistabellen. Genau deshalb darf anon auf den
--- Basistabellen gar keine Rechte haben. Der Supabase-Linter meldet dazu
--- "security definer view" -- das ist hier die Absicht, keine Lücke.
+-- 9. Rechte: anon sieht nur noch die Views
 -- ----------------------------------------------------------------------------
 alter table public.workshops enable row level security;
 alter table public.casas enable row level security;
@@ -602,6 +607,7 @@ grant select on public.casas_public to anon, authenticated;
 drop policy if exists workshops_public_read on public.workshops;
 drop policy if exists casas_public_read on public.casas;
 drop policy if exists casa_images_public_read on public.casa_images;
+drop policy if exists casa_images_authenticated_write on public.casa_images;
 
 drop policy if exists workshops_authenticated_all on public.workshops;
 create policy workshops_authenticated_all
@@ -624,7 +630,6 @@ create policy casa_images_authenticated_all
   using (true)
   with check (true);
 
--- Funktionen sind per Vorgabe für PUBLIC ausführbar -- hier eingeschränkt.
 revoke all on function public.publish_workshop(uuid) from public;
 revoke all on function public.publish_casa(uuid) from public;
 revoke all on function public.discard_workshop_changes(uuid) from public;
@@ -644,7 +649,7 @@ grant execute on function public.slugify(text) to authenticated;
 grant execute on function public.unique_slug(text, text, uuid) to authenticated;
 
 -- ----------------------------------------------------------------------------
--- Storage: Bucket für Lehmhaus-Fotos
+-- 10. Storage-Regeln auffrischen (unverändert, nur idempotent gemacht)
 -- ----------------------------------------------------------------------------
 insert into storage.buckets (id, name, public)
 values ('casa-photos', 'casa-photos', true)

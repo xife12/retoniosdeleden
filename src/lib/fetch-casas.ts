@@ -1,22 +1,44 @@
 import { supabase } from './supabase';
-import type { Casa, CasaFacts, CasaHighlight, CasaImage, CasaListItem, CasaStatus, CasaText } from '../data/casas';
 import type { CasaGlyph } from '../data/casa-glyphs';
-import type { Lang } from '../i18n';
+import type {
+  Casa,
+  CasaHighlight,
+  CasaImage,
+  CasaListItem,
+  CasaStatus,
+  CasaText,
+} from '../data/casas';
 
-interface BilingualText {
-  es: string;
-  en: string;
+/**
+ * Liest die veröffentlichten Lehmhäuser zur Bauzeit aus Supabase.
+ *
+ * Quelle ist ausschließlich die View `casas_public` -- der veröffentlichte
+ * Schnappschuss, nie der Arbeitsstand aus dem Backend. Die Fotos stecken mit
+ * im Schnappschuss (Feld `images`), damit ein Bild erst mit dem nächsten
+ * „Publicar" auf der Website erscheint. Siehe supabase/schema.sql.
+ *
+ * Achtung Begriffe: In der Datenbank trägt `status` den
+ * Veröffentlichungszustand, der Baufortschritt steht in `build_status`.
+ * Auf der Website heißt der Baufortschritt seit jeher `status` -- die
+ * Umbenennung passiert hier.
+ */
+
+/** Ausstattungspunkt, wie ihn das Backend zweisprachig ablegt. */
+interface ListItemRow {
+  glyph: CasaGlyph;
+  label: { es: string; en: string };
 }
 
-interface CasaAmenityRow {
-  glyph: CasaGlyph;
-  label: BilingualText;
+interface HighlightRow extends ListItemRow {
+  note: { es: string; en: string };
 }
 
-interface CasaHighlightRow {
-  glyph: CasaGlyph;
-  label: BilingualText;
-  note: BilingualText;
+interface CasaImageRow {
+  id: string;
+  url: string;
+  alt_es: string;
+  alt_en: string;
+  sort_order: number;
 }
 
 interface CasaTranslationRow {
@@ -26,117 +48,110 @@ interface CasaTranslationRow {
   bookNote: string;
 }
 
-interface CasaRow {
-  id: string;
+interface CasaPublicRow {
   slug: string;
-  status: CasaStatus;
-  archived: boolean;
+  build_status: CasaStatus;
   airbnb_url: string | null;
   beds: number;
   guests: number;
   area: number;
   bedrooms: number;
   bathrooms: number;
-  amenities: CasaAmenityRow[];
-  highlights: CasaHighlightRow[];
-  translations: { es: CasaTranslationRow; en: CasaTranslationRow };
-}
-
-interface CasaImageRow {
-  id: string;
-  casa_id: string;
-  url: string;
-  alt_es: string;
-  alt_en: string;
+  amenities: ListItemRow[];
+  highlights: HighlightRow[];
+  translations: Partial<Record<'es' | 'en', CasaTranslationRow>>;
+  images: CasaImageRow[];
   sort_order: number;
 }
 
-function toFacts(row: CasaRow): CasaFacts {
-  return {
-    beds: row.beds,
-    guests: row.guests,
-    area: Number(row.area),
-    bedrooms: row.bedrooms,
-    bathrooms: row.bathrooms,
-  };
+/**
+ * Fehlt eine Sprache, greift die andere als Notnagel -- ein halb übersetztes
+ * Haus soll den Build nicht anhalten.
+ */
+function pickTranslation(row: CasaPublicRow, lang: 'es' | 'en'): CasaTranslationRow {
+  const own = row.translations?.[lang];
+  if (own) return own;
+
+  const fallback = row.translations?.[lang === 'es' ? 'en' : 'es'];
+  if (fallback) return fallback;
+
+  throw new Error(
+    `Das Lehmhaus "${row.slug}" hat im veröffentlichten Stand keine Texte.\n` +
+      'Im Backend unter /admin ausfüllen und neu veröffentlichen.',
+  );
 }
 
-function toAmenities(row: CasaRow, lang: Lang): CasaListItem[] {
-  return row.amenities.map((a) => ({ glyph: a.glyph, label: a.label[lang] }));
+function toListItems(rows: ListItemRow[] | null, lang: 'es' | 'en'): CasaListItem[] {
+  return (rows ?? []).map((r) => ({ glyph: r.glyph, label: r.label[lang] }));
 }
 
-function toHighlights(row: CasaRow, lang: Lang): CasaHighlight[] {
-  return row.highlights.map((h) => ({ glyph: h.glyph, label: h.label[lang], note: h.note[lang] }));
-}
-
-function toImages(rows: CasaImageRow[], lang: Lang): CasaImage[] {
-  return rows.map((img) => ({
-    id: img.id,
-    url: img.url,
-    alt: lang === 'es' ? img.alt_es : img.alt_en,
+function toHighlights(rows: HighlightRow[] | null, lang: 'es' | 'en'): CasaHighlight[] {
+  return (rows ?? []).map((r) => ({
+    glyph: r.glyph,
+    label: r.label[lang],
+    note: r.note[lang],
   }));
 }
 
-function toCasaText(row: CasaRow, images: CasaImageRow[], lang: Lang): CasaText {
-  const t = row.translations[lang];
+/** Leere Liste ist erlaubt: Stay.astro zeigt dann die Aquarell-Zeichnung. */
+function toImages(rows: CasaImageRow[] | null, lang: 'es' | 'en'): CasaImage[] {
+  return (rows ?? [])
+    .slice()
+    .sort((a, b) => a.sort_order - b.sort_order)
+    .map((r) => ({
+      id: r.id,
+      url: r.url,
+      alt: (lang === 'es' ? r.alt_es : r.alt_en) || '',
+    }));
+}
+
+function toCasaText(row: CasaPublicRow, lang: 'es' | 'en'): CasaText {
+  const t = pickTranslation(row, lang);
   return {
     title: t.title,
     tagline: t.tagline,
-    body: t.body,
+    body: t.body ?? [],
+    amenities: toListItems(row.amenities, lang),
+    highlights: toHighlights(row.highlights, lang),
+    images: toImages(row.images, lang),
     bookNote: t.bookNote,
-    amenities: toAmenities(row, lang),
-    highlights: toHighlights(row, lang),
-    images: toImages(images, lang),
   };
 }
 
-function toCasa(row: CasaRow, images: CasaImageRow[]): Casa {
+function toCasa(row: CasaPublicRow): Casa {
   return {
     id: row.slug,
-    status: row.status,
-    facts: toFacts(row),
-    airbnbUrl: row.airbnb_url ?? undefined,
+    status: row.build_status,
+    facts: {
+      beds: row.beds,
+      guests: row.guests,
+      area: Number(row.area),
+      bedrooms: row.bedrooms,
+      bathrooms: row.bathrooms,
+    },
+    ...(row.airbnb_url ? { airbnbUrl: row.airbnb_url } : {}),
     text: {
-      es: toCasaText(row, images, 'es'),
-      en: toCasaText(row, images, 'en'),
+      es: toCasaText(row, 'es'),
+      en: toCasaText(row, 'en'),
     },
   };
 }
 
-/** Nur nicht archivierte Häuser, für den öffentlichen Seiten-Build. */
+/** Nur veröffentlichte Lehmhäuser, in der im Backend gesetzten Reihenfolge. */
 export async function fetchCasas(): Promise<Casa[]> {
-  const { data: casaRows, error: casaError } = await supabase
-    .from('casas')
+  const { data, error } = await supabase
+    .from('casas_public')
     .select('*')
-    .eq('archived', false)
     .order('sort_order', { ascending: true });
 
-  if (casaError) {
-    throw new Error(`Lehmhäuser konnten nicht geladen werden: ${casaError.message}`);
+  if (error) {
+    throw new Error(
+      'Die Lehmhäuser konnten nicht aus Supabase geladen werden.\n' +
+        `Meldung der Datenbank: ${error.message}\n` +
+        'Häufigste Ursache: Das Schema ist noch nicht eingespielt. Dann fehlt die ' +
+        'View "casas_public" -- siehe SETUP-BACKEND.md, Abschnitt A oder B.',
+    );
   }
 
-  const rows = casaRows as CasaRow[];
-  if (rows.length === 0) return [];
-
-  const { data: imageRows, error: imageError } = await supabase
-    .from('casa_images')
-    .select('*')
-    .in(
-      'casa_id',
-      rows.map((r) => r.id),
-    )
-    .order('sort_order', { ascending: true });
-
-  if (imageError) {
-    throw new Error(`Bilder der Lehmhäuser konnten nicht geladen werden: ${imageError.message}`);
-  }
-
-  const imagesByCasaId = new Map<string, CasaImageRow[]>();
-  for (const img of (imageRows ?? []) as CasaImageRow[]) {
-    const list = imagesByCasaId.get(img.casa_id) ?? [];
-    list.push(img);
-    imagesByCasaId.set(img.casa_id, list);
-  }
-
-  return rows.map((row) => toCasa(row, imagesByCasaId.get(row.id) ?? []));
+  return (data as CasaPublicRow[]).map(toCasa);
 }
