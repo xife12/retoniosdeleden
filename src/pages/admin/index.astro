@@ -1,0 +1,721 @@
+---
+import Base from '../../layouts/Base.astro';
+---
+
+<Base
+  lang="es"
+  title="Panel — Retoños del Edén"
+  description="Área privada para gestionar talleres y casas de barro."
+>
+  <div class="admin" data-admin>
+    <section class="admin-login" data-admin-login>
+      <div class="admin-login-card card">
+        <h1>Panel de Retoños del Edén</h1>
+        <p class="admin-login-sub">Talleres y casas de barro</p>
+        <form data-login-form novalidate>
+          <div class="field">
+            <label for="admin-email">Correo</label>
+            <input id="admin-email" type="email" required autocomplete="username" />
+          </div>
+          <div class="field">
+            <label for="admin-password">Contraseña</label>
+            <input id="admin-password" type="password" required autocomplete="current-password" />
+          </div>
+          <p class="err" data-login-error hidden></p>
+          <button type="submit" class="btn">Entrar</button>
+        </form>
+      </div>
+    </section>
+
+    <section class="admin-dash" data-admin-dash hidden>
+      <header class="admin-topbar">
+        <h1>Panel de Retoños del Edén</h1>
+        <button type="button" class="btn btn--ghost" data-logout>Cerrar sesión</button>
+      </header>
+
+      <p class="admin-status" data-admin-save-status hidden></p>
+
+      <nav class="admin-tabs" role="tablist">
+        <button type="button" class="admin-tab is-active" data-admin-tab="workshops" role="tab" aria-selected="true">
+          Talleres
+        </button>
+        <button type="button" class="admin-tab" data-admin-tab="casas" role="tab" aria-selected="false">
+          Casas de barro
+        </button>
+      </nav>
+
+      <!-- ============================== TALLERES ============================== -->
+      <section data-admin-panel="workshops">
+        <div class="admin-panel-head">
+          <button type="button" class="btn" data-workshop-new>+ Nuevo taller</button>
+        </div>
+        <ul class="admin-list" data-workshop-list></ul>
+      </section>
+
+      <!-- ============================== CASAS ============================== -->
+      <section data-admin-panel="casas" hidden>
+        <div class="admin-panel-head">
+          <button type="button" class="btn" data-casa-new>+ Nueva casa</button>
+        </div>
+        <ul class="admin-list" data-casa-list></ul>
+      </section>
+    </section>
+  </div>
+
+  <!-- ============================================================
+       Formular: Taller (Modal)
+  ============================================================= -->
+  <div class="modal-backdrop" data-workshop-form-backdrop hidden></div>
+  <div class="modal admin-modal" data-workshop-form-modal role="dialog" aria-modal="true" aria-labelledby="wf-title" hidden>
+    <button type="button" class="modal-close" data-workshop-form-close aria-label="Cerrar">×</button>
+    <h3 id="wf-title" data-workshop-form-title>Nuevo taller</h3>
+
+    <form data-workshop-form novalidate>
+      <section class="admin-form-block">
+        <h4>Tema</h4>
+        <div class="theme-picker" data-theme-picker role="radiogroup" aria-label="Tema del taller"></div>
+      </section>
+
+      <section class="admin-form-block admin-form-grid">
+        <div class="field">
+          <label for="wf-price">Precio</label>
+          <input id="wf-price" type="number" min="0" step="0.01" required />
+        </div>
+        <div class="field">
+          <label for="wf-currency">Moneda</label>
+          <select id="wf-currency" required>
+            <option value="USD">USD</option>
+            <option value="UYU">UYU</option>
+            <option value="EUR">EUR</option>
+            <option value="ARS">ARS</option>
+          </select>
+        </div>
+        <div class="field">
+          <label for="wf-hours">Duración (horas)</label>
+          <input id="wf-hours" type="number" min="0.5" step="0.5" required />
+        </div>
+        <div class="field">
+          <label for="wf-max-people">Máximo de personas</label>
+          <input id="wf-max-people" type="number" min="1" step="1" required />
+        </div>
+        <div class="field">
+          <label for="wf-instructor-first">Nombre de quien lo da</label>
+          <input id="wf-instructor-first" type="text" />
+        </div>
+        <div class="field">
+          <label for="wf-instructor-last">Apellido de quien lo da</label>
+          <input id="wf-instructor-last" type="text" />
+        </div>
+      </section>
+
+      <section class="admin-form-block">
+        <h4>Fechas</h4>
+        <div data-workshop-dates></div>
+      </section>
+
+      <section class="admin-form-block">
+        <h4>Qué se muestra en la ficha del taller</h4>
+        <div class="admin-checks">
+          <label><input type="checkbox" id="wf-show-programme" checked /> Cómo es el encuentro</label>
+          <label><input type="checkbox" id="wf-show-included" checked /> Qué incluye</label>
+          <label><input type="checkbox" id="wf-show-bring" checked /> Qué traer</label>
+          <label><input type="checkbox" id="wf-show-for-whom" checked /> Para quién es</label>
+          <label><input type="checkbox" id="wf-show-languages" checked /> Idiomas</label>
+          <label><input type="checkbox" id="wf-show-meeting-point" checked /> Punto de encuentro</label>
+        </div>
+      </section>
+
+      <section class="admin-form-block">
+        <div class="lang-tabs" role="tablist">
+          <button type="button" class="lang-tab is-active" data-workshop-lang-tab="es" role="tab" aria-selected="true">Español</button>
+          <button type="button" class="lang-tab" data-workshop-lang-tab="en" role="tab" aria-selected="false">English</button>
+        </div>
+
+        <div data-workshop-lang-panel="es">
+          <div class="field">
+            <label for="wf-title-es">Título</label>
+            <input id="wf-title-es" type="text" />
+          </div>
+          <div class="field">
+            <label for="wf-summary-es">Resumen corto (se ve en la tarjeta)</label>
+            <textarea id="wf-summary-es" rows="3" maxlength="170"></textarea>
+            <p class="char-count" data-char-count-for="wf-summary-es"></p>
+          </div>
+          <div class="field">
+            <label for="wf-audience-es">Para quién (etiqueta corta)</label>
+            <input id="wf-audience-es" type="text" />
+          </div>
+          <div class="field">
+            <label for="wf-long-desc-es">Descripción completa</label>
+            <textarea id="wf-long-desc-es" rows="4"></textarea>
+          </div>
+          <div class="field">
+            <label for="wf-for-whom-es">Para quién es (texto largo)</label>
+            <textarea id="wf-for-whom-es" rows="2"></textarea>
+          </div>
+          <div class="field">
+            <label for="wf-languages-es">Idiomas</label>
+            <input id="wf-languages-es" type="text" />
+          </div>
+          <div class="field">
+            <label for="wf-meeting-point-es">Punto de encuentro</label>
+            <textarea id="wf-meeting-point-es" rows="2"></textarea>
+          </div>
+          <div class="admin-form-block">
+            <h4>Cómo es el encuentro (programa)</h4>
+            <div data-workshop-programme="es"></div>
+          </div>
+          <div class="admin-form-block">
+            <h4>Qué incluye</h4>
+            <div data-workshop-included="es"></div>
+          </div>
+          <div class="admin-form-block">
+            <h4>Qué traer</h4>
+            <div data-workshop-bring="es"></div>
+          </div>
+        </div>
+
+        <div data-workshop-lang-panel="en" hidden>
+          <div class="field">
+            <label for="wf-title-en">Title</label>
+            <input id="wf-title-en" type="text" />
+          </div>
+          <div class="field">
+            <label for="wf-summary-en">Short summary (shown on the card)</label>
+            <textarea id="wf-summary-en" rows="3" maxlength="170"></textarea>
+            <p class="char-count" data-char-count-for="wf-summary-en"></p>
+          </div>
+          <div class="field">
+            <label for="wf-audience-en">Audience (short label)</label>
+            <input id="wf-audience-en" type="text" />
+          </div>
+          <div class="field">
+            <label for="wf-long-desc-en">Full description</label>
+            <textarea id="wf-long-desc-en" rows="4"></textarea>
+          </div>
+          <div class="field">
+            <label for="wf-for-whom-en">Who it is for (long text)</label>
+            <textarea id="wf-for-whom-en" rows="2"></textarea>
+          </div>
+          <div class="field">
+            <label for="wf-languages-en">Languages</label>
+            <input id="wf-languages-en" type="text" />
+          </div>
+          <div class="field">
+            <label for="wf-meeting-point-en">Meeting point</label>
+            <textarea id="wf-meeting-point-en" rows="2"></textarea>
+          </div>
+          <div class="admin-form-block">
+            <h4>How the day goes (programme)</h4>
+            <div data-workshop-programme="en"></div>
+          </div>
+          <div class="admin-form-block">
+            <h4>What's included</h4>
+            <div data-workshop-included="en"></div>
+          </div>
+          <div class="admin-form-block">
+            <h4>What to bring</h4>
+            <div data-workshop-bring="en"></div>
+          </div>
+        </div>
+      </section>
+
+      <p class="err" data-workshop-form-error hidden></p>
+
+      <div class="admin-form-actions">
+        <label class="admin-archive-toggle" data-workshop-archive-row hidden>
+          <input type="checkbox" id="wf-archived" /> Archivado (no se muestra en la web)
+        </label>
+        <button type="button" class="btn btn--ghost" data-workshop-form-cancel>Cancelar</button>
+        <button type="submit" class="btn">Guardar</button>
+      </div>
+    </form>
+  </div>
+
+  <!-- ============================================================
+       Formular: Casa de barro (Modal)
+  ============================================================= -->
+  <div class="modal-backdrop" data-casa-form-backdrop hidden></div>
+  <div class="modal admin-modal" data-casa-form-modal role="dialog" aria-modal="true" aria-labelledby="cf-title" hidden>
+    <button type="button" class="modal-close" data-casa-form-close aria-label="Cerrar">×</button>
+    <h3 id="cf-title" data-casa-form-title>Nueva casa</h3>
+
+    <form data-casa-form novalidate>
+      <section class="admin-form-block admin-form-grid">
+        <div class="field">
+          <label for="cf-status">Estado de la obra</label>
+          <select id="cf-status" required>
+            <option value="listo">Terminada</option>
+            <option value="enObra">En obra</option>
+            <option value="planeado">Planeada</option>
+          </select>
+        </div>
+        <div class="field">
+          <label for="cf-airbnb-url">Link de Airbnb</label>
+          <input id="cf-airbnb-url" type="url" placeholder="https://www.airbnb.com/..." />
+        </div>
+        <div class="field">
+          <label for="cf-beds">Camas</label>
+          <input id="cf-beds" type="number" min="0" step="1" required />
+        </div>
+        <div class="field">
+          <label for="cf-guests">Huéspedes</label>
+          <input id="cf-guests" type="number" min="0" step="1" required />
+        </div>
+        <div class="field">
+          <label for="cf-area">Superficie (m²)</label>
+          <input id="cf-area" type="number" min="0" step="0.5" required />
+        </div>
+        <div class="field">
+          <label for="cf-bedrooms">Dormitorios</label>
+          <input id="cf-bedrooms" type="number" min="0" step="1" required />
+        </div>
+        <div class="field">
+          <label for="cf-bathrooms">Baños</label>
+          <input id="cf-bathrooms" type="number" min="0" step="1" required />
+        </div>
+      </section>
+
+      <section class="admin-form-block">
+        <h4>Fotos</h4>
+        <p class="admin-hint" data-casa-photo-hint-new>Guardá la casa primero (botón "Guardar" abajo) para poder agregar fotos.</p>
+        <input type="file" accept="image/*" multiple data-casa-image-input />
+        <div class="casa-image-grid" data-casa-image-grid></div>
+        <p class="admin-hint">Sin fotos se muestra un dibujo de acuarela según el estado de la obra.</p>
+      </section>
+
+      <section class="admin-form-block">
+        <h4>Equipamiento</h4>
+        <div data-casa-amenities></div>
+        <h4>Lo que la hace especial</h4>
+        <div data-casa-highlights></div>
+      </section>
+
+      <section class="admin-form-block">
+        <div class="lang-tabs" role="tablist">
+          <button type="button" class="lang-tab is-active" data-casa-lang-tab="es" role="tab" aria-selected="true">Español</button>
+          <button type="button" class="lang-tab" data-casa-lang-tab="en" role="tab" aria-selected="false">English</button>
+        </div>
+
+        <div data-casa-lang-panel="es">
+          <div class="field">
+            <label for="cf-title-es">Nombre de la casa</label>
+            <input id="cf-title-es" type="text" />
+          </div>
+          <div class="field">
+            <label for="cf-tagline-es">Frase corta (tarjeta y ficha)</label>
+            <textarea id="cf-tagline-es" rows="2"></textarea>
+          </div>
+          <div class="field">
+            <label for="cf-body-es">Descripción (un párrafo por línea)</label>
+            <textarea id="cf-body-es" rows="6"></textarea>
+          </div>
+          <div class="field">
+            <label for="cf-book-note-es">Nota sobre reservas</label>
+            <textarea id="cf-book-note-es" rows="2"></textarea>
+          </div>
+        </div>
+        <div data-casa-lang-panel="en" hidden>
+          <div class="field">
+            <label for="cf-title-en">House name</label>
+            <input id="cf-title-en" type="text" />
+          </div>
+          <div class="field">
+            <label for="cf-tagline-en">Short line (card and detail)</label>
+            <textarea id="cf-tagline-en" rows="2"></textarea>
+          </div>
+          <div class="field">
+            <label for="cf-body-en">Description (one paragraph per line)</label>
+            <textarea id="cf-body-en" rows="6"></textarea>
+          </div>
+          <div class="field">
+            <label for="cf-book-note-en">Booking note</label>
+            <textarea id="cf-book-note-en" rows="2"></textarea>
+          </div>
+        </div>
+      </section>
+
+      <p class="err" data-casa-form-error hidden></p>
+
+      <div class="admin-form-actions">
+        <label class="admin-archive-toggle" data-casa-archive-row hidden>
+          <input type="checkbox" id="cf-archived" /> Archivada (no se muestra en la web)
+        </label>
+        <button type="button" class="btn btn--ghost" data-casa-form-cancel>Cancelar</button>
+        <button type="submit" class="btn">Guardar</button>
+      </div>
+    </form>
+  </div>
+
+  <script>
+    import '../../scripts/admin/auth';
+    import '../../scripts/admin/workshops-panel';
+    import '../../scripts/admin/casas-panel';
+
+    // Pestañas Talleres / Casas
+    const tabs = document.querySelectorAll<HTMLElement>('[data-admin-tab]');
+    const panels = document.querySelectorAll<HTMLElement>('[data-admin-panel]');
+    tabs.forEach((tab) => {
+      tab.addEventListener('click', () => {
+        const target = tab.dataset.adminTab;
+        tabs.forEach((t) => {
+          const on = t === tab;
+          t.classList.toggle('is-active', on);
+          t.setAttribute('aria-selected', String(on));
+        });
+        panels.forEach((p) => {
+          p.hidden = p.dataset.adminPanel !== target;
+        });
+      });
+    });
+  </script>
+</Base>
+
+<style>
+  .admin {
+    min-height: 100svh;
+    background: var(--papel-warm);
+    padding: var(--sp-6) var(--sp-4);
+  }
+
+  .admin-login {
+    min-height: 80svh;
+    display: grid;
+    place-items: center;
+  }
+
+  .admin-login-card {
+    width: min(100%, 24rem);
+    display: grid;
+    gap: var(--sp-4);
+    padding: var(--sp-6);
+  }
+
+  .admin-login-sub {
+    margin-top: -0.5em;
+    color: var(--c-text-soft);
+  }
+
+  .admin-dash {
+    max-width: 60rem;
+    margin-inline: auto;
+    display: grid;
+    gap: var(--sp-5);
+  }
+
+  .admin-topbar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--sp-3);
+    flex-wrap: wrap;
+  }
+
+  .admin-status {
+    background: var(--pistacho-100);
+    color: var(--pistacho-700);
+    border-radius: var(--r-md);
+    padding: var(--sp-2) var(--sp-4);
+    font-size: var(--fs-300);
+    font-weight: 600;
+  }
+
+  .admin-status.is-error {
+    background: var(--barro-100);
+    color: var(--barro-700);
+  }
+
+  .admin-tabs,
+  .lang-tabs {
+    display: flex;
+    gap: var(--sp-2);
+    border-bottom: 1.5px solid var(--barro-200);
+  }
+
+  .admin-tab,
+  .lang-tab {
+    padding: var(--sp-2) var(--sp-4);
+    border: none;
+    background: none;
+    font-weight: 600;
+    color: var(--tinta-tenue);
+    cursor: pointer;
+    border-bottom: 3px solid transparent;
+    margin-bottom: -1.5px;
+  }
+
+  .admin-tab.is-active,
+  .lang-tab.is-active {
+    color: var(--barro-700);
+    border-color: var(--barro-500);
+  }
+
+  .admin-panel-head {
+    display: flex;
+    justify-content: flex-end;
+  }
+
+  .admin-list {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: grid;
+    gap: var(--sp-3);
+  }
+
+  .admin-list li {
+    display: flex;
+    align-items: center;
+    gap: var(--sp-4);
+    padding: var(--sp-3) var(--sp-4);
+    background: #fffdf8;
+    border-radius: var(--r-md);
+    box-shadow: var(--shadow-soft);
+    flex-wrap: wrap;
+  }
+
+  .admin-list .admin-item-main {
+    flex: 1;
+    min-width: 10rem;
+  }
+
+  .admin-list .admin-item-title {
+    font-weight: 700;
+  }
+
+  .admin-item-badge {
+    display: inline-block;
+    margin-left: 0.6em;
+    padding: 0.1em 0.6em;
+    border-radius: var(--r-full);
+    background: var(--barro-100);
+    color: var(--barro-700);
+    font-size: var(--fs-200);
+    font-weight: 600;
+    vertical-align: middle;
+  }
+
+  .admin-list .admin-item-meta {
+    font-size: var(--fs-200);
+    color: var(--tinta-tenue);
+  }
+
+  .admin-item-order {
+    display: flex;
+    gap: 3px;
+    padding-right: var(--sp-3);
+    border-right: 1.5px solid var(--barro-200);
+  }
+
+  .admin-item-order button {
+    width: 1.9rem;
+    height: 1.9rem;
+    display: grid;
+    place-items: center;
+    border: none;
+    border-radius: var(--r-full);
+    background: var(--papel-warm);
+    color: var(--tinta-suave);
+    cursor: pointer;
+    font-size: var(--fs-300);
+    line-height: 1;
+  }
+
+  .admin-list .admin-item-actions {
+    display: flex;
+    gap: var(--sp-2);
+    flex-wrap: wrap;
+  }
+
+  .admin-item-actions .admin-danger {
+    color: var(--barro-700);
+  }
+
+  .admin-modal {
+    width: min(100% - 1.5rem, 42rem);
+    max-height: min(90svh, 54rem);
+    overflow-y: auto;
+    text-align: start;
+    align-items: start;
+  }
+
+  .admin-form-block {
+    display: grid;
+    gap: var(--sp-3);
+    padding-block: var(--sp-4);
+    border-top: 1.5px dashed var(--barro-200);
+  }
+
+  .admin-form-block:first-of-type {
+    border-top: none;
+    padding-top: 0;
+  }
+
+  .admin-form-block h4 {
+    font-size: var(--fs-500);
+  }
+
+  .admin-form-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(10rem, 1fr));
+    gap: var(--sp-3);
+  }
+
+  .admin-checks {
+    display: grid;
+    gap: var(--sp-2);
+  }
+
+  .admin-checks label {
+    display: flex;
+    align-items: center;
+    gap: var(--sp-2);
+    font-size: var(--fs-300);
+  }
+
+  .char-count {
+    font-size: var(--fs-200);
+    color: var(--tinta-tenue);
+    text-align: right;
+    margin: 0;
+  }
+
+  .char-count.is-over {
+    color: var(--barro-700);
+    font-weight: 600;
+  }
+
+  .theme-picker {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(4.5rem, 1fr));
+    gap: var(--sp-3);
+  }
+
+  .theme-option {
+    display: grid;
+    justify-items: center;
+    gap: var(--sp-1);
+    padding: var(--sp-2);
+    border: 2px solid var(--barro-200);
+    border-radius: var(--r-md);
+    background: var(--papel-warm);
+    cursor: pointer;
+  }
+
+  .theme-option.is-selected {
+    border-color: var(--barro-500);
+    background: #fffdf8;
+  }
+
+  .theme-option svg {
+    width: 40px;
+    height: 40px;
+  }
+
+  .theme-option span {
+    font-size: var(--fs-200);
+  }
+
+  .rep-list {
+    display: grid;
+    gap: var(--sp-2);
+  }
+
+  .rep-row {
+    display: flex;
+    align-items: flex-start;
+    gap: var(--sp-2);
+    background: var(--papel-warm);
+    border-radius: var(--r-md);
+    padding: var(--sp-2);
+  }
+
+  .rep-row .rep-fields {
+    flex: 1;
+    display: grid;
+    gap: var(--sp-2);
+  }
+
+  .rep-controls {
+    display: flex;
+    gap: 0.25em;
+  }
+
+  .rep-move,
+  .rep-remove {
+    width: 1.8rem;
+    height: 1.8rem;
+    border: none;
+    border-radius: var(--r-full);
+    background: #fffdf8;
+    cursor: pointer;
+  }
+
+  .rep-move:disabled {
+    opacity: 0.3;
+    cursor: default;
+  }
+
+  .rep-remove {
+    color: var(--barro-700);
+  }
+
+  .rep-add {
+    margin-top: var(--sp-2);
+  }
+
+  .casa-image-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(7rem, 1fr));
+    gap: var(--sp-3);
+  }
+
+  .casa-image-item {
+    display: grid;
+    gap: var(--sp-1);
+    background: var(--papel-warm);
+    border-radius: var(--r-md);
+    padding: var(--sp-2);
+  }
+
+  .casa-image-item img {
+    width: 100%;
+    aspect-ratio: 4 / 3;
+    object-fit: cover;
+    border-radius: var(--r-sm);
+  }
+
+  .casa-image-item input[type='text'] {
+    font-size: var(--fs-200);
+  }
+
+  .casa-image-actions {
+    display: flex;
+    gap: 0.25em;
+    justify-content: center;
+  }
+
+  .admin-hint {
+    font-size: var(--fs-200);
+    color: var(--tinta-tenue);
+    margin: 0;
+  }
+
+  .admin-form-actions {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: var(--sp-3);
+    flex-wrap: wrap;
+    padding-top: var(--sp-4);
+    border-top: 1.5px dashed var(--barro-200);
+  }
+
+  .admin-archive-toggle {
+    margin-right: auto;
+    display: flex;
+    align-items: center;
+    gap: var(--sp-2);
+    font-size: var(--fs-300);
+  }
+</style>
