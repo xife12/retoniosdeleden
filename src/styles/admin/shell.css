@@ -1,0 +1,461 @@
+/* ============================================================
+   Backend — Hülle und Listenansicht
+
+   Kopfzeile, Ansichtsanker, Listen als Karten, Filter-Chips,
+   Überlaufmenü, Leerzustand. Nur Tokens aus tokens.css und
+   Bausteine aus global.css (.btn, .card, .chip).
+   ============================================================ */
+
+@import './base.css';
+
+.adm {
+  min-height: 100svh;
+  background: var(--papel);
+}
+
+/* ============================================================
+   Kopfzeile
+   ============================================================ */
+
+.adm-top {
+  position: sticky;
+  top: 0;
+  z-index: 40;
+  background: color-mix(in srgb, var(--papel) 92%, transparent);
+  backdrop-filter: blur(8px);
+  border-bottom: 1px solid var(--barro-100);
+}
+
+.adm-top__wrap {
+  max-width: 78rem;
+  margin-inline: auto;
+  padding: var(--sp-2) var(--sp-4);
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--sp-2) var(--sp-4);
+}
+
+.adm-top__brand {
+  margin: 0;
+  display: flex;
+  align-items: center;
+  gap: var(--sp-2);
+  font-family: var(--font-display);
+  font-size: var(--fs-500);
+  white-space: nowrap;
+}
+
+.adm-top__mark svg {
+  display: block;
+  width: 1.9rem;
+  height: 1.9rem;
+}
+
+.adm-nav {
+  display: flex;
+  gap: var(--sp-1);
+  order: 3;
+  flex-basis: 100%;
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+
+.adm-nav::-webkit-scrollbar {
+  display: none;
+}
+
+@media (min-width: 48rem) {
+  .adm-nav {
+    order: 0;
+    flex-basis: auto;
+    margin-inline-start: var(--sp-4);
+  }
+}
+
+.adm-nav__btn {
+  min-height: var(--adm-touch);
+  padding: var(--sp-2) var(--sp-4);
+  border: none;
+  border-radius: var(--r-full);
+  background: transparent;
+  color: var(--c-text-soft);
+  font: inherit;
+  font-weight: 600;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.adm-nav__btn:hover {
+  background: var(--miel-100);
+}
+
+.adm-nav__btn.is-active {
+  background: var(--barro-100);
+  color: var(--barro-700);
+}
+
+.adm-top__user {
+  margin-inline-start: auto;
+  display: flex;
+  align-items: center;
+  gap: var(--sp-3);
+}
+
+.adm-top__mail {
+  display: none;
+  font-size: var(--fs-200);
+  color: var(--tinta-tenue);
+}
+
+@media (min-width: 62rem) {
+  .adm-top__mail {
+    display: inline;
+  }
+}
+
+.adm-main {
+  max-width: 78rem;
+  margin-inline: auto;
+  padding: var(--sp-5) var(--sp-4) var(--sp-9);
+}
+
+/* ============================================================
+   Listen-Kopf: Titel, Neu-Knopf, Suche, Filter
+   ============================================================ */
+
+.adm-list-head {
+  display: grid;
+  gap: var(--sp-4);
+  margin-bottom: var(--sp-5);
+}
+
+.adm-list-head__row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--sp-3);
+}
+
+.adm-list-head__title {
+  margin: 0;
+  font-size: var(--fs-800);
+}
+
+.adm-list-head__count {
+  margin: 0;
+  font-size: var(--fs-300);
+  color: var(--tinta-tenue);
+}
+
+.adm-search {
+  width: min(100%, 22rem);
+}
+
+.adm-filters {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--sp-2);
+}
+
+.adm-filter {
+  min-height: 2.25rem;
+  padding: var(--sp-1) var(--sp-4);
+  border: 1.5px solid var(--barro-200);
+  border-radius: var(--r-full);
+  background: transparent;
+  color: var(--c-text-soft);
+  font: inherit;
+  font-size: var(--fs-300);
+  cursor: pointer;
+}
+
+.adm-filter[aria-pressed='true'] {
+  background: var(--barro-700);
+  border-color: var(--barro-700);
+  color: var(--papel);
+}
+
+/* ============================================================
+   Karten der Liste — statt der informationsarmen Textzeilen (P8)
+   ============================================================ */
+
+.adm-cards {
+  display: grid;
+  gap: var(--sp-3);
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.adm-card {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--sp-3);
+  padding: var(--sp-3);
+  background: #fffdf8;
+  border-radius: var(--r-md);
+  box-shadow: var(--shadow-soft);
+}
+
+.adm-card.is-archived {
+  opacity: 0.72;
+  background: var(--papel-warm);
+  box-shadow: none;
+}
+
+.adm-card__handle {
+  flex: none;
+  width: var(--adm-touch);
+  height: var(--adm-touch);
+  display: grid;
+  place-items: center;
+  border: none;
+  border-radius: var(--r-full);
+  background: transparent;
+  color: var(--tinta-tenue);
+  cursor: grab;
+  touch-action: none;
+}
+
+.adm-card__handle:active {
+  cursor: grabbing;
+}
+
+.adm-card__media {
+  flex: none;
+  width: 4.25rem;
+  height: 4.25rem;
+  display: grid;
+  place-items: center;
+  overflow: hidden;
+  border-radius: var(--r-sm);
+  background: var(--papel-warm);
+}
+
+.adm-card__media svg,
+.adm-card__media img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.adm-card__body {
+  flex: 1;
+  min-width: 0;
+  display: grid;
+  gap: var(--sp-1);
+}
+
+.adm-card__open {
+  justify-self: start;
+  padding: 0;
+  border: none;
+  background: none;
+  font: inherit;
+  font-family: var(--font-display);
+  font-size: var(--fs-600);
+  color: var(--c-text);
+  text-align: start;
+  cursor: pointer;
+}
+
+.adm-card__open:hover {
+  color: var(--barro-700);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+.adm-card__tags {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--sp-2);
+}
+
+.adm-card__facts,
+.adm-card__note {
+  margin: 0;
+  font-size: var(--fs-300);
+  color: var(--c-text-soft);
+}
+
+.adm-card__note--muted {
+  color: var(--tinta-tenue);
+  font-style: italic;
+}
+
+/* Zustands-Badges. „Publicado · cambios sin publicar" ist bewusst lang:
+   der Zustand ist wichtiger als die Zeile kurz zu halten (Spec 2.4). */
+.adm-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4em;
+  padding: 0.2em 0.7em;
+  border-radius: var(--r-full);
+  font-size: var(--fs-200);
+  font-weight: 600;
+}
+
+.adm-badge--draft {
+  background: var(--papel-warm);
+  color: var(--tinta-suave);
+  box-shadow: inset 0 0 0 1.5px var(--barro-200);
+}
+
+.adm-badge--published {
+  background: var(--pistacho-100);
+  color: var(--pistacho-700);
+}
+
+.adm-badge--published-dirty {
+  background: var(--miel-100);
+  color: var(--miel-800);
+}
+
+.adm-badge--archived {
+  background: var(--lavanda-100);
+  color: var(--lavanda-700);
+}
+
+/* Vollständigkeitspunkt Englisch. */
+.adm-dot-en {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35em;
+  font-size: var(--fs-200);
+  font-weight: 600;
+  color: var(--miel-800);
+}
+
+.adm-dot-en::before {
+  content: '';
+  width: 0.55rem;
+  height: 0.55rem;
+  border-radius: var(--r-full);
+  background: var(--miel-500);
+}
+
+.adm-dot-en.is-ok {
+  color: var(--pistacho-700);
+}
+
+.adm-dot-en.is-ok::before {
+  background: var(--pistacho-500);
+}
+
+/* ============================================================
+   Überlaufmenü — „Eliminar" verschwindet aus der Zeile (P7)
+   ============================================================ */
+
+.adm-menu {
+  position: relative;
+  flex: none;
+}
+
+.adm-menu__btn {
+  width: var(--adm-touch);
+  height: var(--adm-touch);
+  display: grid;
+  place-items: center;
+  border: none;
+  border-radius: var(--r-full);
+  background: transparent;
+  color: var(--tinta-tenue);
+  font-size: var(--fs-500);
+  cursor: pointer;
+  list-style: none;
+}
+
+.adm-menu__btn::-webkit-details-marker {
+  display: none;
+}
+
+.adm-menu__btn:hover {
+  background: var(--papel-warm);
+  color: var(--c-text);
+}
+
+.adm-menu__list {
+  position: absolute;
+  inset-inline-end: 0;
+  top: calc(100% + var(--sp-1));
+  z-index: 30;
+  min-width: 12rem;
+  display: grid;
+  padding: var(--sp-1);
+  border-radius: var(--r-md);
+  background: var(--papel);
+  box-shadow: var(--shadow-lift);
+}
+
+.adm-menu__item {
+  min-height: var(--adm-touch);
+  padding: var(--sp-2) var(--sp-3);
+  border: none;
+  border-radius: var(--r-sm);
+  background: none;
+  color: var(--c-text);
+  font: inherit;
+  font-size: var(--fs-300);
+  text-align: start;
+  cursor: pointer;
+}
+
+.adm-menu__item:hover {
+  background: var(--papel-warm);
+}
+
+.adm-menu__item--danger {
+  color: var(--barro-700);
+}
+
+.adm-menu__item--danger:hover {
+  background: var(--barro-100);
+}
+
+/* ============================================================
+   Leerzustand
+   ============================================================ */
+
+.adm-empty {
+  display: grid;
+  justify-items: center;
+  gap: var(--sp-3);
+  padding: var(--sp-8) var(--sp-4);
+  text-align: center;
+}
+
+.adm-empty__art svg {
+  display: block;
+  width: 9rem;
+  height: 9rem;
+}
+
+.adm-empty__title {
+  margin: 0;
+  font-family: var(--font-display);
+  font-size: var(--fs-700);
+}
+
+.adm-empty__body {
+  margin: 0;
+  max-width: 26rem;
+  color: var(--c-text-soft);
+  line-height: var(--lh-body);
+}
+
+.adm-loading {
+  padding: var(--sp-8) 0;
+  text-align: center;
+  color: var(--tinta-tenue);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .adm-card,
+  .adm-nav__btn {
+    transition: none;
+  }
+}
