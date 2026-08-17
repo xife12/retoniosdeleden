@@ -1,0 +1,127 @@
+/* ============================================================
+   Backend — Fotos der Lehmhäuser
+   ============================================================ */
+
+.adm-ph {
+  display: grid;
+  gap: var(--sp-3);
+}
+
+.adm-ph__drop {
+  display: grid;
+  justify-items: center;
+  gap: var(--sp-2);
+  padding: var(--sp-5) var(--sp-4);
+  border: 1.5px dashed var(--barro-300);
+  border-radius: var(--r-md);
+  background: var(--papel-warm);
+  text-align: center;
+}
+
+.adm-ph__drop.is-over {
+  border-color: var(--pistacho-500);
+  background: var(--pistacho-100);
+}
+
+.adm-ph__droptext {
+  margin: 0;
+  font-size: var(--fs-300);
+  color: var(--c-text-soft);
+}
+
+.adm-ph__pick {
+  cursor: pointer;
+}
+
+.adm-ph__progress {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: var(--sp-1);
+}
+
+.adm-ph__job {
+  padding: var(--sp-2) var(--sp-3);
+  border-radius: var(--r-sm);
+  background: var(--lavanda-100);
+  color: var(--lavanda-700);
+  font-size: var(--fs-200);
+}
+
+.adm-ph__job.is-error {
+  background: var(--barro-100);
+  color: var(--barro-700);
+  font-weight: 600;
+}
+
+.adm-ph__empty {
+  margin: 0;
+  font-size: var(--fs-200);
+  color: var(--tinta-tenue);
+}
+
+.adm-ph__grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(13rem, 1fr));
+  gap: var(--sp-3);
+}
+
+.adm-ph__item {
+  display: grid;
+  gap: var(--sp-2);
+  padding: var(--sp-2);
+  border-radius: var(--r-md);
+  background: var(--papel-warm);
+}
+
+.adm-ph__head {
+  position: relative;
+  display: flex;
+  align-items: flex-start;
+  gap: var(--sp-1);
+}
+
+.adm-ph__handle {
+  flex: none;
+  width: 2rem;
+  height: 2rem;
+  display: grid;
+  place-items: center;
+  border: none;
+  border-radius: var(--r-full);
+  background: none;
+  color: var(--tinta-tenue);
+  cursor: grab;
+  touch-action: none;
+}
+
+.adm-ph__handle:active {
+  cursor: grabbing;
+}
+
+.adm-ph__thumb {
+  flex: 1;
+  min-width: 0;
+  aspect-ratio: 4 / 3;
+  object-fit: cover;
+  border-radius: var(--r-sm);
+}
+
+.adm-ph__cover {
+  position: absolute;
+  inset-block-start: var(--sp-1);
+  inset-inline-end: var(--sp-1);
+  padding: 0.05em 0.5em;
+  border-radius: var(--r-full);
+  background: var(--pistacho-700);
+  color: var(--papel);
+  font-size: var(--fs-200);
+  font-weight: 700;
+}
+
+.adm-ph__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--sp-2);
+}

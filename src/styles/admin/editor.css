@@ -1,0 +1,554 @@
+/* ============================================================
+   Backend — Editor
+   Sticky Kopfzeile, Abschnittsnavigation, Formularspalte,
+   Vorschauspalte, Gefahrenzone und die Bedienelemente aus
+   controls.ts.
+
+   Der Editor ist eine volle Seite, kein Overlay: das Riesen-Modal
+   von v1 mit max-height 90svh und Innen-Scroll ist ersatzlos weg.
+   ============================================================ */
+
+.adm-ed {
+  display: grid;
+  gap: var(--sp-4);
+  padding-bottom: var(--sp-9);
+}
+
+/* ---------- Kopfzeile: klebt oben, Speichern nie nur unten ---------- */
+
+.adm-ed__bar {
+  position: sticky;
+  top: 0;
+  z-index: 20;
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  align-items: center;
+  gap: var(--sp-3);
+  padding: var(--sp-3) var(--sp-4);
+  background: color-mix(in srgb, var(--papel) 92%, transparent);
+  backdrop-filter: blur(8px);
+  border-bottom: 1.5px solid var(--barro-200);
+}
+
+.adm-ed__back {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--sp-1);
+  min-height: var(--adm-touch);
+  padding-inline: var(--sp-2);
+  border: none;
+  background: none;
+  color: var(--c-link);
+  font: inherit;
+  font-weight: 600;
+  cursor: pointer;
+  border-radius: var(--r-sm);
+  white-space: nowrap;
+}
+
+.adm-ed__ident {
+  min-width: 0;
+  display: grid;
+  gap: 0.15em;
+}
+
+.adm-ed__title {
+  margin: 0;
+  font-family: var(--font-display);
+  font-size: var(--fs-600);
+  line-height: var(--lh-snug);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.adm-ed__staterow {
+  margin: 0;
+  display: flex;
+  align-items: center;
+  gap: var(--sp-2);
+  flex-wrap: wrap;
+}
+
+.adm-ed__save {
+  border: none;
+  background: none;
+  padding: 0;
+  font: inherit;
+  font-size: var(--fs-200);
+  color: var(--tinta-tenue);
+  cursor: pointer;
+  border-radius: var(--r-sm);
+}
+
+.adm-ed__save:disabled {
+  cursor: default;
+}
+
+.adm-ed__save.is-dirty {
+  color: var(--miel-800);
+  font-weight: 600;
+}
+
+.adm-ed__save.is-error {
+  color: var(--barro-700);
+  font-weight: 700;
+}
+
+.adm-ed__actions {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-2);
+}
+
+/* ---------- Zustands-Plakette ---------- */
+
+.adm-badge {
+  display: inline-block;
+  padding: 0.1em 0.7em;
+  border-radius: var(--r-full);
+  font-size: var(--fs-200);
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.adm-badge--draft {
+  background: var(--lavanda-100);
+  color: var(--lavanda-700);
+}
+
+.adm-badge--published {
+  background: var(--pistacho-100);
+  color: var(--pistacho-700);
+}
+
+.adm-badge--published-dirty {
+  background: var(--miel-100);
+  color: var(--miel-800);
+}
+
+.adm-badge--archived {
+  background: var(--barro-100);
+  color: var(--barro-700);
+}
+
+/* ---------- Hinweis „cambios sin publicar" ---------- */
+
+.adm-ed__notice {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--sp-3);
+  margin-inline: var(--sp-4);
+  padding: var(--sp-3) var(--sp-4);
+  border-radius: var(--r-md);
+  background: var(--miel-100);
+  border: 1.5px solid var(--miel-300);
+}
+
+.adm-ed__noticetext {
+  margin: 0;
+  font-size: var(--fs-300);
+  color: var(--miel-800);
+}
+
+/* ---------- Fortschritt des Website-Builds ---------- */
+
+.adm-ed__deploy {
+  margin-inline: var(--sp-4);
+  padding: var(--sp-3) var(--sp-4);
+  border-radius: var(--r-md);
+  background: var(--pistacho-100);
+  display: grid;
+  gap: var(--sp-2);
+}
+
+.adm-ed__deploytext {
+  margin: 0;
+  font-size: var(--fs-300);
+  color: var(--pistacho-700);
+  font-weight: 600;
+}
+
+.adm-ed__track {
+  height: 6px;
+  border-radius: var(--r-full);
+  background: var(--pistacho-200);
+  overflow: hidden;
+}
+
+.adm-ed__fill {
+  height: 100%;
+  width: 0;
+  border-radius: var(--r-full);
+  background: var(--pistacho-500);
+  transition: width var(--dur-2) linear;
+}
+
+.adm-ed__deploy.is-done .adm-ed__fill {
+  background: var(--pistacho-700);
+}
+
+/* ---------- Abschnitts-Chips (schmale Fenster) ---------- */
+
+.adm-ed__chips {
+  display: flex;
+  gap: var(--sp-2);
+  overflow-x: auto;
+  padding: 0 var(--sp-4) var(--sp-1);
+  scrollbar-width: none;
+}
+
+.adm-ed__chips::-webkit-scrollbar {
+  display: none;
+}
+
+.adm-ed__chip {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--sp-2);
+  flex: none;
+  min-height: 2.25rem;
+  padding: var(--sp-1) var(--sp-3);
+  border: 1.5px solid var(--barro-200);
+  border-radius: var(--r-full);
+  background: var(--papel);
+  font: inherit;
+  font-size: var(--fs-200);
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+/* ---------- Dreispaltiges Raster ---------- */
+
+.adm-ed__grid {
+  display: grid;
+  gap: var(--sp-5);
+  padding-inline: var(--sp-4);
+  align-items: start;
+}
+
+.adm-ed__nav,
+.adm-ed__aside {
+  display: none;
+}
+
+@media (min-width: 62rem) {
+  .adm-ed__chips {
+    display: none;
+  }
+
+  .adm-ed__grid {
+    grid-template-columns: 14rem minmax(0, 1fr);
+  }
+
+  .adm-ed__nav {
+    display: block;
+    position: sticky;
+    top: 6.5rem;
+  }
+}
+
+@media (min-width: 78rem) {
+  .adm-ed__grid {
+    grid-template-columns: 14rem minmax(0, 1fr) 22rem;
+  }
+
+  .adm-ed__aside {
+    display: block;
+    position: sticky;
+    top: 6.5rem;
+  }
+}
+
+/* ---------- Sprungleiste ---------- */
+
+.adm-ed__complete {
+  margin: 0 0 var(--sp-2);
+  font-size: var(--fs-200);
+  color: var(--tinta-tenue);
+  font-variant-numeric: tabular-nums;
+}
+
+.adm-ed__jump {
+  margin-bottom: var(--sp-3);
+  padding: 0;
+  border: none;
+  background: none;
+  font: inherit;
+  font-size: var(--fs-200);
+  font-weight: 600;
+  color: var(--c-link);
+  cursor: pointer;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+.adm-ed__navlist {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 2px;
+}
+
+.adm-ed__navbtn {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-2);
+  width: 100%;
+  min-height: 2.4rem;
+  padding: var(--sp-1) var(--sp-2);
+  border: none;
+  border-radius: var(--r-sm);
+  background: none;
+  font: inherit;
+  font-size: var(--fs-300);
+  text-align: start;
+  cursor: pointer;
+  color: var(--c-text-soft);
+}
+
+.adm-ed__navbtn:hover {
+  background: var(--papel-warm);
+  color: var(--c-text);
+}
+
+/* Vollständigkeitspunkt: leer, teilweise, fertig. */
+.adm-ed__dot {
+  flex: none;
+  width: 0.6rem;
+  height: 0.6rem;
+  border-radius: var(--r-full);
+  border: 1.5px solid var(--barro-300);
+}
+
+.adm-ed__dot--empty {
+  background: transparent;
+}
+
+.adm-ed__dot--partial {
+  background: var(--miel-300);
+  border-color: var(--miel-500);
+}
+
+.adm-ed__dot--ok {
+  background: var(--pistacho-300);
+  border-color: var(--pistacho-500);
+}
+
+/* ---------- Formularspalte ---------- */
+
+.adm-ed__form {
+  display: grid;
+  gap: var(--sp-5);
+  max-width: 44rem;
+  min-width: 0;
+}
+
+.adm-ed__section {
+  display: grid;
+  gap: var(--sp-3);
+  scroll-margin-top: 7rem;
+}
+
+.adm-ed__sectiontitle {
+  margin: 0;
+  font-family: var(--font-display);
+  font-size: var(--fs-700);
+}
+
+.adm-ed__sectionbody {
+  display: grid;
+  gap: var(--sp-4);
+}
+
+/* ---------- Gefahrenzone: abgesetzt, ganz unten ---------- */
+
+.adm-ed__danger {
+  margin-top: var(--sp-6);
+  padding: var(--sp-4);
+  border: 1.5px dashed var(--barro-300);
+  border-radius: var(--r-md);
+  display: grid;
+  gap: var(--sp-3);
+  justify-items: start;
+}
+
+.adm-ed__dangertitle {
+  margin: 0;
+  font-size: var(--fs-500);
+  color: var(--barro-700);
+}
+
+/* ---------- Vorschau als Vollbild-Blatt ---------- */
+
+.adm-ed__sheet {
+  position: fixed;
+  inset: 0;
+  z-index: 120;
+  background: var(--papel);
+  display: grid;
+  grid-template-rows: auto 1fr;
+}
+
+.adm-ed__sheethead {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--sp-3);
+  padding: var(--sp-3) var(--sp-4);
+  border-bottom: 1.5px solid var(--barro-200);
+}
+
+.adm-ed__sheettitle {
+  margin: 0;
+  font-weight: 700;
+}
+
+.adm-ed__sheetbody {
+  overflow: auto;
+  padding: var(--sp-4);
+}
+
+/* ============================================================
+   Bedienelemente (controls.ts)
+   ============================================================ */
+
+.adm-ctl {
+  display: grid;
+  gap: var(--sp-1);
+  min-width: 0;
+}
+
+.adm-ctl__body {
+  display: grid;
+  gap: var(--sp-1);
+}
+
+.adm-ctl__hint {
+  margin: 0;
+  font-size: var(--fs-200);
+  color: var(--tinta-tenue);
+}
+
+.adm-ctl-row {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(9rem, 1fr));
+  gap: var(--sp-3);
+}
+
+.adm-ctl__unitwrap {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-2);
+  padding-inline-end: var(--sp-3);
+  border: 1.5px solid var(--barro-200);
+  border-radius: var(--r-sm);
+  background: var(--papel);
+}
+
+.adm-ctl__unitwrap .adm-input {
+  border: none;
+  background: none;
+  flex: 1;
+  min-width: 0;
+}
+
+.adm-ctl__unit {
+  flex: none;
+  font-size: var(--fs-300);
+  color: var(--tinta-tenue);
+}
+
+.adm-select {
+  min-height: var(--adm-touch);
+  padding: var(--sp-2) var(--sp-3);
+  border: 1.5px solid var(--barro-200);
+  border-radius: var(--r-sm);
+  background: var(--papel);
+  font: inherit;
+  color: var(--c-text);
+}
+
+/* ---------- Schalter ---------- */
+
+.adm-switch {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--sp-3);
+  min-height: var(--adm-touch);
+  padding: var(--sp-2) var(--sp-3);
+  border-radius: var(--r-md);
+  background: var(--papel-warm);
+  cursor: pointer;
+}
+
+.adm-switch__input {
+  flex: none;
+  width: 1.15rem;
+  height: 1.15rem;
+  margin-top: 0.2rem;
+  accent-color: var(--barro-500);
+}
+
+.adm-switch__label {
+  display: grid;
+  gap: 0.15em;
+  font-size: var(--fs-300);
+}
+
+/* ---------- Radiokarten: Themenwahl mit Aquarell-Icon ---------- */
+
+.adm-radios {
+  display: grid;
+  gap: var(--sp-2);
+}
+
+.adm-radios__grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(5.5rem, 1fr));
+  gap: var(--sp-3);
+}
+
+.adm-radios__card {
+  position: relative;
+  display: grid;
+  justify-items: center;
+  gap: var(--sp-1);
+  padding: var(--sp-2);
+  border: 2px solid var(--barro-200);
+  border-radius: var(--r-md);
+  background: var(--papel-warm);
+  cursor: pointer;
+  font-size: var(--fs-200);
+  text-align: center;
+}
+
+.adm-radios__input {
+  position: absolute;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.adm-radios__art {
+  width: 48px;
+  height: 48px;
+}
+
+.adm-radios__card:has(.adm-radios__input:checked) {
+  border-color: var(--barro-500);
+  background: #fffdf8;
+}
+
+.adm-radios__card:has(.adm-radios__input:focus-visible) {
+  outline: 2px solid var(--barro-500);
+  outline-offset: 2px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .adm-ed__fill {
+    transition: none;
+  }
+}
