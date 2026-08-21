@@ -364,6 +364,23 @@
   gap: var(--sp-4);
 }
 
+/* Unterueberschrift innerhalb eines Abschnitts (z. B. "Incluye"/"Qué traer"
+   in "Qué incluye y qué traer"). Bewusst klein und ohne Zierschrift --
+   sonst sieht sie wie ein zweiter, wortgleicher Abschnittstitel aus. */
+.adm-ed__sublabel {
+  margin: 0;
+  font-family: inherit;
+  font-size: var(--fs-300);
+  font-weight: 700;
+  color: var(--c-text-soft);
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+}
+
+.adm-ed__sublabel:not(:first-child) {
+  margin-top: var(--sp-2);
+}
+
 /* ---------- Gefahrenzone: abgesetzt, ganz unten ---------- */
 
 .adm-ed__danger {
@@ -439,6 +456,13 @@
   gap: var(--sp-3);
 }
 
+/* Grid-Kinder duerfen ohne das hier auf ihre Inhaltsbreite bestehen (z. B.
+   ein <select>) und so ueber die Nachbarspalte hinausragen -- klassische
+   Ursache fuer sich ueberlagernde Formularfelder. */
+.adm-ctl-row > .adm-ctl {
+  min-width: 0;
+}
+
 .adm-ctl__unitwrap {
   display: flex;
   align-items: center;
@@ -474,12 +498,21 @@
 
 /* ---------- Schalter ---------- */
 
+/* Kompaktes Raster fuer die "Qué se muestra en la ficha"-Schalter -- zwei
+   Spalten statt einer langen Liste, damit der Abschnitt oben nicht die
+   halbe Seite einnimmt. */
+.adm-switchgrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(13rem, 1fr));
+  gap: var(--sp-1) var(--sp-2);
+}
+
 .adm-switch {
   display: flex;
-  align-items: flex-start;
-  gap: var(--sp-3);
+  align-items: center;
+  gap: var(--sp-2);
   min-height: var(--adm-touch);
-  padding: var(--sp-2) var(--sp-3);
+  padding: var(--sp-1) var(--sp-2);
   border-radius: var(--r-md);
   background: var(--papel-warm);
   cursor: pointer;
@@ -489,7 +522,6 @@
   flex: none;
   width: 1.15rem;
   height: 1.15rem;
-  margin-top: 0.2rem;
   accent-color: var(--barro-500);
 }
 
@@ -537,14 +569,47 @@
   height: 48px;
 }
 
-.adm-radios__card:has(.adm-radios__input:checked) {
-  border-color: var(--barro-500);
-  background: #fffdf8;
+/* `.adm-radios__input` und `.adm-radios__card` sind Geschwister (Label per
+   `for`-Attribut verknüpft, nicht verschachtelt) -- deshalb der
+   Geschwister-Selektor statt `:has()`, das hier ins Leere liefe. */
+.adm-radios__input:checked + .adm-radios__card {
+  border-color: var(--pistacho-500);
+  background: var(--pistacho-100);
+  box-shadow: 0 0 0 1px var(--pistacho-500);
 }
 
-.adm-radios__card:has(.adm-radios__input:focus-visible) {
-  outline: 2px solid var(--barro-500);
+.adm-radios__input:focus-visible + .adm-radios__card {
+  outline: 2px solid var(--pistacho-500);
   outline-offset: 2px;
+}
+
+/* ---------- Auswahl mit Zeichnungs-Vorschau (z. B. "Dibujo" bei Casas) ---------- */
+
+.adm-ctl__iconwrap {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-2);
+}
+
+.adm-ctl__iconpreview {
+  flex: none;
+  display: grid;
+  place-items: center;
+  width: var(--adm-touch);
+  height: var(--adm-touch);
+  border: 1.5px solid var(--barro-200);
+  border-radius: var(--r-sm);
+  background: var(--papel-warm);
+}
+
+.adm-ctl__iconpreview svg {
+  width: 26px;
+  height: 26px;
+}
+
+.adm-ctl__iconwrap .adm-select {
+  flex: 1;
+  min-width: 0;
 }
 
 @media (prefers-reduced-motion: reduce) {

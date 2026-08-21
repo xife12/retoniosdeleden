@@ -26,6 +26,7 @@ import {
 } from './drafts';
 import {
   controlRow,
+  iconSelectField,
   numberField,
   selectField,
   textField,
@@ -228,7 +229,10 @@ export async function mountEditor(container: HTMLElement, id: string): Promise<v
   const area = numberField({ label: 'Superficie', min: 0, step: 0.5, unit: 'm²', onInput: touched });
   const bedrooms = numberField({ label: 'Dormitorios', min: 0, step: 1, integer: true, onInput: touched });
   const bathrooms = numberField({ label: 'Baños', min: 0, step: 1, integer: true, onInput: touched });
-  numSection.append(controlRow(beds, guests, area, bedrooms, bathrooms));
+  numSection.append(
+    controlRow(beds, guests, area),
+    controlRow(bedrooms, bathrooms),
+  );
 
   /* ---------------- Abschnitt: Fotos ---------------- */
 
@@ -289,9 +293,9 @@ export async function mountEditor(container: HTMLElement, id: string): Promise<v
   const gearSection = shell.addSection('equipamiento', 'Equipamiento y detalles');
 
   function glyphSelect(selected: CasaGlyph, onChange: () => void): Control<string> {
-    const ctl = selectField({
+    const ctl = iconSelectField({
       label: 'Dibujo',
-      options: pickable.map((g) => ({ value: g, label: casaGlyphLabels[g].es })),
+      options: pickable.map((g) => ({ value: g, label: casaGlyphLabels[g].es, art: casaGlyphs[g] })),
       onChange,
     });
     ctl.set(selected);

@@ -159,6 +159,24 @@ export async function mountEditor(container: HTMLElement, id: string): Promise<v
     refreshHeader();
   }
 
+  /* ---------------- Abschnitt: Qué se muestra ---------------- */
+
+  // Ganz oben, weil es festlegt, welche Abschnitte auf der Ficha überhaupt
+  // erscheinen -- vor allem anderen entschieden, nicht nach allem anderen.
+  const showSection = shell.addSection('bloques', 'Qué se muestra en la ficha');
+  const showCtls: Record<keyof WorkshopDraft['show'], Control<boolean>> = {
+    programme: switchRow({ label: 'Cómo es el encuentro', onChange: touched }),
+    included: switchRow({ label: 'Qué incluye', onChange: touched }),
+    bring: switchRow({ label: 'Qué traer', onChange: touched }),
+    forWhom: switchRow({ label: 'Para quién es', onChange: touched }),
+    languages: switchRow({ label: 'Idiomas', onChange: touched }),
+    meetingPoint: switchRow({ label: 'Punto de encuentro', onChange: touched }),
+  };
+  const showGrid = document.createElement('div');
+  showGrid.className = 'adm-switchgrid';
+  for (const ctl of Object.values(showCtls)) showGrid.append(ctl.el);
+  showSection.append(showGrid);
+
   /* ---------------- Abschnitt: Thema ---------------- */
 
   const themeSection = shell.addSection('tema', 'Tema');
@@ -195,7 +213,8 @@ export async function mountEditor(container: HTMLElement, id: string): Promise<v
   const last = textField({ label: 'Apellido', onInput: touched });
   controls.push(price, currency, hours, maxPeople, first, last);
   dataSection.append(
-    controlRow(price, currency, hours, maxPeople),
+    controlRow(price, currency),
+    controlRow(hours, maxPeople),
     controlRow(first, last),
   );
 
@@ -313,7 +332,7 @@ export async function mountEditor(container: HTMLElement, id: string): Promise<v
   listsSection.append(
     Object.assign(document.createElement('h3'), {
       className: 'adm-ed__sublabel',
-      textContent: 'Qué incluye',
+      textContent: 'Incluye',
     }),
     included.el,
     Object.assign(document.createElement('h3'), {
@@ -322,19 +341,6 @@ export async function mountEditor(container: HTMLElement, id: string): Promise<v
     }),
     bring.el,
   );
-
-  /* ---------------- Abschnitt: Qué se muestra ---------------- */
-
-  const showSection = shell.addSection('bloques', 'Qué se muestra en la ficha');
-  const showCtls: Record<keyof WorkshopDraft['show'], Control<boolean>> = {
-    programme: switchRow({ label: 'Cómo es el encuentro', onChange: touched }),
-    included: switchRow({ label: 'Qué incluye', onChange: touched }),
-    bring: switchRow({ label: 'Qué traer', onChange: touched }),
-    forWhom: switchRow({ label: 'Para quién es', onChange: touched }),
-    languages: switchRow({ label: 'Idiomas', onChange: touched }),
-    meetingPoint: switchRow({ label: 'Punto de encuentro', onChange: touched }),
-  };
-  for (const ctl of Object.values(showCtls)) showSection.append(ctl.el);
 
   /* ---------------- Abschnitt: Ajustes avanzados ---------------- */
 

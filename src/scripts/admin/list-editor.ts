@@ -91,7 +91,6 @@ export function listEditor<T>(o: ListEditorOptions<T>): ListEditor<T> {
 
   function buildRow(item: T): ListRow<T> {
     const row = o.renderRow(item, { onInput: () => o.onChange?.() });
-    row.el.classList.add('adm-le__row');
 
     const handle = document.createElement('button');
     handle.type = 'button';
@@ -105,12 +104,21 @@ export function listEditor<T>(o: ListEditorOptions<T>): ListEditor<T> {
     remove.className = 'adm-le__remove';
     remove.setAttribute('aria-label', 'Quitar');
     remove.innerHTML = '<span aria-hidden="true">✕</span>';
-    remove.addEventListener('click', () => removeRow(row));
+    remove.addEventListener('click', () => removeRow(wrapped));
 
-    row.el.prepend(handle);
-    row.el.append(remove);
-    rows.set(row.el, row);
-    return row;
+    // Eigener Wrapper statt die `.adm-le__row`-Klasse auf `row.el` selbst zu
+    // setzen: `row.el` traegt schon `.adm-le__body` (display:grid, fuer
+    // mehrzeilige Inhalte wie Titel+Text). Beide Klassen auf demselben
+    // Element kollidieren (grid gewinnt gegen flex je nach Regelreihenfolge)
+    // und die Zeile faellt untereinander statt Griff/Inhalt/Loeschen
+    // nebeneinander zu zeigen.
+    const wrapper = document.createElement('div');
+    wrapper.className = 'adm-le__row';
+    wrapper.append(handle, row.el, remove);
+
+    const wrapped: ListRow<T> = { el: wrapper, read: row.read, focus: row.focus };
+    rows.set(wrapper, wrapped);
+    return wrapped;
   }
 
   function addRow(item: T, opts: { focus?: boolean; at?: number } = {}): ListRow<T> {

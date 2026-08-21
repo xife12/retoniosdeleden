@@ -406,6 +406,19 @@ body.adm-modal-open {
   background: var(--papel-warm);
 }
 
+/* Ein einzelnes einzeiliges Feld (Datum, ein Textbaustein) braucht das
+   Loeschkreuz mittig neben sich, nicht oben angeschlagen. */
+.adm-le__row:not(:has(.adm-le__body > :nth-child(2))) {
+  align-items: center;
+}
+
+/* Mehrzeilige Zeilen (Titel+Text, Zeichnung+Text+Notiz): Griff bleibt oben
+   neben der Nummer, Loeschen ruestet sich unten -- sonst schwebt es mitten
+   in einem hohen Block. */
+.adm-le__row:has(.adm-le__body > :nth-child(2)) .adm-le__remove {
+  align-self: flex-end;
+}
+
 /* Nummer aus dem CSS-Zähler statt aus totem JS (Problem P10). */
 .adm-le--numbered .adm-le__row::before {
   content: counter(adm-le-row);

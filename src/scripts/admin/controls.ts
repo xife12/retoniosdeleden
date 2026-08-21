@@ -157,6 +157,73 @@ export function selectField(o: SelectFieldOptions): Control<string> {
   };
 }
 
+export interface IconSelectOption {
+  value: string;
+  label: string;
+  /** Inneres SVG-Markup, viewBox 0 0 32 32. */
+  art: string;
+}
+
+export interface IconSelectFieldOptions {
+  label: string;
+  hint?: string;
+  options: IconSelectOption[];
+  onChange?: () => void;
+}
+
+/**
+ * Auswahl mit Zeichnungs-Vorschau, z. B. "Dibujo" bei Ausstattung/Highlights
+ * einer Casa. Ein natives `<select>` kann Icons nicht innerhalb der Optionen
+ * zeigen (kein Browser rendert das verlässlich) -- deshalb steht daneben ein
+ * kleines Vorschaufeld, das bei jeder Auswahl live die passende Zeichnung
+ * zeigt, statt nur den Namen.
+ */
+export function iconSelectField(o: IconSelectFieldOptions): Control<string> {
+  const { el, id, body } = shell(o.label, o.hint);
+
+  const wrap = document.createElement('div');
+  wrap.className = 'adm-ctl__iconwrap';
+
+  const preview = document.createElement('span');
+  preview.className = 'adm-ctl__iconpreview';
+  preview.setAttribute('aria-hidden', 'true');
+  preview.innerHTML = '<svg viewBox="0 0 32 32"></svg>';
+  const svg = preview.querySelector('svg')!;
+
+  const select = document.createElement('select');
+  select.id = id;
+  select.className = 'adm-input adm-select';
+  for (const opt of o.options) {
+    const optEl = document.createElement('option');
+    optEl.value = opt.value;
+    optEl.textContent = opt.label;
+    select.append(optEl);
+  }
+
+  function updatePreview(): void {
+    svg.innerHTML = o.options.find((opt) => opt.value === select.value)?.art ?? '';
+  }
+
+  select.addEventListener('change', () => {
+    updatePreview();
+    o.onChange?.();
+  });
+
+  wrap.append(preview, select);
+  body.append(wrap);
+  updatePreview();
+
+  return {
+    el,
+    get: () => select.value,
+    set: (v) => {
+      select.value = v;
+      updatePreview();
+    },
+    focus: () => select.focus(),
+  };
+}
+
 export interface DateFieldOptions {
   label?: string;
   onInput?: () => void;
