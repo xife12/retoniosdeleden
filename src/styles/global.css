@@ -203,6 +203,7 @@ section[data-chapter] {
 .chip--miel { background: var(--miel-100); color: var(--miel-800); }
 .chip--lavanda { background: var(--lavanda-100); color: var(--lavanda-700); }
 .chip--barro { background: var(--barro-100); color: var(--barro-700); }
+.chip--cielo { background: var(--cielo-100); color: var(--cielo-700); }
 
 /* ---------- Tarjetas ---------- */
 

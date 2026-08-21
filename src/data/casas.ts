@@ -1,39 +1,36 @@
 import type { Lang } from '../i18n';
+import type { CasaGlyph } from './casa-glyphs';
 
 /**
- * Daten der drei Lehmhäuser für den Detail-Dialog in Stay.astro.
+ * Datenmodell der Lehmhäuser für den Detail-Dialog in Stay.astro.
  *
  * Aufbau wie workshops.ts: technische Fakten sprachneutral,
  * alle Texte in `text: Record<Lang, ...>`.
  *
- * WICHTIG: Die Ausstattungs- und Faktenwerte sind DEMO-INHALTE.
- * Sie klingen plausibel für die Chacra, sind aber nicht verbindlich.
- * Vor dem Livegang mit Catalina und Stefan abgleichen.
+ * Die Inhalte kommen zur Bauzeit aus Supabase (`src/lib/fetch-casas.ts`).
+ * Das Array unten ist nur noch die lesbare Vorlage, aus der
+ * `supabase/seed.sql` erzeugt wurde.
  */
 
-/** Status wie in der Karten-Legende (t.map.status). */
+/**
+ * Baufortschritt wie in der Karten-Legende (t.map.status).
+ * In der Datenbank heißt das Feld `build_status` -- `casas.status`
+ * trägt dort seit dem Entwurf/Veröffentlichen-Umbau den
+ * Veröffentlichungszustand (draft/published/archived).
+ */
 export type CasaStatus = 'listo' | 'enObra' | 'planeado';
 
-/** Kleine Aquarell-Glyphen. Gezeichnet in Stay.astro (Funktion `glyph`). */
-export type CasaGlyph =
-  | 'bed'
-  | 'guests'
-  | 'area'
-  | 'bedroom'
-  | 'bath'
-  | 'kitchen'
-  | 'hammock'
-  | 'stove'
-  | 'solar'
-  | 'rain'
-  | 'hive'
-  | 'tub'
-  | 'stars'
-  | 'lavender'
-  | 'clay'
-  | 'mirador';
+/**
+ * Glyph-Schlüssel aus dem Zeichnungs-Katalog `casa-glyphs.ts`
+ * (alle 20 Motive). Nur re-exportiert, nicht dupliziert.
+ */
+export type { CasaGlyph };
 
-/** Aquarell-Ansichten der Galerie. Gezeichnet in Stay.astro (Block `casa-art-*`). */
+/**
+ * Aquarell-Platzhalter der Galerie, gezeichnet in Stay.astro
+ * (Konstante `artwork`). Wird gezeigt, solange ein Haus noch keine
+ * echten Fotos in `casa_images` hat.
+ */
 export type CasaArt =
   | 'c1-fachada'
   | 'c1-galeria'
@@ -46,19 +43,12 @@ export type CasaArt =
   | 'c3-vision'
   | 'c3-terreno';
 
-export interface CasaSlide {
-  /** Stabiler Schlüssel, über den die Bildbeschreibung je Sprache gefunden wird. */
+/** Ein echtes Foto aus dem Storage-Bucket `casa-photos`. */
+export interface CasaImage {
   id: string;
-  /** Welche Aquarell-Zeichnung Stay.astro rendert, solange es kein Foto gibt. */
-  art: CasaArt;
-  /**
-   * ECHTE FOTOS HIER EINTRAGEN.
-   * Sobald ein Foto existiert, einfach den Pfad ergänzen, z. B.
-   *   photo: '/fotos/casa-1-fachada.jpg'
-   * Stay.astro zeigt dann automatisch ein <img> statt der Zeichnung.
-   * Der Alt-Text bleibt derselbe: text[lang].slides[slide.id].
-   */
-  photo?: string;
+  url: string;
+  /** Bildbeschreibung in der gerade gerenderten Sprache. */
+  alt: string;
 }
 
 export interface CasaListItem {
@@ -73,14 +63,16 @@ export interface CasaHighlight {
 }
 
 export interface CasaText {
-  /** Ein Satz unter dem Titel im Dialog. */
+  /** Name des Hauses, z. B. „Casa de Barro 1". */
+  title: string;
+  /** Ein Satz unter dem Titel -- auf der Karte und im Dialog. */
   tagline: string;
   /** Lange Beschreibung, ein Absatz pro Eintrag. */
   body: string[];
   amenities: CasaListItem[];
   highlights: CasaHighlight[];
-  /** Bildbeschreibungen, Schlüssel = CasaSlide.id */
-  slides: Record<string, string>;
+  /** Fotos in Sortierreihenfolge; leer => Aquarell-Platzhalter. */
+  images: CasaImage[];
   /** Ehrlicher Hinweis zum tatsächlichen Buchungsstand. */
   bookNote: string;
 }
@@ -95,38 +87,35 @@ export interface CasaFacts {
 }
 
 export interface Casa {
+  /** Slug aus der Datenbank -- zugleich Dialog-Id auf der Website. */
   id: string;
   status: CasaStatus;
-  /** true = die Zahlen sind Planwerte, noch nicht gebaut. */
-  planned?: boolean;
   facts: CasaFacts;
   /**
-   * ECHTE INSERATS-URL HIER EINTRAGEN.
-   * Solange es kein Inserat gibt, steht hier der Airbnb-Startpunkt.
-   * Fehlt das Feld ganz, zeigt der Dialog statt des Buttons
+   * Inserats-URL. Fehlt sie, zeigt der Dialog statt des Buttons
    * einen Hinweis plus Link zum Kontaktformular.
    */
   airbnbUrl?: string;
-  slides: CasaSlide[];
   text: Record<Lang, CasaText>;
 }
 
+/**
+ * Ausgangsbestand der drei Lehmhäuser.
+ *
+ * WICHTIG: Ausstattungs- und Faktenwerte sind DEMO-INHALTE. Sie klingen
+ * plausibel für die Chacra, sind aber nicht verbindlich. Gepflegt wird
+ * ab jetzt im Backend unter /admin, nicht mehr hier.
+ */
 export const casas: Casa[] = [
   {
     id: 'casa-1',
     status: 'listo',
     // DEMO-WERTE
     facts: { beds: 2, guests: 3, area: 45, bedrooms: 1, bathrooms: 1 },
-    // ECHTE INSERATS-URL HIER EINTRAGEN
     airbnbUrl: 'https://www.airbnb.com/',
-    slides: [
-      { id: 'fachada', art: 'c1-fachada' },
-      { id: 'galeria', art: 'c1-galeria' },
-      { id: 'interior', art: 'c1-interior' },
-      { id: 'detalle', art: 'c1-detalle' },
-    ],
     text: {
       es: {
+        title: 'Casa de Barro 1',
         tagline: 'La primera de todas: la que probó que el barro aguanta.',
         body: [
           'Catalina y Stefan la levantaron con la tierra que salió del propio terreno, mezclada con paja y agua, sin comprar un solo ladrillo. Las paredes tienen casi medio metro de espesor y eso se siente apenas entrás: en enero adentro hace fresco sin aire acondicionado, y en julio guardan el calor de la estufa hasta la mañana siguiente.',
@@ -163,16 +152,12 @@ export const casas: Casa[] = [
             note: 'Dos cajones al borde del deck. Se pueden mirar de cerca, con velo prestado y calma.',
           },
         ],
-        slides: {
-          fachada: 'La Casa de Barro 1 desde el camino de entrada, con el techo de quincho curvo y los agapantos en flor',
-          galeria: 'La galería sobre columnas de rollizo, con la hamaca amarilla y dos colmenas contra la baranda',
-          interior: 'El interior: la estufa de barro encendida y la cama bajo la ventana de marco granate',
-          detalle: 'Detalle de la ventana granate con un frasco de lavanda en el alféizar de barro',
-        },
+        images: [],
         bookNote:
           'La casa está terminada y habitada, así que se abre a huéspedes en fechas puntuales. Escribinos antes de reservar y coordinamos.',
       },
       en: {
+        title: 'Clay House 1',
         tagline: 'The first one of all: the house that proved clay holds up.',
         body: [
           'Catalina and Stefan raised it with earth dug from the land itself, mixed with straw and water, without buying a single brick. The walls are almost half a metre thick and you feel it the moment you step in: in January it stays cool inside with no air conditioning, and in July it holds the heat of the stove until the next morning.',
@@ -209,12 +194,7 @@ export const casas: Casa[] = [
             note: 'Two boxes at the edge of the deck. You can look closely, with a borrowed veil and a calm hand.',
           },
         ],
-        slides: {
-          fachada: 'Clay House 1 seen from the entrance track, with its curved thatched roof and agapanthus in bloom',
-          galeria: 'The veranda on round timber posts, with the yellow hammock and two hives against the railing',
-          interior: 'Inside: the clay stove burning and the bed under the wine red window frame',
-          detalle: 'Close up of the wine red window with a jar of lavender on the clay sill',
-        },
+        images: [],
         bookNote:
           'The house is finished and lived in, so it opens to guests on selected dates. Write to us before booking and we will sort out the dates together.',
       },
@@ -225,15 +205,10 @@ export const casas: Casa[] = [
     status: 'enObra',
     // DEMO-WERTE
     facts: { beds: 3, guests: 4, area: 60, bedrooms: 2, bathrooms: 1 },
-    // ECHTE INSERATS-URL HIER EINTRAGEN, sobald das Inserat online ist
     airbnbUrl: 'https://www.airbnb.com/',
-    slides: [
-      { id: 'obra', art: 'c2-obra' },
-      { id: 'tub', art: 'c2-tub' },
-      { id: 'interior', art: 'c2-interior' },
-    ],
     text: {
       es: {
+        title: 'Casa de Barro 2',
         tagline: 'La casa que estamos levantando pensando en vos.',
         body: [
           'La segunda casa nace para huéspedes. Cincuenta metros cuadrados, un dormitorio abierto con una cama doble y un sofá cama en el living. El mismo barro del terreno, incluso aislando el techo, pero con la galería girada hacia el tajamar, para que el sol nos despierte al amanecer. Está a la izquierda del anillo central, entre los frutales, el futuro campo de pistachos y lavandas.',
@@ -265,15 +240,12 @@ export const casas: Casa[] = [
             note: 'Como la casa 1: paneles propios y dos tanques que juntan lo que cae sobre el quincho.',
           },
         ],
-        slides: {
-          obra: 'La obra hoy: medio techo de quincho colocado, las vigas a la vista y el andamio contra la pared este',
-          tub: 'El hot tub de madera a leña entre los árboles nativos del vecino, bajo el cielo estrellado del sur',
-          interior: 'Boceto del dormitorio grande con la claraboya sobre la cama',
-        },
+        images: [],
         bookNote:
           'La obra sigue en marcha. El anuncio propio en Airbnb se publica cuando esté el techo entero; por ahora el botón te lleva a Airbnb y todavía no hay fechas cargadas.',
       },
       en: {
+        title: 'Clay House 2',
         tagline: 'The house we are raising with guests in mind.',
         body: [
           'The second house was built for guests. Fifty square metres, one open bedroom with a double bed and a sofa bed in the living room. The same clay from the land, even insulating the roof, but with the gallery turned toward the pond, so the sun wakes you at dawn. It sits to the left of the central ring, between the fruit trees, the future pistachio field and the lavender.',
@@ -305,11 +277,7 @@ export const casas: Casa[] = [
             note: 'Same as house 1: its own panels, plus two tanks collecting whatever falls on the thatch.',
           },
         ],
-        slides: {
-          obra: 'The build today: half the thatch laid, rafters still open and scaffolding against the east wall',
-          tub: 'The wood fired wooden hot tub among the neighbour\'s native trees, under the southern night sky',
-          interior: 'Sketch of the large bedroom with the skylight above the bed',
-        },
+        images: [],
         bookNote:
           'The build is still under way. Our own Airbnb listing goes live once the roof is fully thatched; for now the button opens Airbnb and no dates are loaded yet.',
       },
@@ -318,18 +286,13 @@ export const casas: Casa[] = [
   {
     id: 'casa-3',
     status: 'planeado',
-    planned: true,
     // DEMO-WERTE, Planzahlen aus dem Entwurf
     facts: { beds: 4, guests: 6, area: 75, bedrooms: 2, bathrooms: 2 },
     // Kein airbnbUrl: Haus existiert nur auf dem Papier.
     // Der Dialog zeigt stattdessen den Hinweis plus Link auf #contacto.
-    slides: [
-      { id: 'plano', art: 'c3-plano' },
-      { id: 'vision', art: 'c3-vision' },
-      { id: 'terreno', art: 'c3-terreno' },
-    ],
     text: {
       es: {
+        title: 'Casa de Barro 3',
         tagline: 'Todavía en el papel, sobre el tramo sur del anillo.',
         body: [
           'La tercera casa existe por ahora en un plano dibujado a mano que vive sobre la mesa de la cocina, con manchas de mate y correcciones a lápiz. Va sobre el tramo sur, a cien metros del mirador, mirando hacia donde el terreno baja y se abre.',
@@ -365,15 +328,12 @@ export const casas: Casa[] = [
             note: 'La única casa desde la que se ve el panorama entero sin salir de la galería.',
           },
         ],
-        slides: {
-          plano: 'El plano dibujado a mano sobre la mesa de la cocina, con el lápiz y el mate al lado',
-          vision: 'Acuarela de cómo imaginamos la casa terminada, con la galería en L',
-          terreno: 'El tramo sur donde va a ir la casa, con las estacas marcadas y el mirador al fondo',
-        },
+        images: [],
         bookNote:
           'Todavía es un plano: no hay nada que reservar. Si querés seguir la obra, apuntarte a un taller de barro o preguntar por fechas futuras, escribinos.',
       },
       en: {
+        title: 'Clay House 3',
         tagline: 'Still on paper, out on the southern stretch of the ring.',
         body: [
           'The third house exists for now as a hand drawn plan that lives on the kitchen table, complete with mate stains and pencil corrections. It goes on the southern stretch, a hundred metres from the lookout, facing the side where the land drops away and opens up.',
@@ -409,11 +369,7 @@ export const casas: Casa[] = [
             note: 'The only house where you get the full panorama without leaving the veranda.',
           },
         ],
-        slides: {
-          plano: 'The hand drawn plan on the kitchen table, pencil and mate gourd beside it',
-          vision: 'Watercolour of how we picture the finished house, with its L shaped veranda',
-          terreno: 'The southern stretch where the house will stand, stakes already set and the lookout behind',
-        },
+        images: [],
         bookNote:
           'It is still a drawing, so there is nothing to book. If you want to follow the build, join a clay workshop or ask about future dates, write to us.',
       },

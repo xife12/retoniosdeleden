@@ -1,0 +1,277 @@
+/* ============================================================
+   Backend — Listenansicht
+   Karten statt Textzeilen: Zustand, Kennzahlen und ob Englisch
+   fehlt, alles ohne den Editor zu öffnen.
+   ============================================================ */
+
+.adm-list {
+  max-width: 60rem;
+  margin-inline: auto;
+  padding: var(--sp-5) var(--sp-4) var(--sp-9);
+  display: grid;
+  gap: var(--sp-4);
+}
+
+.adm-list__head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--sp-3);
+}
+
+.adm-list__title {
+  margin: 0;
+  font-family: var(--font-display);
+  font-size: var(--fs-800);
+}
+
+.adm-list__new {
+  min-height: var(--adm-touch);
+}
+
+.adm-list__tools {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--sp-3);
+}
+
+.adm-list__filters {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--sp-2);
+}
+
+.adm-list__filter {
+  min-height: 2.25rem;
+  padding: 0 var(--sp-3);
+  border: 1.5px solid var(--barro-200);
+  border-radius: var(--r-full);
+  background: var(--papel);
+  font: inherit;
+  font-size: var(--fs-200);
+  color: var(--c-text-soft);
+  cursor: pointer;
+}
+
+.adm-list__filter.is-on {
+  background: var(--barro-100);
+  border-color: var(--barro-500);
+  color: var(--barro-700);
+  font-weight: 700;
+}
+
+.adm-list__filter:focus-visible,
+.adm-list__search:focus-visible {
+  outline: 2px solid var(--barro-500);
+  outline-offset: 2px;
+}
+
+.adm-list__search {
+  flex: 1;
+  min-width: 12rem;
+  max-width: 20rem;
+}
+
+.adm-list__items {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: var(--sp-3);
+}
+
+.adm-list__empty {
+  margin: 0;
+  padding: var(--sp-7) var(--sp-4);
+  border: 1.5px dashed var(--barro-200);
+  border-radius: var(--r-md);
+  text-align: center;
+  color: var(--tinta-tenue);
+}
+
+/* ---------- Einzelne Karte ---------- */
+
+.adm-card {
+  display: flex;
+  align-items: stretch;
+  gap: var(--sp-2);
+  padding: var(--sp-2);
+  border-radius: var(--r-md);
+  background: #fffdf8;
+  box-shadow: var(--shadow-soft);
+}
+
+.adm-card__handle {
+  flex: none;
+  width: var(--adm-touch);
+  display: grid;
+  place-items: center;
+  border: none;
+  border-radius: var(--r-sm);
+  background: none;
+  color: var(--tinta-tenue);
+  cursor: grab;
+  touch-action: none;
+}
+
+.adm-card__handle:active {
+  cursor: grabbing;
+}
+
+/* Die ganze Karte ist der Öffnen-Knopf -- ein großes Ziel für den Daumen. */
+.adm-card__open {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  gap: var(--sp-3);
+  padding: var(--sp-2);
+  border: none;
+  border-radius: var(--r-sm);
+  background: none;
+  font: inherit;
+  text-align: start;
+  cursor: pointer;
+}
+
+.adm-card__open:hover {
+  background: var(--papel-warm);
+}
+
+.adm-card__open:focus-visible {
+  outline: 2px solid var(--barro-500);
+  outline-offset: -2px;
+}
+
+.adm-card__media {
+  flex: none;
+  width: 3.5rem;
+  height: 3.5rem;
+  display: grid;
+  place-items: center;
+  border-radius: var(--r-sm);
+  background: var(--papel-warm);
+  overflow: hidden;
+}
+
+.adm-card__media img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.adm-card__media svg {
+  width: 2.5rem;
+  height: 2.5rem;
+}
+
+.adm-card__body {
+  flex: 1;
+  min-width: 0;
+  display: grid;
+  gap: 0.2em;
+}
+
+.adm-card__titlerow {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-2);
+  flex-wrap: wrap;
+}
+
+.adm-card__title {
+  font-weight: 700;
+}
+
+.adm-card__meta {
+  font-size: var(--fs-200);
+  color: var(--tinta-tenue);
+}
+
+.adm-card__langs {
+  display: flex;
+  gap: var(--sp-2);
+}
+
+.adm-card__lang {
+  font-size: var(--fs-200);
+  font-variant-numeric: tabular-nums;
+  padding: 0.05em 0.5em;
+  border-radius: var(--r-full);
+}
+
+.adm-card__lang.is-ok {
+  background: var(--pistacho-100);
+  color: var(--pistacho-700);
+}
+
+.adm-card__lang.is-partial {
+  background: var(--miel-100);
+  color: var(--miel-800);
+}
+
+.adm-card__lang.is-empty {
+  background: var(--barro-100);
+  color: var(--barro-700);
+}
+
+/* ---------- Überlaufmenü: hier wohnt das Gefährliche ---------- */
+
+.adm-card__menu {
+  position: relative;
+  flex: none;
+}
+
+.adm-card__menubtn {
+  width: var(--adm-touch);
+  height: var(--adm-touch);
+  display: grid;
+  place-items: center;
+  border: none;
+  border-radius: var(--r-full);
+  background: none;
+  color: var(--tinta-tenue);
+  font-size: var(--fs-500);
+  cursor: pointer;
+}
+
+.adm-card__menubtn:hover {
+  background: var(--papel-warm);
+  color: var(--c-text);
+}
+
+.adm-card__menulist {
+  position: absolute;
+  inset-inline-end: 0;
+  top: calc(100% + 4px);
+  z-index: 10;
+  min-width: 12rem;
+  display: grid;
+  padding: var(--sp-1);
+  border-radius: var(--r-md);
+  background: var(--papel);
+  box-shadow: var(--shadow-lift);
+}
+
+.adm-card__menulist button {
+  min-height: var(--adm-touch);
+  padding-inline: var(--sp-3);
+  border: none;
+  border-radius: var(--r-sm);
+  background: none;
+  font: inherit;
+  font-size: var(--fs-300);
+  text-align: start;
+  cursor: pointer;
+}
+
+.adm-card__menulist button:hover {
+  background: var(--papel-warm);
+}
+
+.adm-card__delete {
+  color: var(--barro-700);
+}

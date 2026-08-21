@@ -1,0 +1,63 @@
+---
+/**
+ * Hülle des Backends.
+ *
+ * Aus 721 Zeilen Markup plus CSS ist eine Seite mit genau einem Anker
+ * geworden. Alles, was die Nutzerin sieht, bauen die Ansichten in
+ * `src/scripts/admin/` zur Laufzeit -- Liste und Editor sind Ansichten
+ * derselben Seite, umgeschaltet über den History-Router (Spec 2.1).
+ * Das Riesen-Modal von v1 entfällt damit ersatzlos (Problem P1).
+ *
+ * Statisch bleibt nur, was ohne Daten Sinn ergibt: die Kopfzeile mit dem
+ * Wechsel zwischen Talleres und Casas und der Abmeldeknopf. Sie ist
+ * versteckt, solange niemand angemeldet ist.
+ */
+import Base from '../../layouts/Base.astro';
+---
+
+<Base
+  lang="es"
+  title="Panel — Retoños del Edén"
+  description="Área privada para gestionar talleres y casas de barro."
+>
+  <div class="adm">
+    <header class="adm-top" data-admin-top hidden>
+      <div class="adm-top__wrap">
+        <p class="adm-top__brand">
+          <span class="adm-top__mark" aria-hidden="true">
+            <svg viewBox="0 0 32 32">
+              <circle cx="16" cy="16" r="12" fill="url(#pg-miel)" filter="url(#wc-rough)"></circle>
+              <path
+                d="M9 20 C 13 12, 19 12, 23 20"
+                stroke="#8f4c31"
+                stroke-width="2.2"
+                fill="none"
+                stroke-linecap="round"
+                filter="url(#ink)"></path>
+            </svg>
+          </span>
+          <span>Retoños del Edén</span>
+        </p>
+
+        <nav class="adm-nav" aria-label="Secciones del panel">
+          <button type="button" class="adm-nav__btn" data-admin-nav="talleres">Talleres</button>
+          <button type="button" class="adm-nav__btn" data-admin-nav="casas">Casas de barro</button>
+        </nav>
+
+        <div class="adm-top__user">
+          <span class="adm-top__mail" data-admin-email></span>
+          <button type="button" class="btn btn--ghost btn--sm" data-admin-logout>
+            Cerrar sesión
+          </button>
+        </div>
+      </div>
+    </header>
+
+    <!-- Einziger Anker: hier hängen Login, Listen und Editoren. -->
+    <main class="adm-main" data-admin-view></main>
+  </div>
+
+  <script>
+    import '../../scripts/admin/main';
+  </script>
+</Base>

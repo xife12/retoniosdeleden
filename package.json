@@ -12,6 +12,7 @@
   "dependencies": {
     "@fontsource-variable/fraunces": "^5.2.5",
     "@fontsource-variable/outfit": "^5.2.5",
+    "@supabase/supabase-js": "^2.112.2",
     "astro": "^5.12.3",
     "gsap": "^3.13.0"
   }

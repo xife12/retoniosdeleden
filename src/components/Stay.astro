@@ -1,6 +1,8 @@
 ---
 import type { Dict, Lang } from '../i18n';
-import { casas, casaUI, fill, type CasaArt, type CasaGlyph } from '../data/casas';
+import { casaUI, fill, type CasaArt, type CasaStatus } from '../data/casas';
+import { casaGlyphs, type CasaGlyph } from '../data/casa-glyphs';
+import { fetchCasas } from '../lib/fetch-casas';
 
 interface Props {
   t: Dict;
@@ -12,114 +14,152 @@ const { t, lang: langProp } = Astro.props;
 const lang: Lang = langProp ?? (Astro.url.pathname.startsWith('/en') ? 'en' : 'es');
 const ui = casaUI[lang];
 
-const statusChip: Record<string, string> = {
+/**
+ * Inhalte kommen zur Bauzeit aus Supabase (View `casas_public`).
+ * Die Zeichnungen bleiben im Code: sie sind gestaltete Assets, keine
+ * Inhalte, die die Nutzerin im Backend pflegt.
+ */
+const casas = await fetchCasas();
+const [featured, ...rest] = casas;
+
+const statusChip: Record<CasaStatus, string> = {
   listo: '',
   enObra: 'chip--barro',
   planeado: 'chip--lavanda',
 };
 
+/* Der Pfeil neben "Ver la casa" -- dreimal dasselbe, deshalb einmal hier. */
+const openArrow = `<path d="M1 6 C 7 4, 14 8, 22 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" fill="none" filter="url(#ink)" /><path d="M17 2 L 22 6 L 17 10" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" fill="none" filter="url(#ink)" />`;
+
 /* ------------------------------------------------------------------
-   Kleine Aquarell-Glyphen für Fakten, Ausstattung und Besonderheiten.
-   Jede Zeile bekommt ihr eigenes Motiv, nie zweimal dasselbe Icon.
-   Alle nutzen die globalen Filter/Verläufe aus WatercolorDefs.astro.
+   Zeichnung auf der Übersichtskarte, ausgewählt über den Bau-Status:
+   fertiges Haus, Baustelle, Bauplan. Das erste Haus wird groß
+   dargestellt, deshalb hat "listo" eine eigene, größere Ansicht.
 ------------------------------------------------------------------- */
-const glyphs: Record<CasaGlyph, string> = {
-  bed: `
-    <path d="M4 24 L 4 13 C 4 11, 6 11, 8 11 L 26 11 C 28 11, 28 13, 28 15 L 28 24 Z" fill="#e9e4da" filter="url(#wc-soft)" />
-    <rect x="7" y="13" width="9" height="6" rx="2.5" fill="url(#pg-cielo)" filter="url(#wc-rough)" />
-    <path d="M4 19 L 28 19" stroke="#a07f4a" stroke-width="2.6" filter="url(#ink)" />
-    <path d="M5 24 L 5 28 M 27 24 L 27 28" stroke="#a07f4a" stroke-width="2.4" stroke-linecap="round" filter="url(#ink)" />`,
-  guests: `
-    <circle cx="12" cy="10" r="5" fill="url(#pg-miel)" filter="url(#wc-rough)" />
-    <path d="M3 27 C 4 18, 20 18, 21 27 Z" fill="url(#pg-miel)" opacity="0.75" filter="url(#wc-soft)" />
-    <circle cx="23" cy="13" r="4" fill="url(#pg-barro)" filter="url(#wc-rough)" />
-    <path d="M16 27 C 17 20, 29 20, 30 27 Z" fill="url(#pg-barro)" opacity="0.6" filter="url(#wc-soft)" />`,
-  area: `
-    <rect x="5" y="6" width="22" height="20" rx="3" fill="#eef1e2" stroke="#7a8b5a" stroke-width="2" stroke-dasharray="4 4" filter="url(#ink)" />
-    <path d="M9 16 L 23 16 M 9 16 L 12.5 12.5 M 9 16 L 12.5 19.5 M 23 16 L 19.5 12.5 M 23 16 L 19.5 19.5"
-      stroke="#3f4f30" stroke-width="1.8" stroke-linecap="round" fill="none" filter="url(#ink)" />`,
-  bedroom: `
-    <path d="M6 27 L 6 8 L 26 5 L 26 27 Z" fill="#e9e4da" filter="url(#wc-soft)" />
-    <path d="M6 27 L 6 8 L 26 5 L 26 27" fill="none" stroke="#33291f" stroke-width="1.6" opacity="0.4" filter="url(#ink)" />
-    <rect x="12" y="12" width="9" height="15" rx="2" fill="none" stroke="#a4444a" stroke-width="2.4" filter="url(#ink)" />
-    <circle cx="19" cy="20" r="1.4" fill="#a4444a" />`,
-  bath: `
-    <path d="M16 3 L 16 9" stroke="#8a7b68" stroke-width="2.4" stroke-linecap="round" filter="url(#ink)" />
-    <path d="M8 13 C 9 8, 23 8, 24 13 Z" fill="url(#pg-cielo)" filter="url(#wc-rough)" />
-    <g stroke="#7fb0c9" stroke-width="2.2" stroke-linecap="round" filter="url(#ink)">
-      <path d="M11 17 L 10 23" /><path d="M16 17 L 15 26" /><path d="M21 17 L 20 22" />
-    </g>`,
-  kitchen: `
-    <path d="M7 16 L 25 16 L 23 26 C 21.5 27.5, 10.5 27.5, 9 26 Z" fill="url(#pg-barro)" filter="url(#wc-soft)" />
-    <path d="M5 16 L 27 16" stroke="#8f4c31" stroke-width="2.8" stroke-linecap="round" filter="url(#ink)" />
-    <path d="M12 12 C 14 9, 11 7, 13 4 M 20 12 C 22 9, 19 7, 21 4"
-      stroke="#b1d3e3" stroke-width="2" stroke-linecap="round" fill="none" filter="url(#ink)" />`,
-  hammock: `
-    <path d="M5 5 L 5 27 M 27 5 L 27 27" stroke="#a07f4a" stroke-width="2.6" stroke-linecap="round" filter="url(#ink)" />
-    <path d="M5 12 C 10 25, 22 25, 27 12" stroke="#f3c87f" stroke-width="4.6" stroke-linecap="round" fill="none" filter="url(#ink)" />
-    <path d="M8 14 C 12 21, 20 21, 24 14" stroke="#e8a13d" stroke-width="2" stroke-linecap="round" fill="none" opacity="0.7" filter="url(#ink)" />`,
-  stove: `
-    <path d="M8 27 L 8 15 C 8 8, 24 8, 24 15 L 24 27 Z" fill="url(#pg-barro)" filter="url(#wc-soft)" />
-    <path d="M20.5 9 L 20.5 3" stroke="#8f4c31" stroke-width="2.6" stroke-linecap="round" filter="url(#ink)" />
-    <path d="M13 24 C 12 20, 16 20, 15 14 C 19 17, 20.5 21, 18.5 24 Z" fill="url(#pg-miel)" filter="url(#wc-rough)" />`,
-  solar: `
-    <circle cx="10" cy="9" r="5" fill="url(#pg-sol)" filter="url(#wc-rough)" />
-    <g stroke="#e8a13d" stroke-width="1.8" stroke-linecap="round" filter="url(#ink)">
-      <path d="M10 1.5 L 10 3.5 M 2 9 L 4 9 M 4.4 3.4 L 5.8 4.8" />
-    </g>
-    <path d="M9 26 L 13 17 L 29 17 L 27 26 Z" fill="url(#pg-cielo)" filter="url(#wc-soft)" />
-    <path d="M14.6 17 L 12.6 26 M 19.6 17 L 18.2 26 M 24.6 17 L 23.7 26"
-      stroke="#5c4f40" stroke-width="1.4" opacity="0.5" filter="url(#ink)" />`,
-  rain: `
-    <path d="M7 13 C 6 8, 14 5, 17.5 9 C 22.5 8, 26 12, 24 16 L 8 16 C 6 16, 6 14, 7 13 Z" fill="#d9eaf2" filter="url(#wc-soft)" />
-    <g stroke="#7fb0c9" stroke-width="2.2" stroke-linecap="round" filter="url(#ink)">
-      <path d="M11 19 L 10 22" /><path d="M16 19 L 15 23" /><path d="M21 19 L 20 22" />
-    </g>
-    <path d="M9 28 L 10 24 L 23 24 L 24 28 Z" fill="url(#pg-barro)" opacity="0.85" filter="url(#wc-rough)" />`,
-  hive: `
-    <path d="M7 25 L 7 12 L 25 12 L 25 25 Z" fill="#e8d5b8" filter="url(#wc-soft)" />
-    <path d="M7 17 L 25 17 M 7 21.5 L 25 21.5" stroke="#a07f4a" stroke-width="1.8" filter="url(#ink)" />
-    <path d="M4.5 12 L 27.5 12 L 24 7.5 L 8 7.5 Z" fill="#8a6f4d" filter="url(#wc-rough)" />
-    <rect x="13" y="22.5" width="6" height="2.5" fill="#5c4a3a" />
-    <ellipse cx="26" cy="28" rx="3.4" ry="2.4" fill="url(#pg-miel)" filter="url(#wc-rough)" />`,
-  tub: `
-    <path d="M5 15 L 27 15 L 24 26 C 22 28, 10 28, 8 26 Z" fill="#c9a86a" filter="url(#wc-soft)" />
-    <path d="M6.5 18.5 C 12 16.5, 20 16.5, 25.5 18.5" stroke="#7fb0c9" stroke-width="3" fill="none" filter="url(#ink)" />
-    <path d="M10 15 L 10 26 M 16 15 L 16 27 M 22 15 L 22 26" stroke="#a07f4a" stroke-width="1.3" opacity="0.55" filter="url(#ink)" />
-    <path d="M11 12 C 13 9, 10 7, 12 3.5 M 20 12 C 22 9, 19 7, 21 3.5"
-      stroke="#b1d3e3" stroke-width="2" stroke-linecap="round" fill="none" filter="url(#ink)" />`,
-  stars: `
-    <path d="M7 27 L 7 13 C 7 5, 25 5, 25 13 L 25 27 Z" fill="#3d4a63" filter="url(#wc-soft)" />
-    <path d="M7 27 L 7 13 C 7 5, 25 5, 25 13 L 25 27" fill="none" stroke="#a4444a" stroke-width="2.6" filter="url(#ink)" />
-    <g fill="#fdf3e0">
-      <circle cx="12" cy="13" r="1.5" /><circle cx="19.5" cy="10.5" r="1.1" />
-      <circle cx="16" cy="18" r="1.7" /><circle cx="21" cy="21" r="1.1" /><circle cx="11" cy="22" r="1.2" />
-    </g>`,
-  lavender: `
-    <path d="M16 28 C 17 21, 15 15, 17 9" stroke="#5b6c42" stroke-width="2.2" stroke-linecap="round" filter="url(#ink)" fill="none" />
-    <ellipse cx="17" cy="8" rx="4" ry="7" fill="url(#pg-lavanda)" filter="url(#wc-rough)" />
-    <ellipse cx="10" cy="17" rx="2.8" ry="5" transform="rotate(-28 10 17)" fill="url(#pg-lavanda)" opacity="0.8" filter="url(#wc-rough)" />
-    <ellipse cx="23" cy="15" rx="2.8" ry="5" transform="rotate(24 23 15)" fill="url(#pg-lavanda)" opacity="0.8" filter="url(#wc-rough)" />`,
-  clay: `
-    <path d="M5 26 C 5 18, 11 14, 16 14 C 21 14, 27 18, 27 26 Z" fill="url(#pg-barro)" filter="url(#wc-soft)" />
-    <path d="M10 14.5 L 7 6 M 16 13.5 L 17.5 4 M 22 15.5 L 26.5 8"
-      stroke="#c9a86a" stroke-width="2" stroke-linecap="round" filter="url(#ink)" />
-    <path d="M11 22 C 14 20, 19 20, 22 22" stroke="#8f4c31" stroke-width="1.6" opacity="0.6" fill="none" filter="url(#ink)" />`,
-  mirador: `
-    <path d="M1 27 C 8 19, 13 23, 19 14 C 23 8, 28 12, 31 9 L 31 28 L 1 28 Z" fill="url(#pg-pistacho)" opacity="0.55" filter="url(#wc-wash)" />
-    <path d="M22 15 L 22 4" stroke="#a07f4a" stroke-width="2.4" stroke-linecap="round" filter="url(#ink)" />
-    <path d="M22 5 L 30 7.5 L 22 10 Z" fill="url(#pg-miel)" filter="url(#wc-rough)" />
-    <path d="M2 25 C 9 18, 13 22, 18 14" stroke="#3f4f30" stroke-width="1.6" opacity="0.45" fill="none" filter="url(#ink)" />`,
+const cardArt: Record<CasaStatus, { viewBox: string; svg: string }> = {
+  listo: {
+    viewBox: '0 0 340 220',
+    svg: `
+      <ellipse cx="172" cy="196" rx="140" ry="16" fill="#aebd8a" opacity="0.4" filter="url(#wc-wash)" />
+
+      <!-- Veranda-Deck -->
+      <path d="M34 188 L 158 188 L 158 176 L 34 176 Z" fill="#c9a86a" filter="url(#wc-rough)" />
+      <path d="M48 176 L 48 188 M 76 176 L 76 188 M 104 176 L 104 188 M 132 176 L 132 188"
+        stroke="#a07f4a" stroke-width="2" opacity="0.6" filter="url(#ink)" />
+
+      <!-- Wand -->
+      <path d="M150 176 L 150 96 L 300 96 L 300 176 Z" fill="#e9e4da" filter="url(#wc-soft)" />
+      <path d="M150 176 L 150 96 L 300 96 L 300 176" stroke="#33291f" stroke-width="2"
+        opacity="0.45" filter="url(#ink)" fill="none" />
+
+      <!-- großes Sprossenfenster (weinrot) -->
+      <g filter="url(#wc-rough)">
+        <rect x="216" y="116" width="64" height="48" rx="4" fill="#f6f2e8" />
+        <rect x="216" y="116" width="64" height="48" rx="4" fill="none" stroke="#a4444a" stroke-width="4" />
+        <path d="M216 140 L 280 140 M 238 116 L 238 164 M 260 116 L 260 164"
+          stroke="#a4444a" stroke-width="2.4" />
+      </g>
+      <!-- Tür (weinrot gerahmt) -->
+      <g filter="url(#wc-rough)">
+        <rect x="168" y="122" width="34" height="54" rx="5" fill="#5c4a3a" opacity="0.8" />
+        <rect x="168" y="122" width="34" height="54" rx="5" fill="none" stroke="#a4444a" stroke-width="3.4" />
+      </g>
+
+      <!-- Veranda-Pfosten -->
+      <g stroke="#a07f4a" stroke-width="7" stroke-linecap="round" filter="url(#wc-rough)">
+        <path d="M44 176 L 44 96" />
+        <path d="M98 176 L 98 92" />
+        <path d="M150 176 L 150 92" />
+      </g>
+
+      <!-- Hängematte -->
+      <path d="M52 118 C 68 138, 86 138, 96 116" stroke="#f3c87f" stroke-width="5"
+        stroke-linecap="round" fill="none" filter="url(#ink)" />
+      <path d="M56 120 C 70 136, 84 136, 93 118" stroke="#e8a13d" stroke-width="2.4"
+        stroke-linecap="round" fill="none" opacity="0.7" filter="url(#ink)" />
+
+      <!-- großes Reetdach mit geschwungener Traufe + Gaube -->
+      <path d="M24 100 C 60 44, 120 26, 176 26 C 240 26, 296 48, 316 100 C 318 106, 312 110, 304 106
+               C 260 88, 220 82, 176 82 C 128 82, 78 90, 38 108 C 28 112, 20 108, 24 100 Z"
+        fill="#8a6f4d" filter="url(#wc-soft)" />
+      <path d="M40 96 C 80 56, 140 40, 176 40 C 230 40, 280 58, 304 94"
+        stroke="#6e5638" stroke-width="2.4" opacity="0.5" filter="url(#ink)" fill="none" />
+      <path d="M60 88 C 100 58, 150 48, 176 48 M 200 50 C 240 54, 274 68, 296 88"
+        stroke="#6e5638" stroke-width="1.6" opacity="0.35" filter="url(#ink)" fill="none" />
+      <!-- Gaube -->
+      <g filter="url(#wc-rough)">
+        <path d="M228 78 L 228 52 C 228 44, 272 44, 272 52 L 272 78 Z" fill="#8a6f4d" />
+        <rect x="236" y="54" width="28" height="20" rx="3" fill="#f6f2e8" />
+        <rect x="236" y="54" width="28" height="20" rx="3" fill="none" stroke="#a4444a" stroke-width="3" />
+        <path d="M250 54 L 250 74" stroke="#a4444a" stroke-width="2" />
+      </g>
+
+      <!-- Pflanzen -->
+      <g filter="url(#wc-rough)">
+        <path d="M308 176 C 306 162, 306 154, 308 144 M 308 160 C 300 154, 297 148, 296 140 M 308 154 C 316 148, 319 142, 320 134"
+          stroke="#5b6c42" stroke-width="3" stroke-linecap="round" fill="none" />
+        <ellipse cx="30" cy="170" rx="7" ry="14" fill="url(#pg-lavanda)" />
+        <ellipse cx="18" cy="176" rx="6" ry="11" fill="url(#pg-lavanda)" opacity="0.8" />
+      </g>`,
+  },
+  enObra: {
+    viewBox: '0 0 240 150',
+    svg: `
+      <ellipse cx="120" cy="138" rx="92" ry="10" fill="#aebd8a" opacity="0.4" filter="url(#wc-wash)" />
+      <path d="M62 132 L 62 78 L 178 78 L 178 132 Z" fill="#e9e4da" filter="url(#wc-soft)" />
+      <path d="M62 132 L 62 78 L 178 78 L 178 132" stroke="#33291f" stroke-width="1.8"
+        opacity="0.4" filter="url(#ink)" fill="none" />
+      <!-- halb gedecktes Reetdach -->
+      <path d="M48 84 C 74 46, 120 36, 122 36 L 122 66 C 96 66, 70 74, 56 88 C 48 94, 44 90, 48 84 Z"
+        fill="#8a6f4d" filter="url(#wc-soft)" />
+      <!-- offene Dachbalken rechts -->
+      <g stroke="#a07f4a" stroke-width="3.4" stroke-linecap="round" filter="url(#ink)">
+        <path d="M122 38 L 192 84" />
+        <path d="M122 50 L 182 88" />
+        <path d="M122 62 L 172 92" />
+      </g>
+      <!-- Gerüst -->
+      <g stroke="#8a7b68" stroke-width="3" stroke-linecap="round" filter="url(#ink)">
+        <path d="M196 132 L 196 56 M 216 132 L 216 64 M 196 72 L 216 76 M 196 104 L 216 106" />
+      </g>
+      <!-- Fensteröffnung mit rotem Rahmen, noch ohne Glas -->
+      <rect x="94" y="94" width="36" height="28" rx="3" fill="#cfc7b8"
+        stroke="#a4444a" stroke-width="3" filter="url(#wc-rough)" />
+      <!-- Lehmkübel -->
+      <ellipse cx="34" cy="128" rx="16" ry="8" fill="url(#pg-barro)" filter="url(#wc-rough)" />
+      <path d="M20 118 C 26 124, 42 124, 48 118" stroke="#8f4c31" stroke-width="3"
+        stroke-linecap="round" fill="none" filter="url(#ink)" />`,
+  },
+  planeado: {
+    viewBox: '0 0 240 150',
+    svg: `
+      <path d="M58 128 L 58 76 L 182 76 L 182 128 Z" fill="none"
+        stroke="#9b8ec4" stroke-width="2.6" stroke-dasharray="7 6" filter="url(#ink)" />
+      <path d="M42 82 C 70 42, 170 42, 198 82" fill="none"
+        stroke="#9b8ec4" stroke-width="2.6" stroke-dasharray="7 6" filter="url(#ink)" />
+      <rect x="104" y="94" width="30" height="34" rx="4" fill="none"
+        stroke="#9b8ec4" stroke-width="2.2" stroke-dasharray="5 5" filter="url(#ink)" />
+      <rect x="146" y="94" width="24" height="20" rx="3" fill="none"
+        stroke="#9b8ec4" stroke-width="2" stroke-dasharray="5 5" filter="url(#ink)" />
+      <path d="M52 140 L 188 140" stroke="#8a7b68" stroke-width="2.6"
+        stroke-linecap="round" opacity="0.5" filter="url(#ink)" />
+      <g fill="#c3b9e0" opacity="0.6" filter="url(#wc-rough)">
+        <circle cx="204" cy="124" r="6" />
+        <circle cx="216" cy="132" r="4.5" />
+        <circle cx="32" cy="128" r="5" />
+      </g>`,
+  },
 };
 
 /* ------------------------------------------------------------------
-   Galerie-Ansichten der drei Häuser, viewBox 320 x 200 (16:10).
-   Farbwelt wie auf den Karten: Lehmwand #e9e4da, Reetdach #8a6f4d,
-   weinrote Fensterrahmen #a4444a, Rundholz #a07f4a.
+   Aquarell-Ansichten für die Galerie im Detail-Dialog, viewBox 320 x 200
+   (16:10). Farbwelt wie auf den Karten: Lehmwand #e9e4da, Reetdach
+   #8a6f4d, weinrote Fensterrahmen #a4444a, Rundholz #a07f4a.
 
-   ECHTE FOTOS: sobald es Fotos gibt, in src/data/casas.ts beim
-   jeweiligen Slide `photo: '/fotos/....jpg'` eintragen. Dann rendert
-   die Galerie ein <img> und diese Zeichnungen werden übersprungen.
+   Sie sind der Platzhalter, solange ein Haus keine echten Fotos hat.
+   Fotos werden unter /admin hochgeladen und landen in casa_images;
+   sobald welche da sind, rendert die Galerie <img> statt dieser
+   Zeichnungen.
 ------------------------------------------------------------------- */
 const artwork: Record<CasaArt, string> = {
   'c1-fachada': `
@@ -515,6 +555,16 @@ const artwork: Record<CasaArt, string> = {
     <ellipse cx="296" cy="144" rx="7" ry="13" fill="url(#pg-lavanda)" filter="url(#wc-rough)" />`,
 };
 
+/**
+ * Platzhalter in der Galerie, solange ein Haus noch keine Fotos in
+ * casa_images hat -- eine Aquarell-Ansicht je Bau-Status.
+ */
+const placeholderArt: Record<CasaStatus, CasaArt> = {
+  listo: 'c1-fachada',
+  enObra: 'c2-obra',
+  planeado: 'c3-vision',
+};
+
 /** Facts-Kacheln je Haus zusammenbauen (Werte sprachneutral, Labels aus casaUI). */
 function factsOf(f: { beds: number; guests: number; area: number; bedrooms: number; bathrooms: number }) {
   return [
@@ -543,185 +593,58 @@ function factsOf(f: { beds: number; guests: number; area: number; bedrooms: numb
     </header>
 
     <div class="stay-grid">
-      <!-- Casa 1: das fertige Original, groß -->
+      <!-- Das erste Haus der Reihenfolge groß, der Rest in der Seitenspalte -->
       <article class="card casa-card casa-card--featured" data-reveal>
         <div class="casa-art casa-art--featured" aria-hidden="true">
           <span class="roof-bee meli-perch" data-meli-perch></span>
-          <svg viewBox="0 0 340 220">
-            <ellipse cx="172" cy="196" rx="140" ry="16" fill="#aebd8a" opacity="0.4" filter="url(#wc-wash)" />
-
-            <!-- Veranda-Deck -->
-            <path d="M34 188 L 158 188 L 158 176 L 34 176 Z" fill="#c9a86a" filter="url(#wc-rough)" />
-            <path d="M48 176 L 48 188 M 76 176 L 76 188 M 104 176 L 104 188 M 132 176 L 132 188"
-              stroke="#a07f4a" stroke-width="2" opacity="0.6" filter="url(#ink)" />
-
-            <!-- Wand -->
-            <path d="M150 176 L 150 96 L 300 96 L 300 176 Z" fill="#e9e4da" filter="url(#wc-soft)" />
-            <path d="M150 176 L 150 96 L 300 96 L 300 176" stroke="#33291f" stroke-width="2"
-              opacity="0.45" filter="url(#ink)" fill="none" />
-
-            <!-- großes Sprossenfenster (weinrot) -->
-            <g filter="url(#wc-rough)">
-              <rect x="216" y="116" width="64" height="48" rx="4" fill="#f6f2e8" />
-              <rect x="216" y="116" width="64" height="48" rx="4" fill="none" stroke="#a4444a" stroke-width="4" />
-              <path d="M216 140 L 280 140 M 238 116 L 238 164 M 260 116 L 260 164"
-                stroke="#a4444a" stroke-width="2.4" />
-            </g>
-            <!-- Tür (weinrot gerahmt) -->
-            <g filter="url(#wc-rough)">
-              <rect x="168" y="122" width="34" height="54" rx="5" fill="#5c4a3a" opacity="0.8" />
-              <rect x="168" y="122" width="34" height="54" rx="5" fill="none" stroke="#a4444a" stroke-width="3.4" />
-            </g>
-
-            <!-- Veranda-Pfosten -->
-            <g stroke="#a07f4a" stroke-width="7" stroke-linecap="round" filter="url(#wc-rough)">
-              <path d="M44 176 L 44 96" />
-              <path d="M98 176 L 98 92" />
-              <path d="M150 176 L 150 92" />
-            </g>
-
-            <!-- Hängematte -->
-            <path d="M52 118 C 68 138, 86 138, 96 116" stroke="#f3c87f" stroke-width="5"
-              stroke-linecap="round" fill="none" filter="url(#ink)" />
-            <path d="M56 120 C 70 136, 84 136, 93 118" stroke="#e8a13d" stroke-width="2.4"
-              stroke-linecap="round" fill="none" opacity="0.7" filter="url(#ink)" />
-
-            <!-- großes Reetdach mit geschwungener Traufe + Gaube -->
-            <path d="M24 100 C 60 44, 120 26, 176 26 C 240 26, 296 48, 316 100 C 318 106, 312 110, 304 106
-                     C 260 88, 220 82, 176 82 C 128 82, 78 90, 38 108 C 28 112, 20 108, 24 100 Z"
-              fill="#8a6f4d" filter="url(#wc-soft)" />
-            <path d="M40 96 C 80 56, 140 40, 176 40 C 230 40, 280 58, 304 94"
-              stroke="#6e5638" stroke-width="2.4" opacity="0.5" filter="url(#ink)" fill="none" />
-            <path d="M60 88 C 100 58, 150 48, 176 48 M 200 50 C 240 54, 274 68, 296 88"
-              stroke="#6e5638" stroke-width="1.6" opacity="0.35" filter="url(#ink)" fill="none" />
-            <!-- Gaube -->
-            <g filter="url(#wc-rough)">
-              <path d="M228 78 L 228 52 C 228 44, 272 44, 272 52 L 272 78 Z" fill="#8a6f4d" />
-              <rect x="236" y="54" width="28" height="20" rx="3" fill="#f6f2e8" />
-              <rect x="236" y="54" width="28" height="20" rx="3" fill="none" stroke="#a4444a" stroke-width="3" />
-              <path d="M250 54 L 250 74" stroke="#a4444a" stroke-width="2" />
-            </g>
-
-            <!-- Pflanzen -->
-            <g filter="url(#wc-rough)">
-              <path d="M308 176 C 306 162, 306 154, 308 144 M 308 160 C 300 154, 297 148, 296 140 M 308 154 C 316 148, 319 142, 320 134"
-                stroke="#5b6c42" stroke-width="3" stroke-linecap="round" fill="none" />
-              <ellipse cx="30" cy="170" rx="7" ry="14" fill="url(#pg-lavanda)" />
-              <ellipse cx="18" cy="176" rx="6" ry="11" fill="url(#pg-lavanda)" opacity="0.8" />
-            </g>
-          </svg>
+          <svg viewBox={cardArt[featured.status].viewBox} set:html={cardArt[featured.status].svg} />
         </div>
         <div class="casa-body">
-          <span class={`chip ${statusChip[t.stay.casas[0].status]}`}>
-            {t.map.status[t.stay.casas[0].status as keyof typeof t.map.status]}
+          <span class={`chip ${statusChip[featured.status]}`}>
+            {t.map.status[featured.status as keyof typeof t.map.status]}
           </span>
-          <h3>{t.stay.casas[0].name}</h3>
-          <p>{t.stay.casas[0].desc}</p>
+          <h3>{featured.text[lang].title}</h3>
+          <p>{featured.text[lang].tagline}</p>
           <button
             type="button"
             class="casa-open"
-            data-casa-open={casas[0].id}
-            aria-label={`${ui.open}: ${t.stay.casas[0].name}`}
+            data-casa-open={featured.id}
+            aria-label={`${ui.open}: ${featured.text[lang].title}`}
           >
             <span>{ui.open}</span>
             <span class="casa-open-arrow" aria-hidden="true">
-              <svg viewBox="0 0 24 12" set:html={`<path d="M1 6 C 7 4, 14 8, 22 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" fill="none" filter="url(#ink)" /><path d="M17 2 L 22 6 L 17 10" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" fill="none" filter="url(#ink)" />`} />
+              <svg viewBox="0 0 24 12" set:html={openArrow} />
             </span>
           </button>
         </div>
       </article>
 
       <div class="stay-side">
-        <!-- Casa 2: im Bau -->
-        <article class="card casa-card" data-reveal>
-          <div class="casa-art" aria-hidden="true">
-            <svg viewBox="0 0 240 150">
-              <ellipse cx="120" cy="138" rx="92" ry="10" fill="#aebd8a" opacity="0.4" filter="url(#wc-wash)" />
-              <path d="M62 132 L 62 78 L 178 78 L 178 132 Z" fill="#e9e4da" filter="url(#wc-soft)" />
-              <path d="M62 132 L 62 78 L 178 78 L 178 132" stroke="#33291f" stroke-width="1.8"
-                opacity="0.4" filter="url(#ink)" fill="none" />
-              <!-- halb gedecktes Reetdach -->
-              <path d="M48 84 C 74 46, 120 36, 122 36 L 122 66 C 96 66, 70 74, 56 88 C 48 94, 44 90, 48 84 Z"
-                fill="#8a6f4d" filter="url(#wc-soft)" />
-              <!-- offene Dachbalken rechts -->
-              <g stroke="#a07f4a" stroke-width="3.4" stroke-linecap="round" filter="url(#ink)">
-                <path d="M122 38 L 192 84" />
-                <path d="M122 50 L 182 88" />
-                <path d="M122 62 L 172 92" />
-              </g>
-              <!-- Gerüst -->
-              <g stroke="#8a7b68" stroke-width="3" stroke-linecap="round" filter="url(#ink)">
-                <path d="M196 132 L 196 56 M 216 132 L 216 64 M 196 72 L 216 76 M 196 104 L 216 106" />
-              </g>
-              <!-- Fensteröffnung mit rotem Rahmen, noch ohne Glas -->
-              <rect x="94" y="94" width="36" height="28" rx="3" fill="#cfc7b8"
-                stroke="#a4444a" stroke-width="3" filter="url(#wc-rough)" />
-              <!-- Lehmkübel -->
-              <ellipse cx="34" cy="128" rx="16" ry="8" fill="url(#pg-barro)" filter="url(#wc-rough)" />
-              <path d="M20 118 C 26 124, 42 124, 48 118" stroke="#8f4c31" stroke-width="3"
-                stroke-linecap="round" fill="none" filter="url(#ink)" />
-            </svg>
-          </div>
-          <div class="casa-body">
-            <span class={`chip ${statusChip[t.stay.casas[1].status]}`}>
-              {t.map.status[t.stay.casas[1].status as keyof typeof t.map.status]}
-            </span>
-            <h3>{t.stay.casas[1].name}</h3>
-            <p>{t.stay.casas[1].desc}</p>
-            <button
-              type="button"
-              class="casa-open"
-              data-casa-open={casas[1].id}
-              aria-label={`${ui.open}: ${t.stay.casas[1].name}`}
-            >
-              <span>{ui.open}</span>
-              <span class="casa-open-arrow" aria-hidden="true">
-                <svg viewBox="0 0 24 12" set:html={`<path d="M1 6 C 7 4, 14 8, 22 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" fill="none" filter="url(#ink)" /><path d="M17 2 L 22 6 L 17 10" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" fill="none" filter="url(#ink)" />`} />
+        {rest.map((casa) => (
+          <article class="card casa-card" data-reveal>
+            <div class="casa-art" aria-hidden="true">
+              <svg viewBox={cardArt[casa.status].viewBox} set:html={cardArt[casa.status].svg} />
+            </div>
+            <div class="casa-body">
+              <span class={`chip ${statusChip[casa.status]}`}>
+                {t.map.status[casa.status as keyof typeof t.map.status]}
               </span>
-            </button>
-          </div>
-        </article>
-
-        <!-- Casa 3: Blaupause -->
-        <article class="card casa-card" data-reveal>
-          <div class="casa-art" aria-hidden="true">
-            <svg viewBox="0 0 240 150">
-              <path d="M58 128 L 58 76 L 182 76 L 182 128 Z" fill="none"
-                stroke="#9b8ec4" stroke-width="2.6" stroke-dasharray="7 6" filter="url(#ink)" />
-              <path d="M42 82 C 70 42, 170 42, 198 82" fill="none"
-                stroke="#9b8ec4" stroke-width="2.6" stroke-dasharray="7 6" filter="url(#ink)" />
-              <rect x="104" y="94" width="30" height="34" rx="4" fill="none"
-                stroke="#9b8ec4" stroke-width="2.2" stroke-dasharray="5 5" filter="url(#ink)" />
-              <rect x="146" y="94" width="24" height="20" rx="3" fill="none"
-                stroke="#9b8ec4" stroke-width="2" stroke-dasharray="5 5" filter="url(#ink)" />
-              <path d="M52 140 L 188 140" stroke="#8a7b68" stroke-width="2.6"
-                stroke-linecap="round" opacity="0.5" filter="url(#ink)" />
-              <g fill="#c3b9e0" opacity="0.6" filter="url(#wc-rough)">
-                <circle cx="204" cy="124" r="6" />
-                <circle cx="216" cy="132" r="4.5" />
-                <circle cx="32" cy="128" r="5" />
-              </g>
-            </svg>
-          </div>
-          <div class="casa-body">
-            <span class={`chip ${statusChip[t.stay.casas[2].status]}`}>
-              {t.map.status[t.stay.casas[2].status as keyof typeof t.map.status]}
-            </span>
-            <h3>{t.stay.casas[2].name}</h3>
-            <p>{t.stay.casas[2].desc}</p>
-            <button
-              type="button"
-              class="casa-open"
-              data-casa-open={casas[2].id}
-              aria-label={`${ui.open}: ${t.stay.casas[2].name}`}
-            >
-              <span>{ui.open}</span>
-              <span class="casa-open-arrow" aria-hidden="true">
-                <svg viewBox="0 0 24 12" set:html={`<path d="M1 6 C 7 4, 14 8, 22 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" fill="none" filter="url(#ink)" /><path d="M17 2 L 22 6 L 17 10" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" fill="none" filter="url(#ink)" />`} />
-              </span>
-            </button>
-          </div>
-        </article>
+              <h3>{casa.text[lang].title}</h3>
+              <p>{casa.text[lang].tagline}</p>
+              <button
+                type="button"
+                class="casa-open"
+                data-casa-open={casa.id}
+                aria-label={`${ui.open}: ${casa.text[lang].title}`}
+              >
+                <span>{ui.open}</span>
+                <span class="casa-open-arrow" aria-hidden="true">
+                  <svg viewBox="0 0 24 12" set:html={openArrow} />
+                </span>
+              </button>
+            </div>
+          </article>
+        ))}
       </div>
     </div>
 
@@ -735,11 +658,10 @@ function factsOf(f: { beds: number; guests: number; area: number; bedrooms: numb
   ------------------------------------------------------------------- -->
   <div class="casa-backdrop" data-casa-backdrop hidden></div>
 
-  {casas.map((casa, i) => {
+  {casas.map((casa) => {
     const ct = casa.text[lang];
-    const card = t.stay.casas[i];
-    const name = card?.name ?? casa.id;
-    const total = casa.slides.length;
+    const images = ct.images;
+    const total = Math.max(1, images.length);
     return (
       <div
         class="casa-modal"
@@ -758,7 +680,7 @@ function factsOf(f: { beds: number; guests: number; area: number; bedrooms: numb
             <span class={`chip ${statusChip[casa.status]}`}>
               {t.map.status[casa.status as keyof typeof t.map.status]}
             </span>
-            <h3 id={`casa-title-${casa.id}`}>{name}</h3>
+            <h3 id={`casa-title-${casa.id}`}>{ct.title}</h3>
             <p class="casa-tagline">{ct.tagline}</p>
           </header>
 
@@ -771,9 +693,8 @@ function factsOf(f: { beds: number; guests: number; area: number; bedrooms: numb
               role="group"
               aria-label={ui.gallery}
             >
-              {casa.slides.map((slide, s) => {
-                const caption = ct.slides[slide.id] ?? '';
-                return (
+              {images.length > 0 ? (
+                images.map((img, s) => (
                   <li
                     class="gal-slide"
                     data-gal-slide
@@ -781,48 +702,62 @@ function factsOf(f: { beds: number; guests: number; area: number; bedrooms: numb
                     aria-label={fill(ui.slideLabel, { n: s + 1, total })}
                   >
                     <div class="gal-frame">
-                      {slide.photo ? (
-                        /* ECHTES FOTO: kommt aus casas.ts (slide.photo) */
-                        <img src={slide.photo} alt={caption} loading="lazy" decoding="async" />
-                      ) : (
-                        /* Platzhalter: Aquarell-Zeichnung, bis es ein Foto gibt */
-                        <svg class="gal-svg" viewBox="0 0 320 200" aria-hidden="true" set:html={artwork[slide.art]} />
-                      )}
+                      <img src={img.url} alt={img.alt} loading="lazy" decoding="async" />
                     </div>
-                    <p class="gal-cap">{caption}</p>
+                    <p class="gal-cap">{img.alt}</p>
                   </li>
-                );
-              })}
+                ))
+              ) : (
+                /* Noch keine Fotos: Aquarell-Ansicht passend zum Bau-Status */
+                <li
+                  class="gal-slide"
+                  data-gal-slide
+                  role="group"
+                  aria-label={fill(ui.slideLabel, { n: 1, total: 1 })}
+                >
+                  <div class="gal-frame">
+                    <svg
+                      class="gal-svg"
+                      viewBox="0 0 320 200"
+                      aria-hidden="true"
+                      set:html={artwork[placeholderArt[casa.status]]}
+                    />
+                  </div>
+                  <p class="gal-cap"></p>
+                </li>
+              )}
             </ul>
 
-            <div class="gal-nav">
-              <button type="button" class="gal-arrow" data-gal-prev aria-label={ui.prev}>
-                <span aria-hidden="true">‹</span>
-              </button>
-              <div class="gal-dots">
-                {casa.slides.map((_, s) => (
-                  <button
-                    type="button"
-                    class="gal-dot"
-                    data-gal-dot={s}
-                    aria-label={fill(ui.goToSlide, { n: s + 1 })}
-                  ></button>
-                ))}
+            {images.length > 1 && (
+              <div class="gal-nav">
+                <button type="button" class="gal-arrow" data-gal-prev aria-label={ui.prev}>
+                  <span aria-hidden="true">‹</span>
+                </button>
+                <div class="gal-dots">
+                  {images.map((_, s) => (
+                    <button
+                      type="button"
+                      class="gal-dot"
+                      data-gal-dot={s}
+                      aria-label={fill(ui.goToSlide, { n: s + 1 })}
+                    ></button>
+                  ))}
+                </div>
+                <button type="button" class="gal-arrow" data-gal-next aria-label={ui.next}>
+                  <span aria-hidden="true">›</span>
+                </button>
               </div>
-              <button type="button" class="gal-arrow" data-gal-next aria-label={ui.next}>
-                <span aria-hidden="true">›</span>
-              </button>
-            </div>
+            )}
           </div>
 
           <!-- Faktenblock: klare Werte, keine Tabellenlinien -->
           <section class="casa-block">
             <h4>{ui.factsTitle}</h4>
-            {casa.planned && <p class="casa-planned">{ui.plannedPrefix}</p>}
+            {casa.status === 'planeado' && <p class="casa-planned">{ui.plannedPrefix}</p>}
             <ul class="casa-facts">
               {factsOf(casa.facts).map((f) => (
                 <li class="fact">
-                  <svg class="glyph" viewBox="0 0 32 32" aria-hidden="true" set:html={glyphs[f.glyph]} />
+                  <svg class="glyph" viewBox="0 0 32 32" aria-hidden="true" set:html={casaGlyphs[f.glyph]} />
                   <span class="fact-text">
                     <span class="fact-val">{f.value}</span>
                     <span class="fact-key">{f.key}</span>
@@ -841,7 +776,7 @@ function factsOf(f: { beds: number; guests: number; area: number; bedrooms: numb
             <ul class="casa-list">
               {ct.amenities.map((item) => (
                 <li>
-                  <svg class="glyph" viewBox="0 0 32 32" aria-hidden="true" set:html={glyphs[item.glyph]} />
+                  <svg class="glyph" viewBox="0 0 32 32" aria-hidden="true" set:html={casaGlyphs[item.glyph]} />
                   <span>{item.label}</span>
                 </li>
               ))}
@@ -853,7 +788,7 @@ function factsOf(f: { beds: number; guests: number; area: number; bedrooms: numb
             <ul class="casa-list casa-list--rich">
               {ct.highlights.map((item) => (
                 <li>
-                  <svg class="glyph" viewBox="0 0 32 32" aria-hidden="true" set:html={glyphs[item.glyph]} />
+                  <svg class="glyph" viewBox="0 0 32 32" aria-hidden="true" set:html={casaGlyphs[item.glyph]} />
                   <span>
                     <strong>{item.label}</strong>
                     <span class="casa-note">{item.note}</span>
@@ -880,7 +815,7 @@ function factsOf(f: { beds: number; guests: number; area: number; bedrooms: numb
             ) : (
               <>
                 <p class="casa-soon">
-                  <svg class="glyph" viewBox="0 0 32 32" aria-hidden="true" set:html={glyphs.clay} />
+                  <svg class="glyph" viewBox="0 0 32 32" aria-hidden="true" set:html={casaGlyphs.clay} />
                   <span>{ui.notBookable}</span>
                 </p>
                 <a class="btn btn--secondary" href="#contacto" data-casa-contact>{ui.askUs}</a>

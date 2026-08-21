@@ -1,0 +1,508 @@
+/* ============================================================
+   Backend — Grundbausteine
+   Toasts, Dialoge, Login, gepaarte Sprachfelder, Listen-Editor,
+   Ziehgriffe. Alles, was die Module in src/scripts/admin/ erzeugen.
+
+   Ausschließlich Tokens aus tokens.css und Bausteine aus global.css
+   (.btn, .btn--ghost, .card, .field). Kein eigenes Farbsystem:
+   Barro = Primäraktion und Gefahr, Pistacho = Erfolg,
+   Lavanda = neutrale Information, Miel = Warnung.
+   ============================================================ */
+
+:root {
+  /* Fingerkuppe. Die Nutzerin arbeitet oft am Handy. */
+  --adm-touch: 44px;
+  --adm-ring: 0 0 0 3px var(--lavanda-200);
+}
+
+/* Ein einheitlicher, immer sichtbarer Fokusring. */
+.adm-toast__undo:focus-visible,
+.adm-toast__close:focus-visible,
+.adm-dialog button:focus-visible,
+.adm-pf__control:focus-visible,
+.adm-pf__copy:focus-visible,
+.adm-le__handle:focus-visible,
+.adm-le__remove:focus-visible,
+.adm-input:focus-visible {
+  outline: 2px solid var(--barro-500);
+  outline-offset: 2px;
+  box-shadow: var(--adm-ring);
+}
+
+/* ============================================================
+   Toasts — Rückmeldung, die auch über einem Dialog ankommt.
+   Das alte Backend schrieb den Status oben ins Dashboard, wo ihn
+   das Formular verdeckte (Problem P6).
+   ============================================================ */
+
+.adm-toasts {
+  position: fixed;
+  z-index: 200;
+  inset-inline: var(--sp-4);
+  bottom: calc(var(--sp-4) + env(safe-area-inset-bottom, 0px));
+  display: grid;
+  gap: var(--sp-2);
+  justify-items: center;
+  pointer-events: none;
+}
+
+@media (min-width: 48rem) {
+  .adm-toasts {
+    inset-inline: auto var(--sp-5);
+    justify-items: end;
+  }
+}
+
+.adm-toast {
+  pointer-events: auto;
+  display: flex;
+  align-items: center;
+  gap: var(--sp-3);
+  width: min(100%, 28rem);
+  padding: var(--sp-3) var(--sp-4);
+  border-radius: var(--r-md);
+  background: var(--tinta);
+  color: var(--papel);
+  box-shadow: var(--shadow-lift);
+  font-size: var(--fs-300);
+  transition: opacity var(--dur-2) var(--ease-out), transform var(--dur-2) var(--ease-out);
+}
+
+.adm-toast--ok {
+  background: var(--pistacho-700);
+}
+
+.adm-toast--error {
+  background: var(--barro-700);
+}
+
+.adm-toast--info {
+  background: var(--lavanda-700);
+}
+
+.adm-toast.is-leaving {
+  opacity: 0;
+  transform: translateY(0.5rem);
+}
+
+.adm-toast__text {
+  flex: 1;
+  margin: 0;
+}
+
+.adm-toast__undo,
+.adm-toast__close {
+  flex: none;
+  border: none;
+  background: none;
+  color: inherit;
+  cursor: pointer;
+  border-radius: var(--r-sm);
+}
+
+.adm-toast__undo {
+  font-weight: 700;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  padding: var(--sp-1) var(--sp-2);
+}
+
+.adm-toast__close {
+  display: grid;
+  place-items: center;
+  width: 1.75rem;
+  height: 1.75rem;
+  opacity: 0.75;
+  font-size: var(--fs-400);
+  line-height: 1;
+}
+
+.adm-toast__close:hover {
+  opacity: 1;
+}
+
+/* ============================================================
+   Dialoge — ersetzen natives confirm() (Problem P7).
+   Bei tone="danger" ist Abbrechen die Primäraktion.
+   ============================================================ */
+
+.adm-dialog-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 150;
+  background: rgba(51, 41, 31, 0.45);
+  backdrop-filter: blur(2px);
+  display: grid;
+  place-items: center;
+  padding: var(--sp-4);
+}
+
+body.adm-modal-open {
+  overflow: hidden;
+}
+
+.adm-dialog {
+  width: min(100%, 30rem);
+  max-height: 85svh;
+  overflow-y: auto;
+  background: var(--papel);
+  border-radius: var(--r-lg);
+  box-shadow: var(--shadow-modal);
+  padding: var(--sp-6);
+  display: grid;
+  gap: var(--sp-4);
+}
+
+.adm-dialog__title {
+  margin: 0;
+  font-size: var(--fs-700);
+}
+
+.adm-dialog__body {
+  margin: 0;
+  color: var(--c-text-soft);
+  line-height: var(--lh-body);
+}
+
+.adm-dialog__actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: var(--sp-3);
+}
+
+.adm-dialog__form {
+  display: grid;
+  gap: var(--sp-3);
+}
+
+/* Löschen bleibt erreichbar, sieht aber nicht nach Standardweg aus. */
+.adm-btn--danger {
+  background: var(--barro-700);
+  color: var(--papel);
+  border-color: var(--barro-700);
+}
+
+.adm-error {
+  margin: 0;
+  color: var(--barro-700);
+  font-size: var(--fs-300);
+  font-weight: 600;
+}
+
+/* ============================================================
+   Login & Reauth
+   ============================================================ */
+
+.adm-login {
+  min-height: 80svh;
+  display: grid;
+  place-items: center;
+  padding: var(--sp-4);
+}
+
+.adm-login__card {
+  width: min(100%, 24rem);
+  display: grid;
+  gap: var(--sp-4);
+  padding: var(--sp-6);
+  background: #fffdf8;
+  border-radius: var(--r-lg);
+  box-shadow: var(--shadow-soft);
+}
+
+.adm-login__title {
+  margin: 0;
+  font-size: var(--fs-700);
+}
+
+.adm-login__sub {
+  margin: -0.5em 0 0;
+  color: var(--c-text-soft);
+}
+
+.adm-field {
+  display: grid;
+  gap: var(--sp-1);
+}
+
+.adm-label {
+  font-size: var(--fs-300);
+  font-weight: 600;
+  color: var(--c-text-soft);
+}
+
+.adm-input {
+  min-height: var(--adm-touch);
+  padding: var(--sp-2) var(--sp-3);
+  border: 1.5px solid var(--barro-200);
+  border-radius: var(--r-sm);
+  background: var(--papel);
+  font: inherit;
+  color: var(--c-text);
+}
+
+/* ============================================================
+   Gepaartes Sprachfeld — Spanisch führt, Englisch ordnet sich unter.
+   Die ES/EN-Reiter des alten Backends entfallen damit (Problem P2).
+   ============================================================ */
+
+.adm-pf {
+  display: grid;
+  gap: var(--sp-2);
+  padding: var(--sp-3);
+  border-radius: var(--r-md);
+  background: #fffdf8;
+  border: 1.5px solid transparent;
+}
+
+.adm-pf.is-warn {
+  border-color: var(--miel-300);
+  background: var(--miel-100);
+}
+
+.adm-pf__head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--sp-2);
+}
+
+.adm-pf__label {
+  font-weight: 600;
+  font-size: var(--fs-300);
+}
+
+.adm-pf__req {
+  color: var(--barro-700);
+  margin-inline-start: 0.15em;
+}
+
+.adm-pf__row {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--sp-2);
+}
+
+.adm-pf__badge {
+  flex: none;
+  margin-top: 0.55rem;
+  padding: 0.05em 0.45em;
+  border-radius: var(--r-full);
+  font-size: var(--fs-200);
+  font-weight: 700;
+  letter-spacing: 0.03em;
+  background: var(--barro-100);
+  color: var(--barro-700);
+}
+
+.adm-pf__row--en .adm-pf__badge {
+  background: var(--pistacho-100);
+  color: var(--pistacho-700);
+}
+
+.adm-pf__control {
+  flex: 1;
+  min-width: 0;
+  min-height: var(--adm-touch);
+  padding: var(--sp-2) var(--sp-3);
+  border: 1.5px solid var(--barro-200);
+  border-radius: var(--r-sm);
+  background: var(--papel);
+  font: inherit;
+  color: var(--c-text);
+  resize: vertical;
+}
+
+/* Englisch ist sichtbar zweite Geige: kleiner, blasser, ruhiger. */
+.adm-pf__row--en .adm-pf__control {
+  font-size: var(--fs-300);
+  border-style: dashed;
+  border-color: var(--barro-200);
+  background: transparent;
+  color: var(--c-text-soft);
+}
+
+.adm-pf__row--en .adm-pf__control:focus {
+  background: var(--papel);
+  color: var(--c-text);
+  border-style: solid;
+}
+
+.adm-pf__copy {
+  flex: none;
+  align-self: flex-start;
+  margin-top: 0.35rem;
+  padding: var(--sp-1) var(--sp-2);
+  border: 1px solid var(--barro-200);
+  border-radius: var(--r-full);
+  background: var(--papel);
+  color: var(--c-text-soft);
+  font-size: var(--fs-200);
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.adm-pf__copy:hover {
+  border-color: var(--barro-500);
+  color: var(--barro-700);
+}
+
+.adm-pf__foot {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--sp-3);
+  min-height: 1em;
+}
+
+.adm-pf__warn {
+  margin: 0;
+  font-size: var(--fs-200);
+  color: var(--miel-800);
+  font-weight: 600;
+}
+
+.adm-pf__hint {
+  margin: 0;
+  font-size: var(--fs-200);
+  color: var(--tinta-tenue);
+}
+
+.adm-pf__count {
+  margin: 0 0 0 auto;
+  font-size: var(--fs-200);
+  color: var(--tinta-tenue);
+  font-variant-numeric: tabular-nums;
+}
+
+.adm-pf__count.is-over {
+  color: var(--barro-700);
+  font-weight: 700;
+}
+
+/* ============================================================
+   Listen-Editor — Programmschritte, Ausstattung, Highlights
+   ============================================================ */
+
+.adm-le {
+  display: grid;
+  gap: var(--sp-3);
+}
+
+.adm-le__rows {
+  display: grid;
+  gap: var(--sp-2);
+  counter-reset: adm-le-row;
+}
+
+.adm-le__row {
+  counter-increment: adm-le-row;
+  display: flex;
+  align-items: flex-start;
+  gap: var(--sp-2);
+  padding: var(--sp-2);
+  border-radius: var(--r-md);
+  background: var(--papel-warm);
+}
+
+/* Nummer aus dem CSS-Zähler statt aus totem JS (Problem P10). */
+.adm-le--numbered .adm-le__row::before {
+  content: counter(adm-le-row);
+  flex: none;
+  width: 1.6rem;
+  height: 1.6rem;
+  margin-top: 0.55rem;
+  display: grid;
+  place-items: center;
+  border-radius: var(--r-full);
+  background: var(--barro-100);
+  color: var(--barro-700);
+  font-size: var(--fs-200);
+  font-weight: 700;
+}
+
+.adm-le__body {
+  flex: 1;
+  min-width: 0;
+  display: grid;
+  gap: var(--sp-2);
+}
+
+.adm-le__handle,
+.adm-le__remove {
+  flex: none;
+  width: var(--adm-touch);
+  height: var(--adm-touch);
+  display: grid;
+  place-items: center;
+  border: none;
+  border-radius: var(--r-full);
+  background: transparent;
+  color: var(--tinta-tenue);
+  cursor: pointer;
+}
+
+.adm-le__handle {
+  cursor: grab;
+  touch-action: none;
+}
+
+.adm-le__handle:active {
+  cursor: grabbing;
+}
+
+.adm-le__remove:hover {
+  background: var(--barro-100);
+  color: var(--barro-700);
+}
+
+.adm-le__empty {
+  margin: 0;
+  padding: var(--sp-4);
+  border: 1.5px dashed var(--barro-200);
+  border-radius: var(--r-md);
+  text-align: center;
+  color: var(--tinta-tenue);
+  font-size: var(--fs-300);
+}
+
+.adm-le__add {
+  justify-self: start;
+}
+
+.adm-le__note {
+  margin: 0;
+  font-size: var(--fs-200);
+  color: var(--tinta-tenue);
+}
+
+/* ============================================================
+   Ziehen & Sortieren
+   ============================================================ */
+
+[data-drag-handle] {
+  touch-action: none;
+}
+
+.is-sorting {
+  user-select: none;
+}
+
+.is-dragging {
+  opacity: 0.85;
+  box-shadow: var(--shadow-lift);
+  transform: scale(1.01);
+}
+
+/* ============================================================
+   Bewegung nur, wo sie gewollt ist
+   ============================================================ */
+
+@media (prefers-reduced-motion: reduce) {
+  .adm-toast,
+  .is-dragging {
+    transition: none;
+    transform: none;
+  }
+}
