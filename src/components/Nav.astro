@@ -1,6 +1,7 @@
 ---
 import type { Dict, Lang } from '../i18n';
 import Logo from './Logo.astro';
+import { libroActivo } from '../config';
 
 interface Props {
   lang: Lang;
@@ -22,9 +23,14 @@ const allLinks = [
   { href: '#productos', label: t.nav.productos },
   { href: '#talleres', label: t.nav.talleres },
   { href: '#visita', label: t.nav.visita },
+  // Eigene Unterseite, kein Anker: die Familie hinter der Chacra
+  { href: `/${lang}/${lang === 'es' ? 'nosotros' : 'about'}`, label: t.nav.nosotros, external: true },
   { href: '#contacto', label: t.nav.contacto },
-  // Eigene Unterseite, kein Anker: das interaktive Buch
-  { href: `/${lang}/${lang === 'es' ? 'libro' : 'book'}`, label: t.nav.libro, external: true },
+  // Eigene Unterseite, kein Anker: das interaktive Buch. Liegt still,
+  // solange `libroActivo` aus ist — siehe src/config.ts.
+  ...(libroActivo
+    ? [{ href: `/${lang}/${lang === 'es' ? 'libro' : 'book'}`, label: t.nav.libro, external: true }]
+    : []),
 ];
 
 // Auf Desktop bleibt die Nav einzeilig: nur die sechs Hauptstationen der
@@ -35,10 +41,12 @@ const allLinks = [
 const desktopHrefs = new Set(['#historia', '#chacra', '#productos', '#talleres', '#visita', '#contacto']);
 const desktopLinks = allLinks.filter((l) => desktopHrefs.has(l.href));
 
-// Das Buch führt von der Seite weg statt zu einer Sektion. Hinten an die
-// Ankerliste geklebt wirkte es wie ein Fremdkörper; es steht deshalb rechts
-// bei den Aktionen — links die Navigation der Seite, rechts, was hinausführt.
-const libroLink = allLinks.find((l) => l.external);
+// Nosotros und das Buch führen beide von der Seite weg statt zu einer
+// Sektion. Mitten in der Ankerliste wirkten sie wie ein Fremdkörper; sie
+// stehen deshalb rechts bei den Aktionen — links die Navigation der Seite,
+// rechts, was hinausführt.
+const nosotrosLink = allLinks.find((l) => l.external && l.label === t.nav.nosotros);
+const libroLink = allLinks.find((l) => l.external && l.label === t.nav.libro);
 ---
 
 <a class="skip-link" href="#historia">{t.nav.skip}</a>
@@ -54,6 +62,22 @@ const libroLink = allLinks.find((l) => l.external);
   </nav>
 
   <div class="nav-right">
+    {nosotrosLink && (
+      <a class="nav-libro nav-nosotros" href={nosotrosLink.href} data-astro-prefetch>
+        <svg viewBox="0 0 22 18" width="16" height="16" aria-hidden="true">
+          <circle cx="8" cy="5" r="3" fill="none" stroke="currentColor" stroke-width="1.6" filter="url(#ink)" />
+          <path d="M2.4 16 C 2.4 10.8, 5 8.4, 8 8.4 C 11 8.4, 13.6 10.8, 13.6 16"
+            fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"
+            filter="url(#ink)" />
+          <circle cx="16.4" cy="7.2" r="2.3" fill="none" stroke="currentColor" stroke-width="1.4" filter="url(#ink)" />
+          <path d="M12.6 16.2 C 12.6 12.4, 14.3 10.4, 16.4 10.4 C 18.6 10.4, 20.2 12.4, 20.2 16.2"
+            fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"
+            filter="url(#ink)" />
+        </svg>
+        <span>{nosotrosLink.label}</span>
+      </a>
+    )}
+
     {libroLink && (
       <a class="nav-libro" href={libroLink.href} data-astro-prefetch>
         <svg viewBox="0 0 22 18" width="16" height="16" aria-hidden="true">
@@ -110,7 +134,7 @@ const libroLink = allLinks.find((l) => l.external);
         href={l.href}
         data-nav-link={l.external ? undefined : l.href.slice(1)}
         data-menu-link
-        class={l.external ? 'is-libro' : undefined}
+        class={l.external ? 'is-external' : undefined}
         data-astro-prefetch={l.external ? true : undefined}
         style={`--i: ${i}`}
       >
@@ -445,15 +469,15 @@ const libroLink = allLinks.find((l) => l.external);
     transition-delay: calc(var(--i) * 35ms + 60ms);
   }
 
-  /* Das Buch führt auf eine eigene Seite und wird darum abgesetzt */
-  .mobile-links a.is-libro {
+  /* Nosotros und das Buch führen auf eigene Seiten und werden darum abgesetzt */
+  .mobile-links a.is-external {
     color: var(--miel-800);
     font-style: italic;
     border-bottom: none;
     margin-top: var(--sp-2);
   }
 
-  .mobile-links a.is-libro::after {
+  .mobile-links a.is-external::after {
     content: '→';
     margin-left: 0.5rem;
     font-style: normal;

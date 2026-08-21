@@ -124,6 +124,8 @@ const chispas = Array.from({ length: 9 }, (_, i) => ({
           <span class="chip chip--miel">{totalJuegos} {ui.promesaJuegos}</span>
           <span class="chip">{totalCards} {ui.promesaCartas}</span>
         </p>
+
+        <p class="entrada-excerpto entrada-l" style="--l:6">{ui.excerpto}</p>
       </div>
     </div>
 
@@ -575,6 +577,14 @@ const chispas = Array.from({ length: 9 }, (_, i) => ({
     display: flex;
     flex-wrap: wrap;
     gap: var(--sp-2);
+    margin-top: var(--sp-1);
+  }
+
+  /* Unaufdringlicher Hinweis, dass hier nur eine Auswahl aus dem Buch
+     steht — derselbe leise Ton wie .fin-derechos am Ende der Lesung. */
+  .entrada-excerpto {
+    font-size: var(--fs-200);
+    color: var(--tinta-tenue);
     margin-top: var(--sp-1);
   }
 

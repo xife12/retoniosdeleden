@@ -109,6 +109,33 @@ function initVignettes() {
     once: true,
   });
 
+  if (document.getElementById('vig-semilla')) {
+    const tl = gsap.timeline({ scrollTrigger: trig('vig-semilla') });
+    tl.from('#vig-semilla .v-bird', {
+      x: 60,
+      y: -46,
+      autoAlpha: 0,
+      duration: 0.6,
+      ease: 'power2.in',
+    }).from(
+      '#vig-semilla .v-bird',
+      {
+        y: -8,
+        duration: 0.35,
+        ease: 'bounce.out',
+      },
+    ).from(
+      '#vig-semilla .v-seed',
+      {
+        y: -18,
+        autoAlpha: 0,
+        duration: 0.5,
+        ease: 'power1.in',
+      },
+      '-=0.1',
+    );
+  }
+
   if (document.getElementById('vig-suelo')) {
     gsap.from('#vig-suelo .v-sprout', {
       scaleY: 0,

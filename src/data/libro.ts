@@ -60,6 +60,14 @@ export interface BookPage {
   capitulo: Record<Lang, string>;
   cards: KnowledgeCard[];
   juego?: Juego;
+  /**
+   * Ob die Seite in der Leseprobe gezeigt wird. Default (Feld weggelassen
+   * oder `true`) = aktiv/sichtbar. `false` archiviert die Seite: Texte,
+   * Bild-Referenz und `n` bleiben im Datensatz erhalten (Narration/Audio
+   * bleiben dadurch weiter korrekt zugeordnet), aber sie wird weder
+   * gerendert noch in `totalCards`/`totalJuegos` mitgezählt.
+   */
+  activo?: boolean;
 }
 
 export const pages: BookPage[] = [
@@ -89,6 +97,7 @@ export const pages: BookPage[] = [
   },
   {
     n: 2,
+    activo: false,
     img: jardin,
     zone: 'pradera',
     texto:
@@ -123,6 +132,7 @@ export const pages: BookPage[] = [
   },
   {
     n: 3,
+    activo: false,
     img: encuentro,
     zone: 'pradera',
     texto:
@@ -199,6 +209,7 @@ export const pages: BookPage[] = [
   },
   {
     n: 6,
+    activo: false,
     img: vuelo,
     zone: 'umbral',
     texto:
@@ -242,7 +253,7 @@ export const pages: BookPage[] = [
     texto:
       'Rapidamente volaron por una abertura estrecha y entraron en el cajón verde. ...un aroma dulle a cera y miel... Uaauu, exclamó Luna asombrada.',
     voz: 'Rápidamente volaron por una abertura estrecha y entraron en el cajón verde. Un aroma dulce a cera y miel. ¡Uaauu!, exclamó Luna asombrada.',
-    capitulo: { es: 'La entrada', en: 'The entrance' },
+    capitulo: { es: 'En la colmena', en: 'In the hive' },
     juego: 'larvas',
     cards: [
       {
@@ -267,6 +278,7 @@ export const pages: BookPage[] = [
   },
   {
     n: 8,
+    activo: false,
     img: baile,
     zone: 'colmena',
     texto:
@@ -288,6 +300,7 @@ export const pages: BookPage[] = [
   },
   {
     n: 9,
+    activo: false,
     img: reina,
     zone: 'corazon',
     texto:
@@ -387,6 +400,8 @@ export interface LibroUI {
   subtitle: string;
   author: string;
   intro: string;
+  /** Kurzer Hinweis, dass nur eine Auswahl von Seiten gezeigt wird. */
+  excerpto: string;
   start: string;
   pageOf: string;
   read: string;
@@ -549,6 +564,7 @@ export const libroUI: Record<Lang, LibroUI> = {
     author: 'Catalina Marzorati',
     intro:
       'Luna se sienta en el jardín, escucha un zumbido y termina siendo del tamaño de una abeja. Yo la acompañé en ese viaje. Ahora te toca a vos: bajá conmigo hasta el corazón de la colmena.',
+    excerpto: 'Este es un adelanto del libro completo.',
     start: 'Empezar el viaje',
     pageOf: 'Página',
     read: 'Que me lea Meli',
@@ -810,6 +826,7 @@ export const libroUI: Record<Lang, LibroUI> = {
     author: 'Catalina Marzorati',
     intro:
       'Luna sits down in the garden, hears a buzz, and ends up the size of a bee. I went with her on that journey. Now it is your turn: come down with me to the heart of the hive. The story pages are in Spanish, the way Catalina wrote them.',
+    excerpto: 'This is a preview of the full book.',
     start: 'Begin the journey',
     pageOf: 'Page',
     read: 'Let Meli read',
@@ -1065,7 +1082,10 @@ export const libroUI: Record<Lang, LibroUI> = {
   },
 };
 
+/** Nur die Seiten, die in der Leseprobe gezeigt werden (siehe `activo`). */
+export const activePages = pages.filter((p) => p.activo !== false);
+
 /** Wie viele Wissenskarten es insgesamt gibt — für das Sammelheft. */
-export const totalCards = pages.reduce((n, p) => n + p.cards.length, 0);
+export const totalCards = activePages.reduce((n, p) => n + p.cards.length, 0);
 /** Wie viele Spiele es gibt — für das Sammelheft. */
-export const totalJuegos = pages.filter((p) => p.juego).length;
+export const totalJuegos = activePages.filter((p) => p.juego).length;

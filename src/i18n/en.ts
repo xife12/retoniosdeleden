@@ -16,6 +16,7 @@ export const en: Dict = {
     productos: 'Products',
     talleres: 'Workshops',
     visita: 'Visit us',
+    nosotros: 'About us',
     contacto: 'Contact',
     menu: 'Menu',
     closeMenu: 'Close menu',
@@ -23,10 +24,10 @@ export const en: Dict = {
     skip: 'Skip to content',
   },
   hero: {
-    kicker: "Uruguay's first pistachio plantation",
+    kicker: 'Where time takes root',
     title: 'Retoños del Edén',
-    sub: 'Organic pistachios, lavender, calendula and bees: a project for generations in southern Uruguay.',
-    scroll: 'Scroll, we fly together',
+    sub: 'A place to learn, observe and grow.',
+    scroll: "Let's fly together",
     saltar: 'Skip',
   },
   intro: {
@@ -36,23 +37,28 @@ export const en: Dict = {
     hint: 'Meli stays by your side for the whole journey.',
   },
   timeline: {
-    kicker: 'Since 2025',
+    kicker: 'Since 2015',
     title: 'Our story, told in flight',
     chapters: [
       {
+        year: '2015',
+        title: 'A branch, a bird, a seed',
+        text: "Family legend says it all started with grandmother Alba: she stuck a dry branch into the ground, with no real intention beyond seeing what would happen. A white bird landed on it and, without knowing it, dropped the first seed. That's how the farm's first tree was born, almost by accident — and with it, the idea of feeding the soil with what it gives us. We started caring for the ground with microorganisms, long before we knew pistachios would ever grow here.",
+      },
+      {
+        year: 'The early years',
+        title: 'Goji berries, the first in the country',
+        text: "We planted Uruguay's first plot of goji berries, and everything else followed: over 350 native and fruit trees joined the land. The farm's first roof was the nursery — today it's being transformed, mud brick by mud brick, into one of our houses.",
+      },
+      {
         year: '2025',
         title: 'The soil says yes',
-        text: 'We test the earth and the news is sweet: pistachios can grow here. The fields are plowed and six hundred holes are drilled, one by one, each waiting for its tree.',
+        text: 'After years of caring for the land, sweet news arrived: pistachios can grow here too. We set aside a plot for a first pilot planting — organic and biodynamic from day one, no chemicals, all by hand.',
       },
       {
-        year: 'Late 2025',
-        title: "600 pistachios, the country's first",
-        text: "At year's end, 600 pistachio trees go into the ground: Uruguay's first commercial plantation. Organic and certified to the European standard from day one: no chemicals, everything by hand. Six hundred is the most this land can care for well, and that's where it stays.",
-      },
-      {
-        year: '2026 to 2029',
-        title: 'While the pistachios grow',
-        text: 'Between the rows, lavender blooms for oils and soaps; calendula gets its own corner for tea. The hives arrive (my family!) and the second clay house rises, soon available to rent. The third one is already a dream with a floor plan.',
+        year: 'Coming up',
+        title: 'More trees are still coming',
+        text: "The last trees are still on their way. When exactly depends on a couple of permits, so for now we're leaving it open. Meanwhile lavender is already blooming between the rows for oils and soaps, calendula has its own corner for tea, the hives arrive (my family!), and the second mud house is growing — soon available to rent. The third is already dreamed up.",
       },
       {
         year: '~2030',
@@ -75,44 +81,52 @@ export const en: Dict = {
         desc: 'The entrance, on the western edge. Every path, and every visit, starts here.',
       },
       {
-        name: 'The fugus avenue',
-        desc: 'Slender trees planted in 2015 line the way in, like a welcome committee standing in file.',
+        name: 'The ash-tree avenue',
+        desc: "A gallery of golden ash trees, also called 'the tree of the World', a symbol of wisdom and eternal life, welcomes you. They were planted in 2015.",
       },
       {
         name: 'The loop path',
-        desc: 'The trail opens into a wide ring. In its middle, an orchard of fruit trees will grow.',
+        desc: 'The trail opens into a wide ring. Fruit trees are already growing in the middle, and soon there will be room for workshops.',
       },
       {
         name: 'Pistachios & lavender',
-        desc: 'North and south of the ring, 600 pistachios in rows; between them, waves of lavender protecting the soil.',
+        desc: 'North and south of the ring, rows of pistachios; between them, waves of lavender, wormwood and other herbs protect the soil.',
       },
       {
-        name: 'Bees & calendula',
-        desc: 'My neighborhood: the northwest corner. Hives beside a field of orange calendula grown for tea.',
+        name: 'Bees, calendula & co.',
+        desc: 'My neighborhood: the northwest corner. Adobe hives among the orange calendula, blue and white wormwood for tea, and thousands of aromatic plants.',
       },
       {
-        name: 'Clay house 2',
-        desc: "Built from the land's own clay. Soon you'll be able to spend the night here.",
+        name: 'Clay house 2: the oven house',
+        desc: "Built with clay from the land itself. Soon you'll be able to spend the night here and enjoy the sunrises.",
       },
       {
-        name: 'Clay house 3',
-        desc: 'The third house, still a blueprint and a dream, on the southern stretch of the ring.',
+        name: 'Clay houses 3 (the white monjita) & 4 (the yellow-hooded blackbird)',
+        desc: "We're still dreaming them up — they'll sit on the ring, facing the sunset.",
       },
       {
         name: 'The lookout',
-        desc: 'Some shade, a few benches, and a panoramic view of the whole farm. The best sunset of the tour.',
+        desc: "The farm's first mimosa trees, with their benches and a panoramic view of the whole farm. The best spot for a good sunset chat or a little siesta.",
       },
       {
-        name: 'Clay house 1',
-        desc: 'The first building, finished and fully ecological. Above it, an elder tree that has been here from the start.',
+        name: 'The hummingbird path',
+        desc: 'More than ten different kinds of sage and aromatic plants keep you company along the path as you keep discovering the farm.',
+      },
+      {
+        name: 'The straw-bale quincho',
+        desc: 'The first building made of straw bales and adobe, 100% ecological. Finished in 2016 using the system of Dutchman Tom Rijbven.',
+      },
+      {
+        name: 'The aromatic forest',
+        desc: 'A stand of elder, avocado, mango and Japanese cherry trees shelters the pistachios from the wind. And a long row of hydrangeas invites you to keep walking.',
       },
       {
         name: 'The pond',
-        desc: "The water at the land's east end, near house 1. Currently being expanded; the dragonflies approve.",
+        desc: "The farm's spring, at the far end of the land. It's being expanded and is a haven for hundreds of birds and insects, with bulrushes at its center.",
       },
     ],
     border:
-      'The whole perimeter is hugged by a belt of eucalyptus trees, with beeches along some stretches.',
+      'The whole perimeter is hugged by a belt of eucalyptus trees, with oaks and maples along some stretches.',
   },
   products: {
     kicker: 'Harvests on their way',
@@ -131,7 +145,7 @@ export const en: Dict = {
         badge: 'From the first blooms',
       },
       {
-        name: 'Calendula tea',
+        name: 'Calendula tea and more',
         desc: 'Orange blossoms dried in the sun, from the northwest corner of the farm.',
         badge: 'Yearly harvest',
       },
@@ -215,6 +229,7 @@ export const en: Dict = {
     foundersTitle: 'Who we are',
     founders:
       'Catalina Marzorati and Stefan Strauß, plus some 60,000 bees with strong opinions.',
+    foundersMore: 'Meet the whole family',
   },
   footer: {
     tagline: 'An Eden growing slowly, at the pace of the bees.',
@@ -228,7 +243,7 @@ export const en: Dict = {
     crackHint: 'Tap the pistachio to crack it open',
     crackAria: 'Crack the pistachio open and see fun facts',
     facts: [
-      'A pistachio tree can live for centuries. Ours, 600 in total, are just getting started.',
+      'A pistachio tree can live for centuries. Ours are just getting started.',
       'There are male trees and female trees. The wind plays postman between them.',
       'The shell splits open on its own when the fruit is ready. Here we say it smiles.',
       'It is a cousin of mango and cashew: tropical family, dryland heart.',
@@ -334,7 +349,7 @@ export const en: Dict = {
   },
   abejas: {
     title: 'The bees, the humming heart',
-    intro: 'We are 60,000 workers per hive and without us there is no farm. Bee tourism starts here, in my neighborhood.',
+    intro: 'We are more than 60,000 workers per hive and without us there is no farm. Bee tourism starts here, in my neighborhood.',
     cycleTitle: 'The circle that binds us',
     cycleHint: 'Tap each station of the circle.',
     cycle: [
@@ -356,7 +371,7 @@ export const en: Dict = {
       },
       {
         t: 'Honey',
-        d: 'And from all that work, the sweetest part remains, for you and for us.',
+        d: 'And from all that work come honey, propolis and pollen: the sweetest part, for you and for us.',
       },
     ],
     honeyTitle: 'What comes out of the hive',
@@ -365,6 +380,8 @@ export const en: Dict = {
     gameHint: 'Tap the flowers and send me to work.',
     gameDone: 'Five flowers pollinated! Now you know what a hive day feels like.',
     gameCount: 'flowers pollinated',
+    gameDoneFact1: 'Together we flew around the world three times just to fill you a jar of honey.',
+    gameDoneFact2: 'We are more than 60,000 bees.',
   },
   herbario: {
     title: 'The farm herbarium',
@@ -372,23 +389,19 @@ export const en: Dict = {
     plants: [
       {
         n: 'Elder',
-        d: 'The old guardian above house 1, there since the very first year. Blossoms for tea, shade for the siesta.',
+        d: 'The guardians of the house. Flowers for tea and syrups.',
       },
       {
         n: 'Fruit trees',
-        d: 'The future orchard in the middle of the ring: fresh fruit for guests and birds alike.',
+        d: 'Lemon, orange, mandarin, apple, plum, cashew, date trees and so many others. Fresh fruit for guests, workshop visitors and birds alike.',
       },
       {
         n: 'Fugus',
-        d: 'The welcome avenue, planted in 2015. Slim, tall and lined up like a friendly guard.',
+        d: 'The welcome avenue, planted in 2015 in honor of Stefan. Slim, tall and lined up like a friendly guard.',
       },
       {
-        n: 'Eucalyptus',
-        d: 'The belt hugging the whole perimeter: it cuts the wind and scents the air.',
-      },
-      {
-        n: 'Beeches',
-        d: 'They join the eucalyptus along some stretches of the border. Copper leaves in autumn.',
+        n: 'Eucalyptus, oaks & maples',
+        d: 'Different types of eucalyptus form the belt hugging part of the perimeter alongside oaks and maples: they cut the wind and scent the air.',
       },
       {
         n: 'Arrayanes',

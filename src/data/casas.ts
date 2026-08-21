@@ -40,7 +40,6 @@ export type CasaArt =
   | 'c1-interior'
   | 'c1-detalle'
   | 'c2-obra'
-  | 'c2-colmena'
   | 'c2-tub'
   | 'c2-interior'
   | 'c3-plano'
@@ -230,7 +229,6 @@ export const casas: Casa[] = [
     airbnbUrl: 'https://www.airbnb.com/',
     slides: [
       { id: 'obra', art: 'c2-obra' },
-      { id: 'colmena', art: 'c2-colmena' },
       { id: 'tub', art: 'c2-tub' },
       { id: 'interior', art: 'c2-interior' },
     ],
@@ -238,10 +236,9 @@ export const casas: Casa[] = [
       es: {
         tagline: 'La casa que estamos levantando pensando en vos.',
         body: [
-          'La segunda casa nace para huéspedes. Sesenta metros cuadrados en dos dormitorios, el mismo barro del terreno y el mismo quincho curvo, pero con la galería girada hacia el tajamar para agarrar el atardecer entero. Está cerca del anillo, a mitad de camino entre las colmenas y el bosque de eucaliptos.',
-          'En la pared norte quedó un hueco del tamaño exacto de un cajón de abejas. Ahí va a vivir una colmena de verdad, con un vidrio del lado del living: desde el sillón se ve crecer el panal, capa sobre capa, sin una sola abeja suelta adentro. La piquera queda afuera, mirando a las hileras de lavanda.',
-          'Del otro lado, entre el cinturón de eucaliptos, va el hot tub de agua caliente a leña. De noche no hay una sola luz alrededor en kilómetros: se ve la Vía Láctea completa, y desde el agua se escuchan las ranas del tajamar.',
-          'La obra avanza con los talleres de barro. Cada pared que se levanta lleva manos de visitantes, así que si venís a un taller vas a poder señalar tu pedazo cuando la casa esté terminada.',
+          'La segunda casa nace para huéspedes. Cincuenta metros cuadrados, un dormitorio abierto con una cama doble y un sofá cama en el living. El mismo barro del terreno, incluso aislando el techo, pero con la galería girada hacia el tajamar, para que el sol nos despierte al amanecer. Está a la izquierda del anillo central, entre los frutales, el futuro campo de pistachos y lavandas.',
+          'Un ojo de buey justo enfrente de la cama deja que el sol te haga cosquillas a la mañana.',
+          'Del otro lado, entre los árboles nativos del vecino, va el hot tub de agua caliente a leña. De noche no hay una sola luz alrededor en kilómetros: se ve la Vía Láctea completa, y desde el agua se escuchan las ranas del tajamar.',
         ],
         amenities: [
           { glyph: 'kitchen', label: 'Cocina abierta con mesada de barro pulido y horno a leña' },
@@ -253,14 +250,9 @@ export const casas: Casa[] = [
         ],
         highlights: [
           {
-            glyph: 'hive',
-            label: 'Colmena integrada en la pared',
-            note: 'Un cajón encastrado en el muro norte con vidrio hacia adentro. Mirás el panal desde el sillón, las abejas entran y salen por afuera.',
-          },
-          {
             glyph: 'tub',
             label: 'Hot tub a leña bajo las estrellas',
-            note: 'Tina de madera calentada con leña, entre los eucaliptos. Tarda dos horas en llegar a temperatura y vale cada minuto.',
+            note: 'Tina de madera calentada con leña, entre los árboles nativos del vecino. Tarda dos horas en llegar a temperatura y vale cada minuto.',
           },
           {
             glyph: 'stars',
@@ -275,8 +267,7 @@ export const casas: Casa[] = [
         ],
         slides: {
           obra: 'La obra hoy: medio techo de quincho colocado, las vigas a la vista y el andamio contra la pared este',
-          colmena: 'La colmena integrada en la pared norte, con su ventanita de vidrio hacia el living',
-          tub: 'El hot tub de madera a leña entre los eucaliptos, bajo el cielo estrellado del sur',
+          tub: 'El hot tub de madera a leña entre los árboles nativos del vecino, bajo el cielo estrellado del sur',
           interior: 'Boceto del dormitorio grande con la claraboya sobre la cama',
         },
         bookNote:
@@ -285,10 +276,9 @@ export const casas: Casa[] = [
       en: {
         tagline: 'The house we are raising with guests in mind.',
         body: [
-          'The second house is being built for visitors. Sixty square metres across two bedrooms, the same clay from the land and the same curved thatch, but with the veranda turned toward the pond to catch the whole sunset. It sits near the ring path, halfway between the hives and the eucalyptus belt.',
-          'A gap the exact size of a bee box was left in the north wall. A real colony will live there, with a pane of glass on the living room side: from the sofa you watch the comb grow, layer over layer, without a single bee loose indoors. The entrance stays outside, facing the lavender rows.',
-          'On the other side, among the eucalyptus, sits the wood fired hot tub. At night there is not one artificial light for kilometres: you get the full Milky Way, and from the water you hear the frogs down at the pond.',
-          'The build moves forward through the clay workshops. Every wall that goes up carries visitors handprints, so if you come to a workshop you will be able to point at your own stretch once the house is finished.',
+          'The second house was built for guests. Fifty square metres, one open bedroom with a double bed and a sofa bed in the living room. The same clay from the land, even insulating the roof, but with the gallery turned toward the pond, so the sun wakes you at dawn. It sits to the left of the central ring, between the fruit trees, the future pistachio field and the lavender.',
+          'A round window right above the bed lets the sun tickle you awake in the morning.',
+          'On the other side, among the neighbour\'s native trees, sits the wood-fired hot tub. At night there is not one artificial light for kilometres: you get the full Milky Way, and from the water you hear the frogs down at the pond.',
         ],
         amenities: [
           { glyph: 'kitchen', label: 'Open kitchen with a polished clay counter and wood oven' },
@@ -300,14 +290,9 @@ export const casas: Casa[] = [
         ],
         highlights: [
           {
-            glyph: 'hive',
-            label: 'A beehive built into the wall',
-            note: 'A box set into the north wall with glass on the inside. You watch the comb from the sofa while the bees come and go outdoors.',
-          },
-          {
             glyph: 'tub',
             label: 'Wood fired hot tub under the stars',
-            note: 'A wooden tub heated by fire, tucked among the eucalyptus. It takes two hours to come up to temperature and is worth every minute.',
+            note: 'A wooden tub heated by fire, tucked among the neighbour\'s native trees. It takes two hours to come up to temperature and is worth every minute.',
           },
           {
             glyph: 'stars',
@@ -322,8 +307,7 @@ export const casas: Casa[] = [
         ],
         slides: {
           obra: 'The build today: half the thatch laid, rafters still open and scaffolding against the east wall',
-          colmena: 'The hive built into the north wall, with its small glass window facing the living room',
-          tub: 'The wood fired wooden hot tub among the eucalyptus, under the southern night sky',
+          tub: 'The wood fired wooden hot tub among the neighbour\'s native trees, under the southern night sky',
           interior: 'Sketch of the large bedroom with the skylight above the bed',
         },
         bookNote:
