@@ -139,26 +139,42 @@ not exist` fehl. Der folgende Weg braucht die Oberfläche gar nicht erst:
 eine eigene, kleine Trigger-Funktion auf Basis von `pg_net` — der
 Erweiterung, auf der die Supabase-Oberfläche selbst aufbaut.
 
+**Voraussetzung:** `pg_net` muss aktiv sein. Dashboard → **Database →
+Extensions** → nach `pg_net` suchen → aktivieren. Reines SQL
+(`create extension pg_net`) reicht dafür oft nicht: die Erweiterung bringt
+einen Hintergrundprozess mit, der eine Servereinstellung
+(`shared_preload_libraries`) braucht, die nur die Oberfläche korrekt setzt.
+Ob sie schon aktiv ist, zeigt:
+
+```sql
+select extname, extnamespace::regnamespace as installiert_in
+from pg_extension
+where extname = 'pg_net';
+```
+
+Je nach Projekt landet `pg_net` dabei im Schema `net` oder `extensions` --
+die Funktion unten prüft deshalb beide, statt eines fest anzunehmen.
+
 **SQL Editor**, `<DEPLOY-HOOK-URL>` durch die URL aus Schritt 6 ersetzen
 (kommt an vier Stellen vor) und ausführen:
 
 ```sql
--- pg_net ist auf den meisten Supabase-Projekten schon aktiv; falls nicht,
--- richtet dieser Befehl es ein (sonst manuell unter Database → Extensions).
-create extension if not exists pg_net with schema net;
+create extension if not exists pg_net;
 
 -- Eine Funktion für beide Tabellen -- die Ziel-URL kommt als Trigger-
--- Argument, damit sie nicht doppelt im Code steht.
+-- Argument, damit sie nicht doppelt im Code steht. search_path deckt
+-- beide üblichen Ablageorte von pg_net ab (net und extensions), damit
+-- es unabhängig vom Projekt funktioniert.
 create or replace function public.notify_deploy_hook()
 returns trigger
 language plpgsql
 security definer
-set search_path = public
+set search_path = extensions, net, public
 as $$
 declare
   hook_url text := tg_argv[0];
 begin
-  perform net.http_post(
+  perform http_post(
     url := hook_url,
     body := '{}'::jsonb,
     headers := '{"Content-Type": "application/json"}'::jsonb,
