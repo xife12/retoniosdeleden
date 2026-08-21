@@ -2,7 +2,7 @@ import { defineConfig } from 'astro/config';
 
 // https://astro.build/config
 export default defineConfig({
-  site: 'https://retonos-del-eden.vercel.app',
+  site: 'https://retoniosdeleden.com',
   // Astro liest PORT nicht von sich aus. Wird die Umgebungsvariable gesetzt
   // (z. B. weil der Standardport schon belegt ist), soll der Dev-Server sie
   // trotzdem übernehmen — sonst bleibt es bei 4321.
