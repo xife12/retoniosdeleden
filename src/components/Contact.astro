@@ -1,12 +1,14 @@
 ---
-import type { Dict } from '../i18n';
+import type { Dict, Lang } from '../i18n';
 import BeeMeli from './BeeMeli.astro';
 
 interface Props {
   t: Dict;
+  lang: Lang;
 }
 
-const { t } = Astro.props;
+const { t, lang } = Astro.props;
+const nosotrosHref = `/${lang}/${lang === 'es' ? 'nosotros' : 'about'}`;
 ---
 
 <section id="contacto" class="contact" data-chapter>
@@ -25,6 +27,7 @@ const { t } = Astro.props;
       <div class="info-block" data-reveal>
         <h4>{t.contact.foundersTitle}</h4>
         <p>{t.contact.founders}</p>
+        <a class="founders-more" href={nosotrosHref}>{t.contact.foundersMore} →</a>
       </div>
 
       <div class="contact-bee" data-reveal aria-hidden="true">
@@ -92,6 +95,19 @@ const { t } = Astro.props;
   .info-block h4 {
     color: var(--lavanda-700);
     margin-bottom: var(--sp-1);
+  }
+
+  .founders-more {
+    display: inline-block;
+    margin-top: var(--sp-1);
+    color: var(--lavanda-700);
+    font-weight: 600;
+    text-decoration: underline;
+    text-underline-offset: 3px;
+  }
+
+  .founders-more:hover {
+    color: var(--lavanda-900, var(--lavanda-700));
   }
 
   .contact-bee {

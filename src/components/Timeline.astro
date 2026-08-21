@@ -28,6 +28,41 @@ const chapters = t.timeline.chapters;
 
             <div class="vignette" aria-hidden="true">
               {i === 0 && (
+                <svg id="vig-semilla" viewBox="0 0 360 200">
+                  <path d="M8 156 C 100 138, 250 140, 352 154 L 352 195 L 8 195 Z" fill="url(#pg-barro)" opacity="0.5" filter="url(#wc-wash)" />
+                  <circle cx="315" cy="45" r="22" fill="url(#pg-sol)" filter="url(#wc-wash)" />
+                  <path d="M180 156 C 178 118, 182 88, 176 56" stroke="#6b4a2f" stroke-width="6" stroke-linecap="round" filter="url(#ink)" fill="none" />
+                  <path d="M179 110 C 168 100, 158 96, 148 92 M181 130 C 194 122, 204 118, 214 112" stroke="#6b4a2f" stroke-width="3" stroke-linecap="round" filter="url(#ink)" fill="none" />
+                  <g class="v-seed">
+                    <ellipse cx="150" cy="90" rx="3" ry="4.5" fill="#8f4c31" opacity="0.85" filter="url(#wc-rough)" />
+                    <path d="M150 82 C 148 76, 146 72, 150 66" stroke="#8a7b68" stroke-width="1.2" stroke-dasharray="2 4" opacity="0.5" fill="none" />
+                  </g>
+                  <g class="v-bird">
+                    <path d="M168 44 C 158 40, 150 44, 146 52 C 156 52, 164 50, 168 44 Z" fill="#efe8d8" filter="url(#wc-rough)" />
+                    <g filter="url(#wc-soft)">
+                      <ellipse cx="176" cy="46" rx="20" ry="15" fill="#fdfaf3" />
+                      <circle cx="192" cy="38" r="9" fill="#fdfaf3" />
+                    </g>
+                    <g filter="url(#ink)">
+                      <ellipse cx="176" cy="46" rx="20" ry="15" fill="none" stroke="#8a7b68" stroke-width="1.4" stroke-opacity="0.35" />
+                      <path d="M198 36 L 208 38 L 198 41 Z" fill="#c9862c" />
+                      <circle cx="196" cy="36" r="1.6" fill="#3a2c1c" />
+                    </g>
+                  </g>
+                </svg>
+              )}
+              {i === 1 && (
+                <svg id="vig-plantacion" viewBox="0 0 360 200">
+                  <path d="M8 152 C 100 132, 250 134, 352 150 L 352 195 L 8 195 Z" fill="url(#pg-pistacho-light)" opacity="0.8" filter="url(#wc-wash)" />
+                  {[55, 120, 185, 250, 315].map((x, k) => (
+                    <g class="v-tree" style={`--k:${k}`}>
+                      <path d={`M${x} 150 C ${x} 136, ${x - 1} 128, ${x} 118`} stroke="#8f4c31" stroke-width="4" stroke-linecap="round" filter="url(#ink)" fill="none" />
+                      <ellipse cx={x} cy="110" rx="16" ry="14" fill="url(#pg-pistacho)" filter="url(#wc-rough)" />
+                    </g>
+                  ))}
+                </svg>
+              )}
+              {i === 2 && (
                 <svg id="vig-suelo" viewBox="0 0 360 200">
                   <path d="M10 150 C 90 128, 260 132, 350 148 L 350 195 L 10 195 Z" fill="url(#pg-barro)" opacity="0.55" filter="url(#wc-wash)" />
                   <g stroke="#8f4c31" stroke-width="4" stroke-linecap="round" opacity="0.4" filter="url(#wc-rough)">
@@ -47,19 +82,7 @@ const chapters = t.timeline.chapters;
                   <circle cx="315" cy="45" r="26" fill="url(#pg-sol)" filter="url(#wc-wash)" />
                 </svg>
               )}
-              {i === 1 && (
-                <svg id="vig-plantacion" viewBox="0 0 360 200">
-                  <path d="M8 152 C 100 132, 250 134, 352 150 L 352 195 L 8 195 Z" fill="url(#pg-pistacho-light)" opacity="0.8" filter="url(#wc-wash)" />
-                  {[55, 120, 185, 250, 315].map((x, k) => (
-                    <g class="v-tree" style={`--k:${k}`}>
-                      <path d={`M${x} 150 C ${x} 136, ${x - 1} 128, ${x} 118`} stroke="#8f4c31" stroke-width="4" stroke-linecap="round" filter="url(#ink)" fill="none" />
-                      <ellipse cx={x} cy="110" rx="16" ry="14" fill="url(#pg-pistacho)" filter="url(#wc-rough)" />
-                    </g>
-                  ))}
-                  <text x="180" y="42" text-anchor="middle" font-family="Fraunces Variable, serif" font-size="30" fill="#b3761c" opacity="0.9" font-style="italic">× 600</text>
-                </svg>
-              )}
-              {i === 2 && (
+              {i === 3 && (
                 <svg id="vig-crecer" viewBox="0 0 360 200">
                   <path d="M8 154 C 110 136, 250 138, 352 152 L 352 195 L 8 195 Z" fill="url(#pg-pistacho-light)" opacity="0.7" filter="url(#wc-wash)" />
                   <g class="v-lav">
@@ -89,7 +112,7 @@ const chapters = t.timeline.chapters;
                   </g>
                 </svg>
               )}
-              {i === 3 && (
+              {i === 4 && (
                 <svg id="vig-cosecha" viewBox="0 0 360 200">
                   <path d="M8 156 C 110 140, 250 142, 352 154 L 352 195 L 8 195 Z" fill="url(#pg-pistacho-light)" opacity="0.75" filter="url(#wc-wash)" />
                   <path d="M180 154 C 178 128, 176 110, 180 88" stroke="#8f4c31" stroke-width="8" stroke-linecap="round" filter="url(#wc-rough)" fill="none" />

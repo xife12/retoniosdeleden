@@ -1,0 +1,805 @@
+---
+/**
+ * "Nosotros" / "About us" — eigenständige Unterseite über die Familie
+ * hinter der Chacra.
+ *
+ * Routing- und Aufbau-Vorbild: BookPage.astro. Wie dort hat diese Seite
+ * eine eigene, schlanke Kopfleiste statt Nav.astro — Nav.astro ist auf
+ * die Ankerliste der Startseite zugeschnitten (IntersectionObserver,
+ * `#historia`-artige Sektionen), die es hier nicht gibt. Der Kopf ist
+ * bewusst 1:1 im Look von `.site-nav`/`.libro-nav` gehalten (Höhe,
+ * Polsterung, Papierton, Unschärfe), damit der Wechsel von der Startseite
+ * hierher keinen Sprung macht — nur ohne den großen Buch-Auftritt, den
+ * diese Seite nicht braucht.
+ */
+import Base from '../../layouts/Base.astro';
+import Footer from '../Footer.astro';
+import Logo from '../Logo.astro';
+import PersonAvatar from './PersonAvatar.astro';
+import { getDict, type Lang } from '../../i18n';
+import { familyIntro, personas, values, nosotrosUI } from '../../data/nosotros';
+
+interface Props {
+  lang: Lang;
+}
+
+const { lang } = Astro.props;
+const t = getDict(lang);
+const ui = nosotrosUI[lang];
+const pageTitle = t.nav.nosotros;
+
+/**
+ * Positionen im Stammbaum, viewBox 0 0 400 560 (Wurzel unten, Knospen oben).
+ * Rein präsentationell — deshalb hier und nicht in nosotros.ts.
+ */
+const posiciones: Record<string, { x: number; y: number; r: number }> = {
+  alba: { x: 200, y: 462, r: 30 },
+  catalina: { x: 124, y: 322, r: 26 },
+  stefan: { x: 276, y: 322, r: 26 },
+  florian: { x: 76, y: 214, r: 22 },
+  maxi: { x: 200, y: 182, r: 22 },
+  jasmin: { x: 324, y: 214, r: 22 },
+  nietos: { x: 200, y: 84, r: 19 },
+};
+
+const personasArbol = personas.map((p, i) => ({ ...p, i, pos: posiciones[p.id] }));
+---
+
+<Base lang={lang} title={`${pageTitle} · Retoños del Edén`} description={familyIntro[lang]}>
+  <a class="skip-link" href="#familia">{t.nav.skip}</a>
+
+  <header class="nosotros-nav">
+    <a class="nosotros-marca" href={`/${lang}/`} data-astro-prefetch>
+      <svg class="nosotros-volver" viewBox="0 0 20 20" width="13" height="13" aria-hidden="true">
+        <path
+          d="M12.5 3.5 L 6 10 L 12.5 16.5"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2.4"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+          filter="url(#ink)"
+        />
+      </svg>
+      <span class="nosotros-marca-logo"><Logo width="34px" decorative /></span>
+      <span>Retoños del Edén</span>
+    </a>
+
+    <p class="nosotros-nav-titulo">{pageTitle}</p>
+
+    <div class="lang-switch" role="group" aria-label="Idioma / Language">
+      <a href="/es/nosotros" aria-current={lang === 'es' ? 'page' : undefined}>ES</a>
+      <span aria-hidden="true">·</span>
+      <a href="/en/about" aria-current={lang === 'en' ? 'page' : undefined}>EN</a>
+    </div>
+  </header>
+
+  <main id="familia">
+    <section class="nosotros-intro">
+      <div class="wrap">
+        <p class="kicker">{ui.eyebrow}</p>
+        <h1><span class="swash">{pageTitle}</span></h1>
+        <p class="lead nosotros-lead">{familyIntro[lang]}</p>
+      </div>
+    </section>
+
+    <section class="nosotros-familia" aria-labelledby="familia-title" data-arbol-wrap>
+      <div class="wrap">
+        <h2 id="familia-title" class="kicker arbol-kicker">{ui.familyTitle}</h2>
+        <p class="arbol-hint">{ui.arbolHint}</p>
+
+        <div class="arbol-stage">
+          <svg class="arbol-arte" viewBox="0 0 400 560" aria-hidden="true">
+            <g class="arbol-suelo">
+              <ellipse cx="200" cy="526" rx="134" ry="15" fill="#8a6f4d" opacity="0.2" filter="url(#wc-wash)" />
+              <ellipse cx="200" cy="521" rx="104" ry="10" fill="url(#pg-pistacho)" opacity="0.24" filter="url(#wc-wash)" />
+            </g>
+
+            <circle class="arbol-semilla" cx="200" cy="508" r="5.5" fill="#8f4c31" filter="url(#wc-rough)" />
+
+            {/* Krone zuerst: die weiche Wasserfarben-Masse liegt hinter den Ästen */}
+            <g class="arbol-copa">
+              <g fill="url(#pg-pistacho-light)" opacity="0.5" filter="url(#wc-wash)">
+                <ellipse cx="200" cy="168" rx="158" ry="112" />
+                <ellipse cx="196" cy="86" rx="104" ry="58" />
+              </g>
+              <g fill="url(#pg-pistacho)" opacity="0.4" filter="url(#wc-wash)">
+                <ellipse cx="104" cy="188" rx="78" ry="62" />
+                <ellipse cx="298" cy="184" rx="76" ry="60" />
+                <ellipse cx="200" cy="122" rx="86" ry="60" />
+              </g>
+            </g>
+
+            {/* Wurzeln */}
+            <g class="arbol-raices" fill="none" stroke="#6b4a2f" stroke-linecap="round" opacity="0.72" filter="url(#ink)">
+              <path class="rama rama-raiz" pathLength="1" d="M200 512 C 178 518, 152 522, 128 528" stroke-width="5" />
+              <path class="rama rama-raiz" pathLength="1" d="M200 512 C 222 518, 248 522, 272 528" stroke-width="5" />
+              <path class="rama rama-raiz" pathLength="1" d="M200 512 C 196 520, 194 526, 192 534" stroke-width="4" />
+            </g>
+
+            <g class="arbol-ramas" fill="none" stroke="#6b4a2f" stroke-linecap="round" filter="url(#ink)">
+              {/* Stamm: unten breit, oben schmaler — zwei Züge übereinander */}
+              <path class="rama rama-tronco" pathLength="1" d="M200 516 C 197 470, 203 424, 200 384" stroke-width="20" />
+              <path class="rama rama-tronco" pathLength="1" d="M200 440 C 199 412, 201 392, 200 372" stroke-width="14" />
+
+              {/* Erste Gabelung: die Eltern-Generation */}
+              <path class="rama rama-1" pathLength="1" d="M200 384 C 180 364, 150 340, 124 322" stroke-width="11" />
+              <path class="rama rama-1" pathLength="1" d="M200 384 C 220 364, 250 340, 276 322" stroke-width="11" />
+
+              {/* Zweite Ebene: die Kinder, nach außen und oben */}
+              <path class="rama rama-2" pathLength="1" d="M124 322 C 108 288, 90 250, 76 214" stroke-width="7" />
+              <path class="rama rama-2" pathLength="1" d="M276 322 C 292 288, 310 250, 324 214" stroke-width="7" />
+              <path class="rama rama-2" pathLength="1" d="M200 380 C 200 316, 201 246, 200 182" stroke-width="8" />
+
+              {/* Feine Zweige in die Krone: die Enkel oben, der Rest als Geäst */}
+              <path class="rama rama-3" pathLength="1" d="M200 182 C 200 148, 200 114, 200 84" stroke-width="4.5" />
+              <path class="rama rama-3" pathLength="1" d="M76 214 C 92 178, 108 148, 124 122" stroke-width="3" />
+              <path class="rama rama-3" pathLength="1" d="M324 214 C 308 178, 292 148, 276 122" stroke-width="3" />
+              <path class="rama rama-3" pathLength="1" d="M148 268 C 130 244, 116 226, 100 208" stroke-width="2.6" />
+              <path class="rama rama-3" pathLength="1" d="M252 268 C 270 244, 284 226, 300 208" stroke-width="2.6" />
+            </g>
+
+            {/* Blattbüschel an den Astenden */}
+            <g class="arbol-hojas hojas-1" fill="url(#pg-pistacho)" filter="url(#wc-rough)" opacity="0.92">
+              <ellipse cx="146" cy="286" rx="15" ry="10" transform="rotate(-34 146 286)" />
+              <ellipse cx="254" cy="286" rx="15" ry="10" transform="rotate(34 254 286)" />
+              <ellipse cx="172" cy="228" rx="13" ry="9" transform="rotate(-20 172 228)" />
+              <ellipse cx="228" cy="228" rx="13" ry="9" transform="rotate(20 228 228)" />
+            </g>
+            <g class="arbol-hojas hojas-2" fill="url(#pg-pistacho-light)" filter="url(#wc-rough)" opacity="0.92">
+              <ellipse cx="92" cy="176" rx="14" ry="9" transform="rotate(-24 92 176)" />
+              <ellipse cx="308" cy="176" rx="14" ry="9" transform="rotate(24 308 176)" />
+              <ellipse cx="140" cy="118" rx="12" ry="8" transform="rotate(-16 140 118)" />
+              <ellipse cx="260" cy="118" rx="12" ry="8" transform="rotate(16 260 118)" />
+              <ellipse cx="200" cy="46" rx="12" ry="8" />
+            </g>
+
+            {/* Ein paar Pistazien — es ist schließlich ein Pistazienbaum */}
+            <g class="arbol-frutos hojas-2" filter="url(#wc-rough)">
+              <g fill="#f0d4c4">
+                <ellipse cx="128" cy="212" rx="6" ry="8" transform="rotate(-14 128 212)" />
+                <ellipse cx="142" cy="220" rx="6" ry="8" transform="rotate(-14 142 220)" />
+                <ellipse cx="268" cy="206" rx="6" ry="8" transform="rotate(12 268 206)" />
+                <ellipse cx="282" cy="214" rx="6" ry="8" transform="rotate(12 282 214)" />
+                <ellipse cx="200" cy="146" rx="6" ry="8" />
+              </g>
+              <g fill="#7a8b5a" opacity="0.85">
+                <ellipse cx="128" cy="213" rx="2.6" ry="5" transform="rotate(-14 128 213)" />
+                <ellipse cx="142" cy="221" rx="2.6" ry="5" transform="rotate(-14 142 221)" />
+                <ellipse cx="268" cy="207" rx="2.6" ry="5" transform="rotate(12 268 207)" />
+                <ellipse cx="282" cy="215" rx="2.6" ry="5" transform="rotate(12 282 215)" />
+                <ellipse cx="200" cy="147" rx="2.6" ry="5" />
+              </g>
+            </g>
+          </svg>
+
+          <div class="arbol-nodos">
+            {personasArbol.map((p) => (
+              <button
+                class={`arbol-nodo gen-${p.generation}`}
+                style={`left:${(p.pos.x / 400) * 100}%; top:${(p.pos.y / 560) * 100}%; --nodo-r:${p.pos.r}px;`}
+                data-persona={p.id}
+                aria-expanded="false"
+                aria-controls="arbol-popup"
+              >
+                <span class="arbol-nodo-glifo">
+                  <PersonAvatar generation={p.generation} seed={p.i} grupo={p.grupo} />
+                </span>
+                <span class="visually-hidden">{p.name[lang]}</span>
+              </button>
+            ))}
+          </div>
+
+          {/* Die Beschreibung erscheint direkt neben der Person, nicht unter
+              dem Baum — sonst müsste man nach jedem Tippen erst scrollen. */}
+          <div class="arbol-popup" id="arbol-popup" data-arbol-popup aria-live="polite" hidden>
+            <button class="arbol-popup-cerrar" data-arbol-cerrar aria-label={ui.arbolCerrar}>
+              <svg viewBox="0 0 20 20" width="12" height="12" aria-hidden="true">
+                <path d="M5 5 L 15 15 M15 5 L 5 15" stroke="currentColor" stroke-width="2.4"
+                  stroke-linecap="round" fill="none" filter="url(#ink)" />
+              </svg>
+            </button>
+            <strong data-arbol-nombre></strong>
+            <p data-arbol-rol></p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <script define:vars={{ personas: personasArbol.map((p) => ({ id: p.id, name: p.name[lang], role: p.role[lang] })) }}>
+      const wrap = document.querySelector('[data-arbol-wrap]');
+      if (wrap) {
+        try {
+          if (sessionStorage.getItem('re:arbol') === 'visto') {
+            wrap.classList.add('arbol-visto');
+          } else {
+            sessionStorage.setItem('re:arbol', 'visto');
+          }
+        } catch {
+          /* Privater Modus o.ä.: dann spielt die Animation halt jedes Mal. */
+        }
+
+        const stage = wrap.querySelector('.arbol-stage');
+        const popup = wrap.querySelector('[data-arbol-popup]');
+        const nombreEl = wrap.querySelector('[data-arbol-nombre]');
+        const rolEl = wrap.querySelector('[data-arbol-rol]');
+        const cerrarBtn = wrap.querySelector('[data-arbol-cerrar]');
+        const nodos = Array.from(wrap.querySelectorAll('[data-persona]'));
+        const porId = Object.fromEntries(personas.map((p) => [p.id, p]));
+
+        let abierto = null;
+
+        const cerrar = () => {
+          if (!popup) return;
+          popup.hidden = true;
+          popup.classList.remove('se-abre');
+          nodos.forEach((b) => b.setAttribute('aria-expanded', 'false'));
+          abierto = null;
+        };
+
+        /**
+         * Setzt die Karte neben die angetippte Person: waagrecht zentriert,
+         * aber innerhalb der Bühne festgehalten, und senkrecht auf der Seite,
+         * wo mehr Platz ist. So bleibt sie immer im Bild, auch am Handy.
+         */
+        const ubicar = (btn) => {
+          if (!popup || !stage) return;
+
+          const sr = stage.getBoundingClientRect();
+          const br = btn.getBoundingClientRect();
+          const cx = br.left - sr.left + br.width / 2;
+          const cy = br.top - sr.top + br.height / 2;
+
+          const pw = popup.offsetWidth;
+          const ph = popup.offsetHeight;
+          const margen = 8;
+
+          let x = cx - pw / 2;
+          x = Math.max(margen, Math.min(x, sr.width - pw - margen));
+
+          const abajo = cy < sr.height / 2;
+          let y = abajo ? cy + br.height / 2 + 12 : cy - br.height / 2 - 12 - ph;
+          y = Math.max(margen, Math.min(y, sr.height - ph - margen));
+
+          popup.style.left = `${x}px`;
+          popup.style.top = `${y}px`;
+        };
+
+        nodos.forEach((btn) => {
+          btn.addEventListener('click', () => {
+            const persona = porId[btn.dataset.persona];
+            if (!persona || !popup || !nombreEl || !rolEl) return;
+
+            if (abierto === btn) {
+              cerrar();
+              return;
+            }
+
+            nodos.forEach((b) => b.setAttribute('aria-expanded', String(b === btn)));
+            nombreEl.textContent = persona.name;
+            rolEl.textContent = persona.role;
+
+            /* Erst einblenden (dann steht die Höhe fest), dann setzen. */
+            popup.hidden = false;
+            popup.classList.remove('se-abre');
+            ubicar(btn);
+            requestAnimationFrame(() => popup.classList.add('se-abre'));
+            abierto = btn;
+          });
+        });
+
+        cerrarBtn?.addEventListener('click', cerrar);
+
+        document.addEventListener('click', (ev) => {
+          if (!abierto || !popup) return;
+          if (popup.contains(ev.target)) return;
+          if (nodos.some((b) => b.contains(ev.target))) return;
+          cerrar();
+        });
+
+        document.addEventListener('keydown', (ev) => {
+          if (ev.key !== 'Escape' || !abierto) return;
+          const volverA = abierto;
+          cerrar();
+          volverA.focus();
+        });
+
+        /* Bei Größenänderung wandert die Person mit — die Karte hinterher. */
+        addEventListener('resize', () => {
+          if (abierto) ubicar(abierto);
+        });
+      }
+    </script>
+
+    <section class="nosotros-valores">
+      <div class="wrap">
+        <div class="valores-card">
+          <p class="kicker">{ui.valuesKicker}</p>
+          <p>{values[lang]}</p>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <Footer t={t} lang={lang} />
+</Base>
+
+<style>
+  /* ---------- Sprungmarke ----------
+     Wie auf der Buchseite: keine Nav.astro hier, die sie sonst stylt. */
+  .skip-link {
+    position: absolute;
+    top: -100px;
+    left: 1rem;
+    z-index: 300;
+    background: var(--miel-500);
+    color: var(--tinta);
+    font-weight: 600;
+    text-decoration: none;
+    padding: 0.6em 1.2em;
+    border-radius: var(--r-full);
+  }
+
+  .skip-link:focus-visible {
+    top: 0.75rem;
+  }
+
+  /* ---------- Kopfleiste ----------
+     1:1 aus .site-nav/.libro-nav übernommen (siehe BookPage.astro). */
+  .nosotros-nav {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    z-index: 200;
+    display: grid;
+    grid-template-columns: auto 1fr auto;
+    align-items: center;
+    gap: var(--sp-4);
+    padding: 0.65rem clamp(1rem, 4vw, 2.5rem);
+    background: color-mix(in srgb, var(--papel) 82%, transparent);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    box-shadow: 0 1px 0 rgba(51, 41, 31, 0.07);
+  }
+
+  @media (max-width: 859px) {
+    .nosotros-nav {
+      grid-auto-rows: minmax(44px, auto);
+    }
+  }
+
+  .nosotros-marca {
+    grid-column: 1;
+    justify-self: start;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    text-decoration: none;
+    color: var(--tinta);
+    font-family: var(--font-display);
+    font-variation-settings: 'SOFT' 80, 'WONK' 1;
+    font-weight: 620;
+    font-size: 1.05rem;
+    white-space: nowrap;
+  }
+
+  .nosotros-marca-logo {
+    display: block;
+    flex: none;
+  }
+
+  .nosotros-volver {
+    flex: none;
+    color: var(--tinta-tenue);
+    transition:
+      translate var(--dur-2) var(--ease-out),
+      color var(--dur-1) var(--ease-out);
+  }
+
+  .nosotros-marca:hover .nosotros-volver,
+  .nosotros-marca:focus-visible .nosotros-volver {
+    translate: -3px 0;
+    color: var(--tinta-suave);
+  }
+
+  .nosotros-nav-titulo {
+    grid-column: 2;
+    display: none;
+    font-family: var(--font-display);
+    font-variation-settings: 'SOFT' 90, 'WONK' 1;
+    font-style: italic;
+    font-size: var(--fs-300);
+    color: var(--tinta-suave);
+    text-align: center;
+    min-width: 0;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  @media (min-width: 860px) {
+    .nosotros-nav {
+      grid-template-columns: 1fr auto 1fr;
+    }
+
+    .nosotros-nav-titulo {
+      display: block;
+    }
+  }
+
+  .lang-switch {
+    grid-column: 3;
+    justify-self: end;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    font-size: var(--fs-300);
+    font-weight: 700;
+    color: var(--tinta-suave);
+  }
+
+  .lang-switch a {
+    position: relative;
+    text-decoration: none;
+    color: var(--tinta-suave);
+    padding: 0.25em 0.5em;
+    border-radius: var(--r-full);
+    transition:
+      background var(--dur-1) var(--ease-out),
+      color var(--dur-1) var(--ease-out);
+  }
+
+  .lang-switch a::before {
+    content: '';
+    position: absolute;
+    inset: -11px -4px;
+  }
+
+  .lang-switch a[aria-current='page'] {
+    background: var(--miel-500);
+    color: var(--tinta);
+  }
+
+  .lang-switch a:not([aria-current]):hover {
+    color: var(--tinta);
+    background: var(--miel-100);
+  }
+
+  /* ---------- Intro ---------- */
+
+  main {
+    padding-top: clamp(5rem, 12vh, 7rem);
+  }
+
+  .nosotros-intro {
+    padding-bottom: clamp(2rem, 6vw, 3.5rem);
+    background: radial-gradient(120% 70% at 50% 0%, var(--miel-100), transparent 60%), var(--papel);
+  }
+
+  .nosotros-lead {
+    max-width: 46rem;
+    font-size: var(--fs-500);
+  }
+
+  /* ---------- Familia: el árbol ---------- */
+
+  .nosotros-familia {
+    padding-block: clamp(1.5rem, 5vw, 3rem);
+  }
+
+  .arbol-kicker {
+    text-align: center;
+    display: block;
+  }
+
+  .arbol-hint {
+    text-align: center;
+    color: var(--tinta-tenue);
+    font-size: var(--fs-300);
+    font-style: italic;
+    margin-top: var(--sp-1);
+    margin-bottom: var(--sp-4);
+  }
+
+  .arbol-stage {
+    position: relative;
+    width: min(92vw, 420px);
+    aspect-ratio: 400 / 560;
+    margin-inline: auto;
+  }
+
+  .arbol-arte {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+  }
+
+  .arbol-semilla {
+    animation: semilla-caida 900ms var(--ease-out) both;
+  }
+
+  /* Die Äste zeichnen sich von der Wurzel nach oben. Über die Strichlinie
+     statt über `transform`: eine senkrechte Linie hat eine Bounding-Box
+     ohne Breite, `transform-box: fill-box` macht daraus einen Haarstrich. */
+  .rama {
+    stroke-dasharray: 1;
+    stroke-dashoffset: 1;
+    animation: rama-crece 600ms var(--ease-out) both;
+  }
+
+  .rama-raiz { animation-delay: 500ms; }
+  .rama-tronco { animation-delay: 620ms; animation-duration: 760ms; }
+  .rama-1 { animation-delay: 1220ms; }
+  .rama-2 { animation-delay: 1620ms; }
+  .rama-3 { animation-delay: 2000ms; animation-duration: 520ms; }
+
+  .arbol-copa,
+  .arbol-hojas,
+  .arbol-frutos {
+    transform-box: fill-box;
+    transform-origin: 50% 60%;
+    opacity: 0;
+    animation: follaje-entra 700ms var(--ease-out) both;
+  }
+
+  .arbol-copa {
+    animation-delay: 1500ms;
+    animation-duration: 900ms;
+  }
+
+  .hojas-1 {
+    animation-delay: 1900ms;
+  }
+
+  .hojas-2 {
+    animation-delay: 2200ms;
+  }
+
+  @keyframes semilla-caida {
+    0% { opacity: 1; transform: translateY(-52px); }
+    62% { opacity: 1; transform: translateY(0); }
+    100% { opacity: 0; transform: translateY(3px); }
+  }
+
+  @keyframes rama-crece {
+    from { stroke-dashoffset: 1; }
+    to { stroke-dashoffset: 0; }
+  }
+
+  @keyframes follaje-entra {
+    from { opacity: 0; transform: scale(0.72); }
+    to { opacity: 1; transform: scale(1); }
+  }
+
+  .arbol-nodos {
+    position: absolute;
+    inset: 0;
+  }
+
+  .arbol-nodo {
+    position: absolute;
+    transform: translate(-50%, -50%);
+    width: calc(var(--nodo-r, 24px) * 2);
+    aspect-ratio: 1;
+    background: none;
+    border: none;
+    padding: 0;
+    cursor: pointer;
+    border-radius: var(--r-blob);
+    opacity: 0;
+    animation: nodo-entra 480ms var(--ease-bounce) both;
+  }
+
+  /* Die kleinen Knospen sind unter 44 px — die Trefferfläche wächst
+     unsichtbar mit, damit sie am Finger nicht durchrutschen. */
+  .arbol-nodo::before {
+    content: '';
+    position: absolute;
+    inset: 50%;
+    translate: -50% -50%;
+    width: max(100%, 44px);
+    height: max(100%, 44px);
+  }
+
+  .arbol-nodo.gen-abuela { animation-delay: 1150ms; }
+  .arbol-nodo.gen-padres { animation-delay: 1700ms; }
+  .arbol-nodo.gen-hijos { animation-delay: 2100ms; }
+  .arbol-nodo.gen-nietos { animation-delay: 2480ms; }
+
+  @keyframes nodo-entra {
+    from { opacity: 0; transform: translate(-50%, -50%) scale(0); }
+    to { opacity: 1; transform: translate(-50%, -50%) scale(1); }
+  }
+
+  .arbol-nodo-glifo {
+    display: block;
+    width: 100%;
+    height: 100%;
+    border-radius: var(--r-blob);
+    background: #fffdf8;
+    box-shadow: var(--shadow-soft);
+    padding: 12%;
+    transition:
+      transform var(--dur-2) var(--ease-bounce),
+      box-shadow var(--dur-2) ease;
+  }
+
+  .arbol-nodo[aria-expanded='true'] .arbol-nodo-glifo {
+    box-shadow: 0 0 0 3px var(--miel-500), var(--shadow-lift);
+    transform: scale(1.12) rotate(-4deg);
+  }
+
+  @media (hover: hover) and (pointer: fine) {
+    .arbol-nodo:hover .arbol-nodo-glifo {
+      transform: scale(1.08);
+      box-shadow: var(--shadow-lift);
+    }
+  }
+
+  .arbol-nodo:active .arbol-nodo-glifo {
+    transform: scale(0.94);
+  }
+
+  /* ---------- Karte neben der Person ---------- */
+
+  .arbol-popup {
+    position: absolute;
+    z-index: 3;
+    width: min(15rem, calc(100% - 1rem));
+    background: #fffdf8;
+    border-radius: var(--r-lg);
+    box-shadow: var(--shadow-lift);
+    padding: var(--sp-3) var(--sp-4) var(--sp-3) var(--sp-3);
+    display: grid;
+    gap: 2px;
+    opacity: 0;
+    transform: scale(0.94);
+    transition:
+      opacity 200ms var(--ease-out),
+      transform 200ms var(--ease-out);
+  }
+
+  .arbol-popup.se-abre {
+    opacity: 1;
+    transform: scale(1);
+  }
+
+  .arbol-popup strong {
+    font-family: var(--font-display);
+    font-size: var(--fs-500);
+    padding-right: 1rem;
+  }
+
+  .arbol-popup p {
+    font-size: var(--fs-300);
+    color: var(--c-text-soft);
+    line-height: 1.4;
+  }
+
+  .arbol-popup-cerrar {
+    position: absolute;
+    top: 6px;
+    right: 6px;
+    display: grid;
+    place-items: center;
+    width: 26px;
+    height: 26px;
+    border: none;
+    border-radius: var(--r-full);
+    background: none;
+    color: var(--tinta-tenue);
+    cursor: pointer;
+    transition: background var(--dur-1) var(--ease-out), color var(--dur-1) var(--ease-out);
+  }
+
+  .arbol-popup-cerrar:hover {
+    background: var(--miel-100);
+    color: var(--tinta);
+  }
+
+  /* Schon in dieser Sitzung gesehen: Baum steht sofort fertig da. */
+  .arbol-visto .arbol-semilla,
+  .arbol-visto .rama,
+  .arbol-visto .arbol-copa,
+  .arbol-visto .arbol-hojas,
+  .arbol-visto .arbol-frutos,
+  .arbol-visto .arbol-nodo {
+    animation: none !important;
+  }
+
+  .arbol-visto .arbol-semilla {
+    opacity: 0;
+  }
+
+  .arbol-visto .rama {
+    stroke-dashoffset: 0;
+  }
+
+  .arbol-visto .arbol-copa,
+  .arbol-visto .arbol-hojas,
+  .arbol-visto .arbol-frutos {
+    opacity: 1;
+    transform: none;
+  }
+
+  .arbol-visto .arbol-nodo {
+    opacity: 1;
+    transform: translate(-50%, -50%);
+  }
+
+  /* ---------- Valores ---------- */
+
+  .nosotros-valores {
+    padding-block: clamp(2rem, 6vw, 4rem) clamp(3rem, 8vw, 5rem);
+  }
+
+  .valores-card {
+    background: var(--pistacho-100);
+    border-radius: var(--r-lg);
+    padding: var(--sp-6);
+    max-width: 44rem;
+    margin-inline: auto;
+    text-align: center;
+    display: grid;
+    gap: var(--sp-3);
+    justify-items: center;
+  }
+
+  .valores-card p:not(.kicker) {
+    color: var(--tinta-suave);
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .nosotros-volver {
+      transition: color var(--dur-1) var(--ease-out);
+    }
+
+    .nosotros-marca:hover .nosotros-volver,
+    .nosotros-marca:focus-visible .nosotros-volver {
+      translate: none;
+    }
+
+    .arbol-semilla,
+    .rama,
+    .arbol-copa,
+    .arbol-hojas,
+    .arbol-frutos,
+    .arbol-nodo {
+      animation: none !important;
+    }
+
+    .arbol-semilla {
+      opacity: 0;
+    }
+
+    .rama {
+      stroke-dashoffset: 0;
+    }
+
+    .arbol-copa,
+    .arbol-hojas,
+    .arbol-frutos {
+      opacity: 1;
+      transform: none;
+    }
+
+    .arbol-nodo {
+      opacity: 1;
+      transform: translate(-50%, -50%);
+    }
+
+    .arbol-nodo-glifo {
+      transition: box-shadow var(--dur-2) var(--ease-out);
+    }
+
+    .arbol-nodo:hover .arbol-nodo-glifo {
+      transform: none;
+    }
+
+    .arbol-popup {
+      transition: none;
+    }
+  }
+</style>

@@ -14,6 +14,7 @@ export const es = {
     productos: 'Productos',
     talleres: 'Talleres',
     visita: 'Visitanos',
+    nosotros: 'Nosotros',
     contacto: 'Contacto',
     menu: 'Menú',
     closeMenu: 'Cerrar menú',
@@ -21,10 +22,10 @@ export const es = {
     skip: 'Saltar al contenido',
   },
   hero: {
-    kicker: 'La primera plantación de pistachos del Uruguay',
+    kicker: 'Donde el tiempo se vuelve raíz',
     title: 'Retoños del Edén',
-    sub: 'Pistachos orgánicos, lavanda, caléndula y abejas: un proyecto para generaciones en el sur del Uruguay.',
-    scroll: 'Deslizá, volamos juntos',
+    sub: 'Un lugar para aprender, observar y crecer.',
+    scroll: 'Volemos juntos',
     saltar: 'Saltar',
   },
   intro: {
@@ -34,23 +35,28 @@ export const es = {
     hint: 'Meli te acompaña durante todo el recorrido.',
   },
   timeline: {
-    kicker: 'Desde 2025',
+    kicker: 'Desde 2015',
     title: 'Nuestra historia, contada volando',
     chapters: [
       {
+        year: '2015',
+        title: 'Una rama, un pájaro, una semilla',
+        text: 'Cuenta la leyenda familiar que todo empezó con la abuela Alba: clavó una rama seca en la tierra, sin más intención que ver qué pasaba. Un pájaro blanco se posó ahí y, sin saberlo, dejó caer la primera semilla. Así nació, casi de casualidad, el primer árbol de la chacra — y con él, la idea de alimentar la tierra con lo que ella misma nos da. Empezamos a cuidar el suelo con microorganismos, mucho antes de saber que ahí, algún día, crecerían pistachos.',
+      },
+      {
+        year: 'Primeros años',
+        title: 'Bayas de Goji, las primeras del país',
+        text: 'Plantamos la primera parcela de bayas de Goji de Uruguay, y con ella empezó todo lo demás: más de 350 árboles nativos y frutales se sumaron a la tierra. El primer techo de la chacra fue el vivero — hoy se está transformando, ladrillo de barro a ladrillo de barro, en una de nuestras casas.',
+      },
+      {
         year: '2025',
         title: 'El suelo dice que sí',
-        text: 'Analizamos la tierra y la noticia es dulce: acá pueden crecer pistachos. Se aran los campos y se perforan, uno por uno, seiscientos hoyos que esperan su árbol.',
+        text: 'Después de años cuidando la tierra, llegó la noticia dulce: acá también pueden crecer pistachos. Se separó un sector para una primera plantación piloto — orgánica y biodinámica desde el primer día, sin químicos, todo a mano.',
       },
       {
-        year: 'Fin de 2025',
-        title: '600 pistachos, los primeros del país',
-        text: 'A fin de año se plantan 600 pistachos, la primera plantación comercial del Uruguay. Orgánica y certificada según el estándar europeo desde el primer día: sin químicos, todo a mano. Seiscientos es el máximo que esta tierra puede cuidar bien, y así se queda.',
-      },
-      {
-        year: '2026 a 2029',
-        title: 'Mientras los pistachos crecen',
-        text: 'Entre las filas florece lavanda para aceites y jabones; la caléndula tiene su propio rincón para té. Llegan las colmenas (¡mi familia!) y crece la segunda casa de barro, que se podrá alquilar. La tercera ya está soñada.',
+        year: 'Próximamente',
+        title: 'Quedan árboles por llegar',
+        text: 'Quedan por llegar los últimos árboles. El cuándo depende todavía de un par de permisos, así que lo dejamos abierto por el momento. Mientras tanto, entre las filas ya florece lavanda para aceites y jabones, la caléndula tiene su rincón para el té, llegan las colmenas (¡mi familia!) y crece la segunda casa de barro, que se podrá alquilar. La tercera ya está soñada.',
       },
       {
         year: '~2030',
@@ -73,44 +79,52 @@ export const es = {
         desc: 'La entrada, en el borde oeste. Acá empieza todo camino, y toda visita.',
       },
       {
-        name: 'La alameda de fugus',
-        desc: 'Árboles finitos plantados en 2015 acompañan el camino hacia adentro, como una bienvenida en fila.',
+        name: 'La alameda de fresnos',
+        desc: "Una galería de fresnos dorados o llamados 'el árbol del Mundo' que simboliza sabiduría y vida eterna, te dan la bienvenida. Fueron plantados en el 2015.",
       },
       {
         name: 'El camino circular',
-        desc: 'El sendero se abre en un gran anillo. En el medio va a crecer la huerta de frutales.',
+        desc: 'El sendero se abre en un gran anillo. En el medio ya crecen frutales y pronto habrá lugar para los talleres.',
       },
       {
         name: 'Pistachos y lavanda',
-        desc: 'Al norte y al sur del anillo, 600 pistachos en filas; entre ellos, olas de lavanda que protegen el suelo.',
+        desc: 'Al norte y al sur del anillo, filas de pistachos; entre ellos, olas de lavanda, ajenjo y otras hierbas protegen el suelo.',
       },
       {
-        name: 'Abejas y caléndula',
-        desc: 'Mi barrio: el rincón noroeste. Colmenas junto a un campo de caléndulas naranjas para té.',
+        name: 'Abejas, caléndula y Co.',
+        desc: 'Mi barrio: el rincón noroeste. Colmenas de adobe entre las caléndulas naranjas, el ajenjo azul y blanco para el té y miles de plantas aromáticas.',
       },
       {
-        name: 'Casa de barro 2',
-        desc: 'Se construye con el barro del propio terreno. Pronto vas a poder quedarte a dormir acá.',
+        name: 'Casa de barro 2: la hornera',
+        desc: 'Se construye con el barro del propio terreno. Pronto podrás quedarte a dormir acá y disfrutar de los amaneceres.',
       },
       {
-        name: 'Casa de barro 3',
-        desc: 'La tercera casa, todavía un plano y un sueño, sobre el tramo sur del anillo.',
+        name: 'Casas de barro 3 (la monjita blanca) y 4 (tordo amarillo)',
+        desc: 'Todavía las estamos soñando, estarán sobre el anillo mirando el atardecer.',
       },
       {
         name: 'El mirador',
-        desc: 'Una sombra, unos bancos y la vista panorámica de toda la chacra. El mejor atardecer del recorrido.',
+        desc: 'Los primeros aromos de la chacra, con sus bancos y la vista panorámica de toda la chacra. El mejor lugar para lindas charlas al atardecer o para tomarse una siestita.',
       },
       {
-        name: 'Casa de barro 1',
-        desc: 'La primera construcción, terminada y 100 % ecológica. Arriba, un saúco que está desde el principio.',
+        name: 'El camino de los colibríes',
+        desc: 'Más de diez tipos de salvias diferentes y plantas aromáticas te acompañan por el camino para seguir descubriendo la chacra.',
+      },
+      {
+        name: 'El quincho de fardos',
+        desc: 'La primera construcción de fardos y adobe, 100% ecológica. Terminada en el 2016 con el sistema del holandés Tom Rijbven.',
+      },
+      {
+        name: 'El bosque aromático',
+        desc: 'Un bosque de sauco, paltas, mangos y cerezos japoneses resguarda a los pistachos de los vientos. Y una larga fila de hortensias te invita a seguir caminando.',
       },
       {
         name: 'El tajamar',
-        desc: 'El agua al final del terreno, cerca de la casa 1. Se está ampliando; a las libélulas les encanta.',
+        desc: 'El ojo de agua de la chacra, al final del terreno. Se está ampliando y es el acogo para cientos de pájaros e insectos, con sus totoras en el centro.',
       },
     ],
     border:
-      'Todo el perímetro está abrazado por un cinturón de eucaliptos, con hayas en algunos tramos.',
+      'Todo el perímetro está abrazado por un cinturón de eucaliptos, con robles y arces en algunos tramos.',
   },
   products: {
     kicker: 'Cosechas en camino',
@@ -129,7 +143,7 @@ export const es = {
         badge: 'Desde las primeras flores',
       },
       {
-        name: 'Té de caléndula',
+        name: 'Té de caléndula y otros',
         desc: 'Flores naranjas secadas al sol, del rincón noroeste de la chacra.',
         badge: 'Cosecha anual',
       },
@@ -214,6 +228,7 @@ export const es = {
     foundersTitle: 'Quiénes somos',
     founders:
       'Catalina Marzorati y Stefan Strauß, y unas 60.000 abejas que opinan en todo.',
+    foundersMore: 'Conocé a toda la familia',
   },
   footer: {
     tagline: 'Un edén que crece despacito, al ritmo de las abejas.',
@@ -227,7 +242,7 @@ export const es = {
     crackHint: 'Tocá el pistacho para abrirlo',
     crackAria: 'Abrir el pistacho y ver datos curiosos',
     facts: [
-      'Un pistacho puede vivir siglos. Los nuestros, 600 en total, recién empiezan.',
+      'Un pistacho puede vivir siglos. Los nuestros recién empiezan su camino.',
       'Hay árboles macho y árboles hembra. El viento hace de cartero entre ellos.',
       'La cáscara se abre sola cuando el fruto está listo. Acá decimos que sonríe.',
       'Es pariente del mango y del cajú: familia tropical, corazón de tierra seca.',
@@ -333,7 +348,7 @@ export const es = {
   },
   abejas: {
     title: 'Las abejas, el corazón que zumba',
-    intro: 'Somos 60.000 obreras por colmena y sin nosotras no hay chacra. El apiturismo empieza acá, en mi barrio.',
+    intro: 'Somos más de 60.000 obreras por colmena y sin nosotras no hay chacra. El apiturismo empieza acá, en mi barrio.',
     cycleTitle: 'El círculo que nos une',
     cycleHint: 'Tocá cada estación del círculo.',
     cycle: [
@@ -355,7 +370,7 @@ export const es = {
       },
       {
         t: 'Miel',
-        d: 'Y de todo ese trabajo queda lo más dulce, para vos y para nosotras.',
+        d: 'Y de todo ese trabajo quedan miel, propóleo y polen: lo más dulce, para vos y para nosotras.',
       },
     ],
     honeyTitle: 'Lo que sale de la colmena',
@@ -364,6 +379,8 @@ export const es = {
     gameHint: 'Tocá las flores y mandame a trabajar.',
     gameDone: '¡Cinco flores polinizadas! Ya sabés lo que es un día de colmena.',
     gameCount: 'flores polinizadas',
+    gameDoneFact1: 'Volé alrededor del mundo tres veces, todas juntas, para llenarte un frasco de miel.',
+    gameDoneFact2: 'Somos más de 60.000 abejas.',
   },
   herbario: {
     title: 'El herbario de la chacra',
@@ -371,23 +388,19 @@ export const es = {
     plants: [
       {
         n: 'Saúco',
-        d: 'El viejo guardián sobre la casa 1, ahí desde el primer año. Flores para té y sombra para la siesta.',
+        d: 'Los guardianes de la casa. Flores para el té y jarabes.',
       },
       {
         n: 'Frutales',
-        d: 'La futura huerta en el centro del anillo: fruta fresca para huéspedes y pájaros por igual.',
+        d: 'Limonero, naranjo, mandarino, manzanos, ciruelos, almendras de cajú, dátiles y tantos otros. Fruta fresca para los huéspedes, visitantes de los talleres y para los pájaros por igual.',
       },
       {
         n: 'Fugus',
-        d: 'La alameda de bienvenida, plantada en 2015. Finos, altos y en fila, como una guardia amable.',
+        d: 'La alameda de bienvenida, plantada en 2015 en honor a Stefan. Finos, altos y en fila, como una guardia amable.',
       },
       {
-        n: 'Eucaliptos',
-        d: 'El cinturón que abraza todo el perímetro: cortan el viento y perfuman el aire.',
-      },
-      {
-        n: 'Hayas',
-        d: 'Acompañan a los eucaliptos en algunos tramos del borde. Hojas cobrizas en otoño.',
+        n: 'Eucaliptos, robles y arces',
+        d: 'Distintos tipos de eucaliptos forman el cinturón que abraza parte del perímetro junto a robles y arces: cortan el viento y perfuman el aire.',
       },
       {
         n: 'Arrayanes',

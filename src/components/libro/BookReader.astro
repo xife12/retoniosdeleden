@@ -22,7 +22,7 @@
  * deshalb auch auf einem stillen Screenshot sofort sichtbar.
  */
 import { Image } from 'astro:assets';
-import { pages, libroUI, zones, totalCards, totalJuegos } from '../../data/libro';
+import { activePages, libroUI, zones, totalCards, totalJuegos } from '../../data/libro';
 import type { Lang } from '../../i18n';
 import BeeMeli from '../BeeMeli.astro';
 import Juego from './Juego.astro';
@@ -33,6 +33,10 @@ interface Props {
 
 const { lang } = Astro.props;
 const ui = libroUI[lang];
+
+/* Nur die aktiven Seiten werden gelesen, navigiert und gezählt (siehe
+   `activo` in libro.ts). Die Portada (Seite 1) ist immer aktiv und bleibt
+   damit unverändert `pages[0]` für das Cover an anderer Stelle. */
 
 /* Pollenstaub: feste Werte, damit Server und Browser dasselbe rendern. */
 const motas = Array.from({ length: 26 }, (_, i) => ({
@@ -107,7 +111,7 @@ const vueloD = vueloSegs
     totalJuegos,
   })}
   data-cartas={JSON.stringify(
-    pages.map((p) => ({
+    activePages.map((p) => ({
       n: p.n,
       voz: p.voz,
       cards: p.cards.map((c) => ({
@@ -128,7 +132,7 @@ const vueloD = vueloSegs
 
   <!-- Wabenfortschritt -->
   <nav class="panal" aria-label={ui.pageOf}>
-    {pages.map((p) => (
+    {activePages.map((p) => (
       <button
         class="panal-celda"
         data-panal={p.n}
@@ -145,7 +149,7 @@ const vueloD = vueloSegs
   </nav>
 
   <div class="columna">
-    {pages.map((p, i) => {
+    {activePages.map((p, i) => {
       const enLaLamina = p.juego && enLamina.has(p.juego);
       const tieneTaller = Boolean(p.juego) || p.cards.length > 1;
       const luz = p.cards[0];

@@ -1,6 +1,7 @@
 ---
 import type { Dict, Lang } from '../i18n';
 import BeeMeli from './BeeMeli.astro';
+import { libroActivo } from '../config';
 
 interface Props {
   t: Dict;
@@ -30,6 +31,8 @@ const nodes = a.cycle.map((c, i) => {
   data-meli-zone
   data-cycle-texts={JSON.stringify(a.cycle.map((c) => c.d))}
   data-game-done={a.gameDone}
+  data-game-done-fact1={a.gameDoneFact1}
+  data-game-done-fact2={a.gameDoneFact2}
 >
   <div class="wrap">
     <header class="section-head" data-reveal>
@@ -121,12 +124,14 @@ const nodes = a.cycle.map((c, i) => {
         <div class="hive-game card" data-reveal>
           <h3>{a.gameTitle}</h3>
           <p class="game-hint" data-game-hint>{a.gameHint}</p>
+          <p class="game-done-fact" data-game-done-fact-1 hidden>{a.gameDoneFact1}</p>
+          <p class="game-done-fact" data-game-done-fact-2 hidden>{a.gameDoneFact2}</p>
 
           <div class="game-stage" data-game>
             <div class="game-bee" data-game-bee>
               <BeeMeli width="54px" />
             </div>
-            <div class="game-flowers">
+            <div class="game-flowers" data-game-flowers>
               {Array.from({ length: 5 }, (_, i) => (
                 <button class="game-flower" data-flower={i} aria-label={`Flor ${i + 1}`}>
                   <svg viewBox="0 0 60 80" aria-hidden="true">
@@ -155,9 +160,9 @@ const nodes = a.cycle.map((c, i) => {
               ))}
             </div>
 
-            <!-- Honigglas als Fortschritt -->
-            <div class="game-jar" aria-hidden="true">
-              <svg viewBox="0 0 70 90">
+            <!-- Honigglas als Fortschrittsanzeige, bleibt klein und fest -->
+            <div class="game-jar" data-game-jar aria-hidden="true">
+              <svg class="jar-art" viewBox="0 0 70 90">
                 <defs>
                   <clipPath id="jar-clip">
                     <path d="M20 26 C 14 34, 12 52, 15 66 C 18 78, 52 78, 55 66 C 58 52, 56 34, 50 26 Z" />
@@ -168,6 +173,28 @@ const nodes = a.cycle.map((c, i) => {
                 <rect class="jar-fill" x="10" y="80" width="50" height="60" fill="url(#pg-miel)" clip-path="url(#jar-clip)" />
                 <rect x="22" y="16" width="26" height="10" rx="4" fill="#a06a2c" filter="url(#wc-rough)" />
               </svg>
+            </div>
+
+            <!-- Zentrale Sieges-Animation: erscheint über den Blumen, sobald das Spiel fertig ist -->
+            <div class="game-finale" data-game-finale aria-hidden="true">
+              <svg class="globe-art" viewBox="0 0 100 100" aria-hidden="true">
+                <circle cx="50" cy="50" r="38" fill="url(#pg-pistacho-light)" filter="url(#wc-wash)" />
+                <g fill="url(#pg-pistacho)" filter="url(#wc-rough)" opacity="0.92">
+                  <ellipse cx="34" cy="38" rx="10" ry="7" />
+                  <ellipse cx="63" cy="60" rx="12" ry="8" />
+                  <ellipse cx="42" cy="68" rx="7" ry="5" />
+                </g>
+                <g fill="none" stroke="#33291f" stroke-opacity="0.22" stroke-width="1.3" filter="url(#ink)">
+                  <ellipse cx="50" cy="50" rx="38" ry="13" />
+                  <path d="M50 12 C 33 24, 33 76, 50 88" />
+                  <path d="M50 12 C 67 24, 67 76, 50 88" />
+                </g>
+                <circle cx="50" cy="50" r="38" fill="none" stroke="#33291f" stroke-opacity="0.28" stroke-width="1.6" filter="url(#ink)" />
+              </svg>
+
+              <div class="orbit-bee" data-orbit-bee aria-hidden="true">
+                <BeeMeli width="30px" />
+              </div>
             </div>
           </div>
 
@@ -188,7 +215,8 @@ const nodes = a.cycle.map((c, i) => {
       </div>
     </div>
 
-    <!-- Einladung ins Buch -->
+    {/* Einladung ins Buch — ruht, solange `libroActivo` aus ist (src/config.ts) */}
+    {libroActivo && (
     <a class="libro-teaser" href={`/${lang}/${lang === 'es' ? 'libro' : 'book'}`} data-reveal>
       <span class="lt-book" aria-hidden="true">
         <svg viewBox="0 0 200 150">
@@ -221,6 +249,7 @@ const nodes = a.cycle.map((c, i) => {
         <span class="chip chip--miel lt-badge">{a2.badge}</span>
       </span>
     </a>
+    )}
   </div>
 </section>
 
@@ -252,8 +281,12 @@ const nodes = a.cycle.map((c, i) => {
   const bee = section.querySelector<HTMLElement>('[data-game-bee]');
   const countEl = section.querySelector<HTMLElement>('[data-game-count]');
   const hintEl = section.querySelector<HTMLElement>('[data-game-hint]');
+  const factEl1 = section.querySelector<HTMLElement>('[data-game-done-fact-1]');
+  const factEl2 = section.querySelector<HTMLElement>('[data-game-done-fact-2]');
   const jarFill = section.querySelector<SVGRectElement>('.jar-fill');
   const doneMsg = section.dataset.gameDone ?? '';
+  const doneFact1 = section.dataset.gameDoneFact1 ?? '';
+  const doneFact2 = section.dataset.gameDoneFact2 ?? '';
 
   if (stage && bee && countEl && jarFill) {
     let count = 0;
@@ -282,6 +315,44 @@ const nodes = a.cycle.map((c, i) => {
             hintEl.textContent = doneMsg;
             hintEl.classList.add('is-done');
             stage.classList.add('all-done');
+
+            const revelarDatos = () => {
+              if (factEl1) {
+                factEl1.textContent = doneFact1;
+                factEl1.hidden = false;
+              }
+              if (factEl2) {
+                factEl2.textContent = doneFact2;
+                factEl2.hidden = false;
+              }
+              requestAnimationFrame(() => {
+                factEl1?.classList.add('is-visible');
+                factEl2?.classList.add('is-visible');
+              });
+            };
+
+            const finaleEl = section.querySelector<HTMLElement>('[data-game-finale]');
+            const flowersEl = section.querySelector<HTMLElement>('[data-game-flowers]');
+            const tranquilo = matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+            if (!finaleEl || tranquilo) {
+              finaleEl?.classList.add('is-active', 'is-orbiting');
+              flowersEl?.classList.add('is-hidden');
+              revelarDatos();
+            } else {
+              /* El tarro celebra lleno (jar-cheer, 700ms). Las flores se
+                 apagan y, en su lugar, crece el globo central (550ms). La
+                 abeja le da tres vueltas (3 × 1100ms) y recién ahí aparecen
+                 los datos — un festejo antes del dato curioso. */
+              setTimeout(() => {
+                flowersEl?.classList.add('is-hidden');
+                finaleEl.classList.add('is-active');
+                setTimeout(() => {
+                  finaleEl.classList.add('is-orbiting');
+                  setTimeout(revelarDatos, 3 * 1100);
+                }, 550);
+              }, 700);
+            }
           }
         }, 620);
       });
@@ -428,6 +499,31 @@ const nodes = a.cycle.map((c, i) => {
     font-style: normal;
   }
 
+  .game-done-fact {
+    color: var(--c-text-soft);
+    font-size: var(--fs-300);
+    font-style: italic;
+    margin-top: var(--sp-1);
+    opacity: 0;
+    transform: translateY(4px);
+    transition: opacity 420ms var(--ease-out), transform 420ms var(--ease-out);
+  }
+
+  .game-done-fact[data-game-done-fact-2] {
+    transition-delay: 160ms;
+  }
+
+  .game-done-fact.is-visible {
+    opacity: 1;
+    transform: translateY(0);
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .game-done-fact {
+      transition: none;
+    }
+  }
+
   .game-stage {
     position: relative;
     display: grid;
@@ -449,9 +545,18 @@ const nodes = a.cycle.map((c, i) => {
   }
 
   .game-flowers {
+    grid-column: 1;
+    grid-row: 1;
     display: flex;
     justify-content: space-between;
     gap: var(--sp-1);
+    transition: opacity 400ms var(--ease-out), transform 400ms var(--ease-out);
+  }
+
+  .game-flowers.is-hidden {
+    opacity: 0;
+    transform: scale(0.92);
+    pointer-events: none;
   }
 
   .game-flower {
@@ -499,15 +604,26 @@ const nodes = a.cycle.map((c, i) => {
     transform: scale(0.95);
   }
 
-  .game-jar svg {
+  .game-jar {
+    grid-column: 2;
+    grid-row: 1;
+    position: relative;
     width: clamp(46px, 9vw, 64px);
+    aspect-ratio: 70 / 90;
+  }
+
+  .game-jar svg {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
   }
 
   .jar-fill {
     transition: y 500ms var(--ease-out);
   }
 
-  .all-done .game-jar svg {
+  .all-done .game-jar .jar-art {
     animation: jar-cheer 700ms var(--ease-bounce);
   }
 
@@ -516,6 +632,74 @@ const nodes = a.cycle.map((c, i) => {
     35% { transform: rotate(-6deg) scale(1.08); }
     70% { transform: rotate(4deg); }
     100% { transform: rotate(0); }
+  }
+
+  /* ---------- Festejo central: el globo aparece donde estaban las flores,
+     la abeja le da tres vueltas ---------- */
+
+  .game-finale {
+    grid-column: 1;
+    grid-row: 1;
+    position: relative;
+    display: grid;
+    place-items: center;
+    justify-self: stretch;
+    min-height: clamp(90px, 20vw, 130px);
+    opacity: 0;
+    transform: scale(0.6);
+    transition: opacity 550ms var(--ease-out), transform 550ms var(--ease-out);
+    pointer-events: none;
+  }
+
+  .game-finale.is-active {
+    opacity: 1;
+    transform: scale(1);
+  }
+
+  .game-finale .globe-art {
+    width: clamp(92px, 22vw, 148px);
+    height: auto;
+    filter: drop-shadow(0 6px 14px rgba(51, 41, 31, 0.16));
+  }
+
+  .game-finale .orbit-bee {
+    position: absolute;
+    width: 30px;
+    height: 30px;
+    left: 50%;
+    top: 50%;
+    margin: -15px 0 0 -15px;
+    opacity: 0;
+    offset-path: circle(38% at 50% 50%);
+    offset-distance: 0%;
+    offset-rotate: auto 90deg;
+  }
+
+  .game-finale.is-orbiting .orbit-bee {
+    opacity: 1;
+    animation: orbit-vuelta 1100ms linear 3;
+  }
+
+  @keyframes orbit-vuelta {
+    from { offset-distance: 0%; }
+    to { offset-distance: 100%; }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .all-done .game-jar .jar-art {
+      animation: none;
+    }
+
+    .game-flowers,
+    .game-finale {
+      transition: none;
+    }
+
+    .game-finale .orbit-bee {
+      animation: none;
+      opacity: 1;
+      offset-distance: 12.5%;
+    }
   }
 
   .game-count {
