@@ -131,15 +131,43 @@ jedes `UPDATE` reagiert, würde damit einen Dauerlauf an Vercel-Builds
 auslösen. Der Hook darf deshalb nur feuern, wenn wirklich veröffentlicht,
 umsortiert, archiviert oder gelöscht wurde.
 
-1. Supabase-Dashboard → **Database → Webhooks** → **Create a new hook** und
-   einen beliebigen Hook anlegen (irgendeine Tabelle, Event `UPDATE`, Type
-   **HTTP Request**, die Deploy-Hook-URL aus Schritt 6, Method `POST`).
-   Das ist nur nötig, damit Supabase die Webhook-Maschinerie einschaltet.
-   Danach diesen Hook im Dashboard wieder löschen.
-2. **SQL Editor**, `<DEPLOY-HOOK-URL>` durch die URL aus Schritt 6 ersetzen
-   und ausführen:
+Der naheliegende Weg wäre die Oberfläche unter **Database → Webhooks**, die
+intern eine Funktion namens `supabase_functions.http_request` nutzt. Auf
+manchen Projekten (z. B. nach einer Pause) ist diese Schema nicht
+vorhanden, das Anlegen schlägt dann mit `schema "supabase_functions" does
+not exist` fehl. Der folgende Weg braucht die Oberfläche gar nicht erst:
+eine eigene, kleine Trigger-Funktion auf Basis von `pg_net` — der
+Erweiterung, auf der die Supabase-Oberfläche selbst aufbaut.
+
+**SQL Editor**, `<DEPLOY-HOOK-URL>` durch die URL aus Schritt 6 ersetzen
+(kommt an vier Stellen vor) und ausführen:
 
 ```sql
+-- pg_net ist auf den meisten Supabase-Projekten schon aktiv; falls nicht,
+-- richtet dieser Befehl es ein (sonst manuell unter Database → Extensions).
+create extension if not exists pg_net with schema net;
+
+-- Eine Funktion für beide Tabellen -- die Ziel-URL kommt als Trigger-
+-- Argument, damit sie nicht doppelt im Code steht.
+create or replace function public.notify_deploy_hook()
+returns trigger
+language plpgsql
+security definer
+set search_path = public
+as $$
+declare
+  hook_url text := tg_argv[0];
+begin
+  perform net.http_post(
+    url := hook_url,
+    body := '{}'::jsonb,
+    headers := '{"Content-Type": "application/json"}'::jsonb,
+    timeout_milliseconds := 5000
+  );
+  return coalesce(new, old);
+end;
+$$;
+
 -- Workshops
 drop trigger if exists workshops_deploy_hook on public.workshops;
 create trigger workshops_deploy_hook
@@ -150,17 +178,13 @@ create trigger workshops_deploy_hook
     or old.status is distinct from new.status
     or old.sort_order is distinct from new.sort_order
   )
-  execute function supabase_functions.http_request(
-    '<DEPLOY-HOOK-URL>', 'POST', '{"Content-Type":"application/json"}', '{}', '5000'
-  );
+  execute function public.notify_deploy_hook('<DEPLOY-HOOK-URL>');
 
 drop trigger if exists workshops_deploy_hook_del on public.workshops;
 create trigger workshops_deploy_hook_del
   after delete on public.workshops
   for each row
-  execute function supabase_functions.http_request(
-    '<DEPLOY-HOOK-URL>', 'POST', '{"Content-Type":"application/json"}', '{}', '5000'
-  );
+  execute function public.notify_deploy_hook('<DEPLOY-HOOK-URL>');
 
 -- Lehmhäuser
 drop trigger if exists casas_deploy_hook on public.casas;
@@ -172,22 +196,29 @@ create trigger casas_deploy_hook
     or old.status is distinct from new.status
     or old.sort_order is distinct from new.sort_order
   )
-  execute function supabase_functions.http_request(
-    '<DEPLOY-HOOK-URL>', 'POST', '{"Content-Type":"application/json"}', '{}', '5000'
-  );
+  execute function public.notify_deploy_hook('<DEPLOY-HOOK-URL>');
 
 drop trigger if exists casas_deploy_hook_del on public.casas;
 create trigger casas_deploy_hook_del
   after delete on public.casas
   for each row
-  execute function supabase_functions.http_request(
-    '<DEPLOY-HOOK-URL>', 'POST', '{"Content-Type":"application/json"}', '{}', '5000'
-  );
+  execute function public.notify_deploy_hook('<DEPLOY-HOOK-URL>');
 ```
+
+Warum nur `update` und `delete`, nicht `insert`: Ein neu angelegter Eintrag
+bekommt immer `status = 'draft'` und taucht damit in keiner öffentlichen
+View auf -- fürs Anlegen selbst gibt es also nichts neu zu bauen. Sichtbar
+wird ein Eintrag erst beim Veröffentlichen (`update`, setzt `published_at`)
+oder verschwindet beim direkten Löschen eines bereits veröffentlichten
+Eintrags (`delete`).
 
 Auf `casa_images` gehört **kein** Hook: Fotos erscheinen ohnehin erst mit dem
 nächsten „Publicar" auf der Website, weil sie Teil des veröffentlichten
 Schnappschusses sind.
+
+Meldet `create extension` einen Rechtefehler: Dashboard → **Database →
+Extensions** → nach `pg_net` suchen → aktivieren, danach den Block ab
+`create or replace function` erneut ausführen.
 
 Damit löst jedes Veröffentlichen automatisch einen neuen Vercel-Build aus
 (live nach ca. 30–90 Sekunden).
