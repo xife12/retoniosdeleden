@@ -188,6 +188,12 @@ begin
        set status = case when archived then 'archived' else 'published' end
      where status in ('listo','enObra','planeado');
 
+    -- Die alte Leserichtlinie für anon greift auf "archived" zu (using (not
+    -- archived)) und muss vor der Spalte selbst weg, sonst verweigert Postgres
+    -- den DROP COLUMN wegen der Abhängigkeit (Fehler 2BP01). Abschnitt 9 legt
+    -- ohnehin die endgültige, view-basierte Regel für anon neu an.
+    drop policy if exists casas_public_read on public.casas;
+
     drop index if exists public.casas_archived_sort_idx;
     alter table public.casas drop column archived;
   end if;
