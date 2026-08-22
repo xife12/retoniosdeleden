@@ -509,6 +509,81 @@ body.adm-modal-open {
 }
 
 /* ============================================================
+   Zweiter Faktor (mfa.ts / mfa-dialog.ts)
+
+   Der Codeschritt taucht an drei Stellen auf: Anmeldung, Reauth-Dialog
+   und Einrichtung. Damit er ueberall gleich aussieht, haengt alles an
+   `.adm-mfa__code` statt an der jeweiligen Umgebung.
+   ============================================================ */
+
+.adm-mfa__body {
+  display: grid;
+  gap: var(--sp-4);
+  justify-items: start;
+}
+
+/* Sechs Ziffern, gross und mit Abstand -- das wird am Handy abgetippt,
+   waehrend die App danebenlaeuft und der Code in 30 Sekunden verfaellt. */
+.adm-mfa__code {
+  font-size: var(--fs-600);
+  letter-spacing: 0.35em;
+  text-align: center;
+  font-variant-numeric: tabular-nums;
+}
+
+.adm-mfa__qr {
+  width: min(100%, 13rem);
+  align-self: center;
+  justify-self: center;
+  /* Der QR-Code kommt als SVG mit schwarzen Modulen auf transparentem
+     Grund. Auf dem warmen Papierton lesen ihn manche Kameras schlecht --
+     deshalb ein echtes Weiss darunter. */
+  background: #fff;
+  padding: var(--sp-3);
+  border-radius: var(--r-md);
+  box-shadow: var(--shadow-soft);
+}
+
+.adm-mfa__secret {
+  font-size: var(--fs-300);
+  color: var(--tinta-tenue);
+}
+
+.adm-mfa__secret summary {
+  cursor: pointer;
+  padding-block: var(--sp-2);
+}
+
+.adm-mfa__secret code {
+  display: block;
+  margin-top: var(--sp-2);
+  padding: var(--sp-2) var(--sp-3);
+  background: var(--papel-warm);
+  border-radius: var(--r-sm);
+  word-break: break-all;
+  letter-spacing: 0.08em;
+  user-select: all;
+}
+
+/* Noch kein Faktor eingerichtet: ein Punkt am Knopf, kein Banner.
+   Eine Warnung, die bei jedem Start wegzuklicken ist, wird nach einer
+   Woche weggeklickt, ohne gelesen zu werden. */
+.adm-top__security {
+  position: relative;
+}
+
+.adm-top__security[data-attention]::after {
+  content: '';
+  position: absolute;
+  inset-block-start: 0.15rem;
+  inset-inline-end: 0.15rem;
+  width: 0.5rem;
+  height: 0.5rem;
+  border-radius: var(--r-full);
+  background: var(--miel-500);
+}
+
+/* ============================================================
    Bewegung nur, wo sie gewollt ist
    ============================================================ */
 

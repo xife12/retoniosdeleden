@@ -11,7 +11,7 @@ import { humanError, sessionCancelledError } from './errors';
  * P14). Laden, Anlegen, Ändern, Archivieren, Löschen und Sortieren sind für
  * beide Inhaltsarten dasselbe und stehen deshalb genau hier.
  *
- * Zwei Dinge macht dieser Store anders als das alte Panel:
+ * Drei Dinge macht dieser Store anders als das alte Panel:
  *
  * 1. **Session-Wache (Problem P13).** Lief das JWT während des Tippens ab,
  *    schlug früher das Speichern mit einer rohen englischen Meldung fehl und
@@ -22,6 +22,14 @@ import { humanError, sessionCancelledError } from './errors';
  * 2. **Veröffentlichen in einem Aufruf.** Der Browser macht keine
  *    Mehrschritt-Schreibvorgänge; Schnappschuss, Zeitstempel und Status setzt
  *    eine Datenbankfunktion (siehe supabase/schema.sql).
+ *
+ * 3. **Löschen ist umkehrbar (Befund B7).** `remove()` setzt kein echtes
+ *    DELETE mehr ab, sondern markiert die Zeile per `deleted_at` -- sie
+ *    verschwindet dadurch sofort aus `list()` (siehe unten) und damit aus
+ *    Panel und Website, bleibt aber 30 Tage lang in der Datenbank stehen
+ *    (siehe supabase/migrations/004_soft_delete.sql). Ein Fehlgriff auf dem
+ *    Handy oder ein kompromittiertes Konto soll nicht gleichbedeutend mit
+ *    endgültigem Verlust sein.
  */
 
 export type EntityStatus = 'draft' | 'published' | 'archived';
@@ -32,6 +40,8 @@ export interface Entity {
   status: EntityStatus;
   has_unpublished_changes: boolean;
   published_at: string | null;
+  /** Gesetzt = weich gelöscht (siehe remove() unten); sonst null. */
+  deleted_at: string | null;
 }
 
 export type StoreTable = 'workshops' | 'casas';
@@ -88,11 +98,17 @@ export function createStore<T extends Entity>(table: StoreTable): Store<T> {
   const rpc = rpcNames[table];
 
   return {
-    /** Alle Einträge, auch Entwürfe und Archiviertes -- das ist die Backend-Sicht. */
+    /**
+     * Alle Einträge, auch Entwürfe und Archiviertes -- das ist die
+     * Backend-Sicht. Weich gelöschte Zeilen bleiben zwar in der Datenbank
+     * (siehe remove() unten), aber genau hier ausgeblendet -- Panel und
+     * Website zeigen sie also identisch nicht mehr an.
+     */
     async list(): Promise<T[]> {
       const { data, error } = await supabase
         .from(table)
         .select('*')
+        .is('deleted_at', null)
         .order('sort_order', { ascending: true });
       if (error) fail(error);
       return (data ?? []) as T[];
@@ -117,9 +133,21 @@ export function createStore<T extends Entity>(table: StoreTable): Store<T> {
       });
     },
 
+    /**
+     * Kein DELETE mehr -- ein weiches Löschen (Befund B7). Die Zeile bekommt
+     * nur einen Zeitstempel in `deleted_at`, wodurch sie sofort aus list()
+     * herausfällt (siehe oben) und damit aus Panel und Website verschwindet,
+     * in der Datenbank aber 30 Tage lang stehen bleibt -- siehe
+     * supabase/migrations/004_soft_delete.sql. Der Methodenname bleibt
+     * remove(), damit workshops-view.ts/casas-view.ts unverändert aufrufen
+     * können; nur was dahinter passiert, ist jetzt umkehrbar statt endgültig.
+     */
     async remove(id: string): Promise<void> {
       return withSession(async () => {
-        const { error } = await supabase.from(table).delete().eq('id', id);
+        const { error } = await supabase
+          .from(table)
+          .update(columns<Entity>({ deleted_at: new Date().toISOString() }))
+          .eq('id', id);
         if (error) fail(error);
       });
     },

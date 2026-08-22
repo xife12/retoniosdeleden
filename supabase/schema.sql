@@ -6,14 +6,37 @@
 -- Für eine BESTEHENDE Installation stattdessen
 -- supabase/migrations/001_draft_publish.sql laufen lassen.
 --
+-- ============================================================================
+-- ACHTUNG -- DIESE DATEI ALLEIN REICHT NICHT
+--
+-- Danach ZWINGEND in dieser Reihenfolge laufen lassen:
+--   migrations/002_admin_allowlist.sql   (Adresse der Nutzerin eintragen)
+--   migrations/003_audit_und_deploy_bremse.sql   (Deploy-Hook-URL eintragen)
+--   migrations/004_soft_delete.sql               (Deploy-Hook-URL eintragen)
+--
+-- Bis 002 gelaufen ist, gilt in dieser Datei noch das ALTE Rechtemodell
+-- (siehe unten): jede Person mit irgendeinem Konto in diesem Supabase-
+-- Projekt darf alles lesen, schreiben und löschen. Ein frisches Projekt
+-- gehört deshalb erst nach 002 mit echten Inhalten befüllt -- und der
+-- Schalter "Allow new users to sign up" gehört vorher aus
+-- (PLAN-SICHERHEIT.md, Phase 0).
+-- ============================================================================
+--
 -- Sicherheitsmodell
 -- -----------------
 -- anon (der öffentliche Website-Build) liest AUSSCHLIESSLICH die beiden
 -- Views workshops_public / casas_public. Auf die Basistabellen hat anon
 -- gar keine Rechte mehr -- sonst könnten Autosave-Zwischenstände aus dem
 -- Backend auf der Website landen.
--- authenticated (die Nutzerin, eingeloggt über Supabase Auth) darf alles
--- lesen und schreiben. Weitere Rollenabstufungen gibt es bewusst nicht.
+--
+-- Auf der Schreibseite stand hier ursprünglich "authenticated (die
+-- Nutzerin) darf alles". Das war der Fehler: `authenticated` heißt in
+-- Postgres nicht "die Nutzerin", sondern "irgendwer mit einem Konto in
+-- diesem Projekt" -- und Konten konnte sich jeder selbst anlegen. Seit
+-- 002_admin_allowlist.sql fragen alle Policys stattdessen
+-- public.is_admin() gegen die Allowlist public.admins.
+-- Die Policys weiter unten in dieser Datei sind der Stand VOR dieser
+-- Korrektur; 002 ersetzt sie. Wer sie kopiert, kopiert die Lücke mit.
 --
 -- Entwurf vs. veröffentlicht
 -- --------------------------

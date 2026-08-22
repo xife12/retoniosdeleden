@@ -253,8 +253,8 @@ export function entityList<T extends Entity>(o: EntityListOptions<T>): EntityLis
       void (async () => {
         const ok = await confirmDialog({
           title: `¿Eliminar “${info.title}”?`,
-          body: 'Se borra para siempre y no se puede deshacer. Si sólo querés sacarlo de la web, archivalo.',
-          confirmLabel: 'Eliminar para siempre',
+          body: 'Desaparece del panel y de la web, pero podés recuperarlo durante 30 días. Si sólo querés sacarlo de la web, archivalo.',
+          confirmLabel: 'Eliminar',
           tone: 'danger',
         });
         if (!ok) return;

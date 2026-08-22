@@ -24,8 +24,33 @@ genommen).
 
 ## A. Bestehende Installation aktualisieren
 
-Wenn das Supabase-Projekt schon läuft und Inhalte enthält, ist **nur dieser
-eine Schritt** nötig:
+> **Zuerst Phase 0 aus [`PLAN-SICHERHEIT.md`](PLAN-SICHERHEIT.md).** Solange
+> im Dashboard unter Authentication → Sign In / Providers → Email der Schalter
+> **„Allow new users to sign up"** an ist, kann sich jeder Mensch selbst ein
+> Konto anlegen und bekommt damit vollen Schreibzugriff auf die Datenbank.
+> Das ist keine Theorie, sondern der Befund B1 — die Migrationen unten sichern
+> diesen Schalter ab, ersetzen ihn aber nicht.
+
+Wenn das Supabase-Projekt schon läuft und Inhalte enthält, laufen im
+Dashboard → **SQL Editor** nacheinander (jede Datei einzeln einfügen und
+**Run**, Reihenfolge einhalten):
+
+| Datei | Was sie tut | Vorher anpassen |
+|---|---|---|
+| [`001_draft_publish.sql`](supabase/migrations/001_draft_publish.sql) | Entwurf/Veröffentlicht-Umbau | — |
+| [`002_admin_allowlist.sql`](supabase/migrations/002_admin_allowlist.sql) | Allowlist statt „irgendwer angemeldet", Rechteprüfung in allen RPCs, Storage-Grenzen | **E-Mail-Adresse der Nutzerin** |
+| [`003_audit_und_deploy_bremse.sql`](supabase/migrations/003_audit_und_deploy_bremse.sql) | Änderungsprotokoll, Deploy-Hook höchstens 1×/Minute | **Deploy-Hook-URL** (4 Stellen) |
+| [`004_soft_delete.sql`](supabase/migrations/004_soft_delete.sql) | Löschen wird 30 Tage lang umkehrbar | **Deploy-Hook-URL** (4 Stellen) |
+
+`002` bricht bewusst ab und rollt alles zurück, wenn die Adresse nicht
+ersetzt oder falsch geschrieben wurde — lieber gar nichts geändert als das
+Panel ausgesperrt. Der Kopf jeder Datei erklärt den Rest.
+
+**`003` und `004` ersetzen Abschnitt D dieses Dokuments.** Wer den alten
+SQL-Block von dort noch einmal ausführt, nimmt die Deploy-Bremse und die
+Soft-Delete-Bedingung wieder heraus.
+
+Zu 001 im Einzelnen:
 
 Dashboard → **SQL Editor** → Inhalt von
 [`supabase/migrations/001_draft_publish.sql`](supabase/migrations/001_draft_publish.sql)
@@ -69,6 +94,13 @@ Im Supabase-Dashboard → **SQL Editor**, in dieser Reihenfolge ausführen:
    veröffentlicht sie am Ende (der `select publish_workshop(...)`-Block ganz
    unten — ohne ihn bleiben die öffentlichen Views leer).
 
+3. Danach **zwingend** die Migrationen aus Abschnitt A in ihrer Reihenfolge:
+   `002_admin_allowlist.sql`, `003_audit_und_deploy_bremse.sql`,
+   `004_soft_delete.sql`. `schema.sql` allein enthält noch das alte
+   Rechtemodell (`to authenticated using (true)`) — bis 002 gelaufen ist,
+   darf jede Person mit irgendeinem Konto in diesem Projekt alles lesen,
+   schreiben und löschen.
+
 `schema.sql` ist auf eine leere Datenbank ausgelegt. `seed.sql` darf nur
 einmal laufen, sonst stehen die Inhalte doppelt drin.
 
@@ -79,6 +111,13 @@ E-Mail-Adresse und ein Passwort für die Mutter vergeben, "Auto Confirm User"
 aktivieren (kein Bestätigungs-Mail-Versand nötig).
 
 Dieser Login ist der einzige Zugang zu `/admin`.
+
+Danach **unbedingt** `002_admin_allowlist.sql` laufen lassen und diese
+Adresse dort eintragen: ohne Eintrag in `public.admins` kommt auch die
+richtige Person an keine einzige Zeile. Und beim ersten Anmelden im Panel
+über **Seguridad** in der Kopfzeile den zweiten Faktor einrichten — solange
+das nicht geschehen ist, ist ein einzelnes Passwort der gesamte Schutz der
+Datenbank.
 
 ### 4. Projekt-Keys besorgen
 
@@ -155,71 +194,25 @@ where extname = 'pg_net';
 Je nach Projekt landet `pg_net` dabei im Schema `net` oder `extensions` --
 die Funktion unten prüft deshalb beide, statt eines fest anzunehmen.
 
-**SQL Editor**, `<DEPLOY-HOOK-URL>` durch die URL aus Schritt 6 ersetzen
-(kommt an vier Stellen vor) und ausführen:
+**Seit Migration 003 steht dieser Trigger dort und nicht mehr hier.**
 
-```sql
-create extension if not exists pg_net;
+Früher stand an dieser Stelle ein SQL-Block zum Einfügen. Er ist nach
+[`supabase/migrations/003_audit_und_deploy_bremse.sql`](supabase/migrations/003_audit_und_deploy_bremse.sql)
+gewandert und dort um eine Bremse erweitert: die Funktion löst höchstens
+einmal pro Minute tatsächlich aus. Ohne sie kann jede Person mit gültiger
+Sitzung in einer Schleife beliebig viele Vercel-Builds auslösen — echte
+Kosten, ohne dass ein einziger Inhalt sich ändert (PLAN-SICHERHEIT.md,
+Befund B9).
 
--- Eine Funktion für beide Tabellen -- die Ziel-URL kommt als Trigger-
--- Argument, damit sie nicht doppelt im Code steht. search_path deckt
--- beide üblichen Ablageorte von pg_net ab (net und extensions), damit
--- es unabhängig vom Projekt funktioniert.
-create or replace function public.notify_deploy_hook()
-returns trigger
-language plpgsql
-security definer
-set search_path = extensions, net, public
-as $$
-declare
-  hook_url text := tg_argv[0];
-begin
-  perform http_post(
-    url := hook_url,
-    body := '{}'::jsonb,
-    headers := '{"Content-Type": "application/json"}'::jsonb,
-    timeout_milliseconds := 5000
-  );
-  return coalesce(new, old);
-end;
-$$;
+[`004_soft_delete.sql`](supabase/migrations/004_soft_delete.sql) legt die
+vier Trigger danach noch einmal an, damit auch das Löschen eines
+veröffentlichten Eintrags einen neuen Build auslöst.
 
--- Workshops
-drop trigger if exists workshops_deploy_hook on public.workshops;
-create trigger workshops_deploy_hook
-  after update on public.workshops
-  for each row
-  when (
-    old.published_at is distinct from new.published_at
-    or old.status is distinct from new.status
-    or old.sort_order is distinct from new.sort_order
-  )
-  execute function public.notify_deploy_hook('<DEPLOY-HOOK-URL>');
+In beiden Dateien ist `<DEPLOY-HOOK-URL>` durch die URL aus Schritt 6 zu
+ersetzen (je vier Stellen). **Den alten Block von hier nicht mehr ausführen** —
+er würde die Bremse und die Soft-Delete-Bedingung wieder herausnehmen.
 
-drop trigger if exists workshops_deploy_hook_del on public.workshops;
-create trigger workshops_deploy_hook_del
-  after delete on public.workshops
-  for each row
-  execute function public.notify_deploy_hook('<DEPLOY-HOOK-URL>');
-
--- Lehmhäuser
-drop trigger if exists casas_deploy_hook on public.casas;
-create trigger casas_deploy_hook
-  after update on public.casas
-  for each row
-  when (
-    old.published_at is distinct from new.published_at
-    or old.status is distinct from new.status
-    or old.sort_order is distinct from new.sort_order
-  )
-  execute function public.notify_deploy_hook('<DEPLOY-HOOK-URL>');
-
-drop trigger if exists casas_deploy_hook_del on public.casas;
-create trigger casas_deploy_hook_del
-  after delete on public.casas
-  for each row
-  execute function public.notify_deploy_hook('<DEPLOY-HOOK-URL>');
-```
+Zum Verständnis bleibt die Begründung der Trigger-Bedingungen stehen:
 
 Warum nur `update` und `delete`, nicht `insert`: Ein neu angelegter Eintrag
 bekommt immer `status = 'draft'` und taucht damit in keiner öffentlichen
