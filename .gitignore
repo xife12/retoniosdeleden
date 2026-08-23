@@ -6,3 +6,6 @@ dist/
 
 # API-Schlüssel für die Stimmerzeugung (scripts/generar-voz.mjs)
 .env
+
+# Supabase-Management-Token (nur lokal, gibt Vollzugriff auf das Projekt)
+.supabase-token

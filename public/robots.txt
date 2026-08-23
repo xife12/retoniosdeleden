@@ -1,0 +1,10 @@
+# /admin ist die Anmeldemaske des Backends. Oeffentlich erreichbar bleibt
+# sie trotzdem -- der eigentliche Schutz ist Row Level Security, nicht
+# Verstecken (Befund B6, PLAN-SICHERHEIT.md). Diese Datei haelt nur
+# wohlerzogene Crawler fern; verbindlich ist der X-Robots-Tag-Header aus
+# vercel.json, der unabhaengig davon wirkt, ob ein Bot robots.txt beachtet.
+#
+# Keine Sitemap-Zeile: es gibt keine sitemap.xml, @astrojs/sitemap ist nicht
+# installiert.
+User-agent: *
+Disallow: /admin

@@ -1,0 +1,69 @@
+# Misst nach, ob die Sicherheitsannahmen des Projekts gerade gelten.
+#
+# Warum automatisch und nicht von Hand: Der kritische Befund B1 aus
+# PLAN-SICHERHEIT.md hing an einem einzigen Dashboard-Schalter
+# ("Allow new users to sign up"). Solche Schalter fallen zurueck -- beim
+# Umbau eines Projekts, beim Wiederherstellen aus einer Sicherung, oder weil
+# jemand etwas ausprobiert hat. Ein Schalter, den niemand nachmisst, ist kein
+# Schutz, sondern eine Annahme.
+#
+# Das Skript meldet sich nirgends an und schreibt nichts -- es tut genau das,
+# was auch eine fremde Person mit dem oeffentlichen anon-Key tun koennte.
+# Es darf deshalb gefahrlos regelmaessig laufen.
+#
+# ----------------------------------------------------------------------------
+# EINMALIG EINZURICHTEN
+# ----------------------------------------------------------------------------
+# GitHub -> Settings -> Secrets and variables -> Actions -> New repository secret
+#
+#   PUBLIC_SUPABASE_ANON_KEY
+#     Supabase-Dashboard -> Settings -> API -> Project API keys -> "anon public".
+#     Dieser Schluessel ist oeffentlich (er steht in jedem ausgelieferten
+#     JS-Bundle). Er liegt hier trotzdem als Secret, damit das Repository nicht
+#     verraet, gegen welches Projekt geprueft wird -- und damit ein Wechsel des
+#     Projekts nur eine Stelle betrifft.
+#
+# Optional als Repository-Variable (Settings -> Variables), falls die Domain
+# einmal wechselt:
+#   SITE_URL   Vorgabe im Skript: https://retoniosdeleden.com
+
+name: Sicherheit
+
+on:
+  push:
+    branches: [main]
+  schedule:
+    # Montags 06:17 UTC. Krumme Minute mit Absicht: zur vollen Stunde stehen
+    # bei GitHub die meisten Jobs in der Warteschlange.
+    - cron: '17 6 * * 1'
+  workflow_dispatch:
+
+# Nur Lesen. Dieser Workflow braucht am Repository nichts zu aendern.
+permissions:
+  contents: read
+
+jobs:
+  pruefen:
+    name: Annahmen nachmessen
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      # Das Skript kommt ohne Abhaengigkeiten aus (nur Node-Bordmittel),
+      # deshalb kein npm ci -- das waere eine Minute fuer nichts.
+      - name: Pruefungen ausfuehren
+        env:
+          PUBLIC_SUPABASE_ANON_KEY: ${{ secrets.PUBLIC_SUPABASE_ANON_KEY }}
+          SITE_URL: ${{ vars.SITE_URL }}
+        run: node scripts/pruefen-sicherheit.mjs
+
+# Schlaegt dieser Workflow fehl, ist das kein Formfehler, sondern eine offene
+# Tuer. Die Ausgabe des Skripts benennt jede durchgefallene Pruefung einzeln
+# und sagt, was erwartet wurde -- PLAN-SICHERHEIT.md, Abschnitt 4, fuehrt die
+# zugehoerigen Gegenmassnahmen.

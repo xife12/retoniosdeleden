@@ -7,7 +7,8 @@
     "dev": "astro dev",
     "build": "astro build",
     "preview": "astro preview",
-    "voz": "node scripts/generar-voz.mjs"
+    "voz": "node scripts/generar-voz.mjs",
+    "seguridad": "node scripts/pruefen-sicherheit.mjs"
   },
   "dependencies": {
     "@fontsource-variable/fraunces": "^5.2.5",
