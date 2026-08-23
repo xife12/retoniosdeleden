@@ -24,6 +24,9 @@ genommen).
 
 ## A. Bestehende Installation aktualisieren
 
+> **Zum Mitklicken gibt es [`ANLEITUNG-ABSICHERN.md`](ANLEITUNG-ABSICHERN.md)** --
+> dort steht jeder Schritt einzeln, in der richtigen Reihenfolge.
+>
 > **Zuerst Phase 0 aus [`PLAN-SICHERHEIT.md`](PLAN-SICHERHEIT.md).** Solange
 > im Dashboard unter Authentication → Sign In / Providers → Email der Schalter
 > **„Allow new users to sign up"** an ist, kann sich jeder Mensch selbst ein

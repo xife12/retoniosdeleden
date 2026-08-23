@@ -27,18 +27,20 @@
 --        select id, email, created_at, last_sign_in_at
 --          from auth.users order by created_at;
 --
---    Steht dort mehr als eine Person, ist das der Beleg, dass die offene
---    Registrierung bereits genutzt wurde. Dann NICHT weitermachen, sondern
---    erst klären, wem die fremden Konten gehören.
+--    Erwartet werden zwei Zeilen: du und deine Mutter. Steht dort eine
+--    dritte, unbekannte Adresse, ist das der Beleg, dass die offene
+--    Registrierung genutzt wurde -- dann NICHT weitermachen, sondern erst
+--    klären, wem das Konto gehört.
 --
--- 3. Unten bei "HIER ANPASSEN" die Adresse eintragen.
+-- 3. Unten bei "HIER ANPASSEN" BEIDE Adressen eintragen -- an zwei Stellen
+--    (Abschnitt 3 und Abschnitt 4), jeweils dieselben.
 --
 -- ----------------------------------------------------------------------------
 -- SICHERHEITSNETZ
 -- ----------------------------------------------------------------------------
 -- Der Supabase-SQL-Editor führt ein eingefügtes Skript als EINE Transaktion
 -- aus (HANDOFF-ADMIN.md, Fallstrick 2). Das ist hier ausdrücklich erwünscht:
--- Wird die Adresse vergessen oder falsch geschrieben, bricht der Wächter
+-- Wird eine Adresse vergessen oder falsch geschrieben, bricht der Wächter
 -- weiter unten ab und die gesamte Migration rollt zurück. Die Datenbank
 -- bleibt dann exakt im Vorzustand -- lieber gar nichts geändert als das Panel
 -- ausgesperrt.
@@ -115,37 +117,82 @@ grant execute on function public.is_admin() to authenticated;
 
 
 -- ----------------------------------------------------------------------------
--- 3. HIER ANPASSEN — die Nutzerin eintragen
+-- 3. HIER ANPASSEN -- wer darf ins Panel?
+--
+-- Beide Adressen eintragen (du und deine Mutter), jeweils genau so
+-- geschrieben wie in auth.users. Gross-/Kleinschreibung und Leerzeichen sind
+-- egal, der Rest nicht.
+--
+-- Die Adressen bekommst du mit dieser Abfrage -- am besten VORHER einmal
+-- allein ausfuehren und von dort kopieren:
+--
+--     select email from auth.users order by created_at;
+--
+-- Kommt spaeter eine dritte Person dazu, reicht eine Zeile mehr in der
+-- values-Liste plus ein erneuter Lauf dieses Abschnitts.
 --
 -- Muss vor Abschnitt 4 stehen, sonst sperrt sich das Panel selbst aus.
 -- ----------------------------------------------------------------------------
 insert into public.admins (user_id, email)
 select u.id, u.email
   from auth.users u
- where lower(u.email) = lower('ADRESSE-DER-NUTZERIN@example.com')  -- <<<<< ERSETZEN
+  join (values
+          ('DEINE-ADRESSE@example.com'),          -- <<<<< ERSETZEN
+          ('ADRESSE-DER-MUTTER@example.com')      -- <<<<< ERSETZEN
+        ) as gewuenscht(email)
+    on lower(trim(u.email)) = lower(trim(gewuenscht.email))
 on conflict (user_id) do nothing;
 
 
 -- ----------------------------------------------------------------------------
--- 4. Wächter
+-- 4. Waechter
 --
--- Ab hier wird scharfgeschaltet. Ist die Liste leer, wäre das Panel danach
--- für alle zu -- also lieber jetzt abbrechen und alles zurückrollen.
+-- Ab hier wird scharfgeschaltet. Steht die falsche oder gar keine Adresse in
+-- Abschnitt 3, waere das Panel danach fuer alle zu. Deshalb hier lieber
+-- abbrechen: der Supabase-SQL-Editor fuehrt das ganze Skript als EINE
+-- Transaktion aus, ein Abbruch rollt also alles zurueck und die Datenbank
+-- steht exakt wie vorher.
+--
+-- Der Waechter sagt ausserdem, WELCHE Adresse er nicht gefunden hat -- ein
+-- Tippfehler soll nicht als raetselhafter Fehlschlag enden.
 -- ----------------------------------------------------------------------------
 do $guard$
 declare
-  v_anzahl integer;
+  v_anzahl    integer;
+  v_unbekannt text;
 begin
   select count(*) into v_anzahl from public.admins;
 
-  if v_anzahl = 0 then
+  -- Gewuenscht, aber in auth.users nicht vorhanden: fast immer ein
+  -- Tippfehler oder eine Person, die im Dashboard noch gar nicht angelegt
+  -- wurde (Authentication -> Users -> Add user).
+  select string_agg(g.email, ', ')
+    into v_unbekannt
+    from (values
+            ('DEINE-ADRESSE@example.com'),          -- <<<<< dieselben zwei
+            ('ADRESSE-DER-MUTTER@example.com')      -- <<<<< wie in Abschnitt 3
+          ) as g(email)
+   where not exists (
+           select 1 from auth.users u
+            where lower(trim(u.email)) = lower(trim(g.email))
+         );
+
+  if v_unbekannt is not null then
     raise exception
-      'Abbruch: public.admins ist leer. Wurde die Adresse in Abschnitt 3 '
-      'ersetzt und stimmt sie exakt mit der in auth.users überein? '
-      'Es wurde nichts geändert -- die Datenbank ist im Vorzustand.';
+      'Abbruch: diese Adresse(n) gibt es in auth.users nicht: %. '
+      'Tippfehler, oder die Person ist im Dashboard noch nicht angelegt '
+      '(Authentication -> Users -> Add user). Es wurde nichts geaendert.',
+      v_unbekannt;
   end if;
 
-  raise notice 'Allowlist enthält % Eintrag/Einträge. Weiter.', v_anzahl;
+  if v_anzahl = 0 then
+    raise exception
+      'Abbruch: public.admins ist leer. Wurden die Adressen in Abschnitt 3 '
+      'wirklich ersetzt? Es wurde nichts geaendert -- die Datenbank ist im '
+      'Vorzustand.';
+  end if;
+
+  raise notice 'Allowlist enthaelt % Eintrag/Eintraege. Weiter.', v_anzahl;
 end;
 $guard$;
 
@@ -542,7 +589,7 @@ $defaults$;
 -- 10. Kontrolle
 --
 -- Diese Abfrage nach dem Lauf einzeln ausführen. Erwartet wird:
---   admins_eintraege        = 1
+--   admins_eintraege        = 2
 --   policys_mit_true        = 0   (keine `using (true)` mehr übrig)
 --   rpcs_ohne_wachter       = 0   (alle sechs prüfen is_admin)
 --   bucket_mime             = {image/jpeg}

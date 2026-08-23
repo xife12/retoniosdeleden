@@ -19,16 +19,21 @@ steht die Tür aus B1 offen.
 
 ### Offen — braucht euch
 
+**Zum Mitklicken: [`ANLEITUNG-ABSICHERN.md`](ANLEITUNG-ABSICHERN.md).**
+Dort steht jeder Schritt einzeln, mit der richtigen Reihenfolge.
+
 | Was | Wo | Warum nicht von mir |
 |---|---|---|
-| **Phase 0 komplett** | Supabase-Dashboard | Dashboard-Anmeldung und Passworteingabe mache ich grundsätzlich nicht |
+| ~~Phase 0~~ | ~~Supabase-Dashboard~~ | **erledigt am 2026-08-22** |
 | `002` … `004` ausführen | Supabase SQL-Editor | Kein Datenbankzugang; die Dateien liegen fertig bereit |
-| Deploy + Vercel-Header | Vercel | `vercel.json` wirkt erst nach einem Deploy |
+| Deploy + Vercel-Header | Vercel | `vercel.json` wirkt erst nach einem Deploy — **nach** den Migrationen |
 | GitHub-Secrets anlegen | GitHub-Einstellungen | `PUBLIC_SUPABASE_ANON_KEY`, `SUPABASE_DB_URL` |
 | Zweiten Faktor einrichten | `/admin` → „Seguridad" | Braucht euer Telefon; danach die `aal2`-Zeile in `is_admin()` scharf schalten |
 
-Vor `002` bitte prüfen, ob unter Authentication → Users **genau eine** Person
-steht. Mehr wäre der Beleg, dass B1 bereits genutzt wurde.
+**Zwei berechtigte Konten** stehen unter Authentication → Users (der Betreiber
+und seine Mutter) — das ist geklärt und kein Hinweis auf einen Missbrauch.
+Beide gehören in die Allowlist; `002` ist darauf ausgelegt. Taucht dort
+später eine dritte, unbekannte Adresse auf, ist das ein Alarmzeichen.
 
 ### Erledigt
 
@@ -288,9 +293,16 @@ eigentliche Fundament. Alles ab Phase 3 ist ehrliche Härtung, kein Notfall.
 
 ---
 
-### Phase 0 — Sofort, im Dashboard, ohne Code *(~15 Minuten)*
+### Phase 0 — Sofort, im Dashboard, ohne Code *(~15 Minuten)* — ERLEDIGT
 
 **Ziel: B1 und B3 entschärfen, bevor irgendetwas anderes passiert.**
+
+> Am 2026-08-22 vom Betreiber erledigt. Die Schritte bleiben zur
+> Nachvollziehbarkeit stehen. Hinweis für später: „Allow new users to sign
+> up" auszuschalten sperrt nur die *Selbst*registrierung über die öffentliche
+> API — neue Konten legt man weiterhin ganz normal über Authentication →
+> Users → Add user an. Das ist ab jetzt der einzige Weg, und so ist es
+> gedacht.
 
 Dashboard → **Authentication → Sign In / Providers → Email**:
 
