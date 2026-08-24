@@ -11,31 +11,57 @@ Ersteinrichtung (das tut [`SETUP-BACKEND.md`](SETUP-BACKEND.md)).
 
 ---
 
-## Umsetzungsstand (2026-08-22)
+## Umsetzungsstand (2026-08-24)
 
-Alles, was sich im Repository erledigen lässt, ist umgesetzt, typgeprüft und
-gebaut. **Was noch fehlt, kann nur die Nutzerin selbst tun** — und bis dahin
-steht die Tür aus B1 offen.
+**Scharf geschaltet und live nachgemessen: `npm run seguridad` meldet 13 von
+13 bestandenen Pruefungen.** Die Migrationen 002-004 sind gegen das
+Live-Projekt gelaufen, die Selbstregistrierung ist gesperrt, der Code ist auf
+`main` deployt.
 
-### Offen — braucht euch
-
-**Zum Mitklicken: [`ANLEITUNG-ABSICHERN.md`](ANLEITUNG-ABSICHERN.md).**
-Dort steht jeder Schritt einzeln, mit der richtigen Reihenfolge.
+### Offen -- braucht euch
 
 | Was | Wo | Warum nicht von mir |
 |---|---|---|
-| ~~Phase 0~~ | ~~Supabase-Dashboard~~ | **erledigt am 2026-08-22** |
-| `002` … `004` ausführen | Supabase SQL-Editor | Kein Datenbankzugang; die Dateien liegen fertig bereit |
-| Deploy + Vercel-Header | Vercel | `vercel.json` wirkt erst nach einem Deploy — **nach** den Migrationen |
-| GitHub-Secrets anlegen | GitHub-Einstellungen | `PUBLIC_SUPABASE_ANON_KEY`, `SUPABASE_DB_URL` |
-| Zweiten Faktor einrichten | `/admin` → „Seguridad" | Braucht euer Telefon; danach die `aal2`-Zeile in `is_admin()` scharf schalten |
+| **Zweiter Faktor einrichten** | `/admin` -> "Seguridad" | Braucht Anmeldung und Handykamera. **Beide Personen**, siehe Anleitung Abschnitt D |
+| aal2 zur Pflicht machen | SQL, eine Anweisung | Erst danach; der Schnipsel steht in der Anleitung, Abschnitt E |
+| GitHub-Secrets anlegen | GitHub-Einstellungen | `PUBLIC_SUPABASE_ANON_KEY` und `SUPABASE_DB_URL`; sonst laufen Pruef-Workflow und naechtliche Sicherung ins Leere |
 
-**Zwei berechtigte Konten** stehen unter Authentication → Users (der Betreiber
-und seine Mutter) — das ist geklärt und kein Hinweis auf einen Missbrauch.
-Beide gehören in die Allowlist; `002` ist darauf ausgelegt. Taucht dort
-später eine dritte, unbekannte Adresse auf, ist das ein Alarmzeichen.
+Bewusst offen gelassen: `password_min_length` steht weiter auf 6 und der
+Abgleich gegen geleakte Passwoerter (`password_hibp_enabled`) ist aus. Beides
+greift ohnehin erst, wenn jemand sein Passwort neu setzt -- nachholbar, wann
+immer ihr wollt.
 
-### Erledigt
+### Erledigt am 2026-08-24
+
+- **Migrationen 002, 003, 004** gegen das Live-Projekt gelaufen. Kontrolle:
+  2 Eintraege in `admins`, keine `using (true)`-Policy mehr, alle sechs RPCs
+  mit Waechter, Bucket auf 5 MB/`image/jpeg`, `audit_log` und `deploy_log`
+  angelegt, `deleted_at` auf beiden Tabellen, beide Views filtern mit.
+  Die oeffentlichen Views liefern unveraendert Daten (4 Workshops, 3 Casas) --
+  der Website-Build ist also nicht betroffen.
+- **Selbstregistrierung gesperrt.** Sie war es entgegen der Annahme noch
+  nicht: `disable_signup` stand auf `false`, sowohl in der Management-API als
+  auch an der oeffentlichen Auth-Schnittstelle. Ueber die API nachgezogen und
+  an beiden Stellen verifiziert.
+- **Deploy** auf `main`, Header und CSP live.
+
+### Zwei Dinge, die dabei auffielen
+
+1. **`retoniosdeleden.com` leitet mit 308 auf `www.` um.** Wer die Header an
+   der Apex-Domain misst, misst die Weiterleitung und sieht sie nie -- das
+   hat beim Pruefen erst Verwirrung gestiftet. `SITE_URL` im Pruefskript
+   zeigt jetzt auf `www.`.
+   **Noch offen und ausserhalb der Sicherheitsarbeit:** `astro.config.mjs`
+   traegt `site: 'https://retoniosdeleden.com'` -- ohne `www`. Damit zeigen
+   `canonical` und `og:url` auf eine Adresse, die weiterleitet. Fuer die
+   Sicherheit belanglos, fuer Suchmaschinen unsauber.
+2. **Das Vercel-Muster `/admin/:path*` trifft `/admin/` nicht.**
+   path-to-regexp verlangt hinter dem Schraegstrich mindestens ein Segment;
+   ausgerechnet die Anmeldeseite blieb dadurch ohne `X-Robots-Tag`. Live
+   gemessen, nicht vermutet. `"/admin/(.*)"` darf leer matchen und deckt
+   beides ab.
+
+### Vorher umgesetzt (im Repository)
 
 - **B1, B2, B4, B10, B11** — `002_admin_allowlist.sql`: Allowlist `admins` +
   `is_admin()`, alle Policys umgestellt, Rechteprüfung in allen sechs

@@ -8,15 +8,25 @@ wenn zwischendurch etwas unklar ist, lieber anhalten und fragen.
 
 ---
 
-## Reihenfolge — bitte nicht vertauschen
+## Stand
 
 ```
-A. Migrationen in Supabase   (002 → 003 → 004)
-B. Erst DANN deployen
-C. GitHub-Secrets
-D. Zweiter Faktor
-E. aal2 scharf schalten
+A. Migrationen in Supabase   ERLEDIGT (2026-08-24)
+B. Deploy                    ERLEDIGT (2026-08-24)
+C. GitHub-Secrets            offen  <- du
+D. Zweiter Faktor            offen  <- ihr beide
+E. aal2 scharf schalten      offen  <- erst nach D
 ```
+
+A und B sind gelaufen, `npm run seguridad` meldet 13 von 13. Es bleiben C, D
+und E. **Wichtig bei E: erst ausfuehren, wenn D bei BEIDEN funktioniert** --
+sonst sperrt ihr euch aus.
+
+Die Abschnitte A und B bleiben zur Nachvollziehbarkeit stehen.
+
+---
+
+## Reihenfolge — bitte nicht vertauschen
 
 **Warum A vor B:** Das neue Panel fragt beim Laden nach der Spalte
 `deleted_at`. Die legt Migration 004 an. Wird zuerst deployt, sucht das Panel
