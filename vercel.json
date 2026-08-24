@@ -43,7 +43,7 @@
       ]
     },
     {
-      "source": "/admin/:path*",
+      "source": "/admin/(.*)",
       "headers": [
         {
           "key": "X-Robots-Tag",

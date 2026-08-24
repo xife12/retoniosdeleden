@@ -26,7 +26,9 @@
  * Umgebungsvariablen:
  *   PUBLIC_SUPABASE_URL       Vorgabe: https://wgoukgndhpdfcgtwbpke.supabase.co
  *   PUBLIC_SUPABASE_ANON_KEY  Pflicht, kein Vorgabewert (siehe unten, warum)
- *   SITE_URL                  Vorgabe: https://retoniosdeleden.com
+ *   SITE_URL                  Vorgabe: https://www.retoniosdeleden.com
+ *                             (die Apex-Domain leitet mit 308 auf www um --
+ *                             gemessen wird die Seite, nicht die Weiterleitung)
  *
  * Exit-Code 0: alle Prüfungen bestanden.
  * Exit-Code 1: mindestens eine Prüfung durchgefallen, oder die Konfiguration
@@ -38,7 +40,7 @@ const ZEITLIMIT_MS = 15_000;
 const SUPABASE_URL = (
   process.env.PUBLIC_SUPABASE_URL || 'https://wgoukgndhpdfcgtwbpke.supabase.co'
 ).replace(/\/+$/, '');
-const SITE_URL = (process.env.SITE_URL || 'https://retoniosdeleden.com').replace(/\/+$/, '');
+const SITE_URL = (process.env.SITE_URL || 'https://www.retoniosdeleden.com').replace(/\/+$/, '');
 const ANON_KEY = process.env.PUBLIC_SUPABASE_ANON_KEY;
 
 // Ohne den anon-Key kann keine einzige Prüfung laufen -- und absichtlich gibt
