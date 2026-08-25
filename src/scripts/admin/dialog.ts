@@ -12,7 +12,7 @@
  *
  * Optik: src/styles/admin/base.css, Klassen `.adm-dialog…`.
  */
-import { currentEmail, hasValidSession, reauthenticate } from './auth';
+import { currentEmail, hasValidSession, reauthenticate, verifyCode } from './auth';
 
 const FOCUSABLE = [
   'a[href]',
@@ -48,7 +48,7 @@ function unlockPage(): void {
   inerted = [];
 }
 
-interface DialogParts {
+export interface DialogParts {
   /** Der Kasten selbst, ohne Hintergrund. */
   dialog: HTMLElement;
   labelledBy: string;
@@ -58,8 +58,12 @@ interface DialogParts {
 
 /**
  * Gemeinsames Gerüst. `build` bekommt `resolve` und darf jederzeit schließen.
+ *
+ * Exportiert, weil mfa-dialog.ts denselben Focus-Trap, dieselbe Seitensperre
+ * und dieselbe Fokus-Rueckgabe braucht -- ein zweites Dialoggeruest daneben
+ * waere genau die Art Verdopplung, die beim Umbau P12 verschwunden ist.
  */
-function openDialog(build: (resolve: (value: boolean) => void) => DialogParts): Promise<boolean> {
+export function openDialog(build: (resolve: (value: boolean) => void) => DialogParts): Promise<boolean> {
   return new Promise<boolean>((resolvePromise) => {
     const opener = document.activeElement instanceof HTMLElement ? document.activeElement : null;
 
@@ -224,13 +228,19 @@ export async function reauthDialog(): Promise<boolean> {
       <h2 class="adm-dialog__title" id="${id}">Tu sesión expiró</h2>
       <p class="adm-dialog__body">Entrá de nuevo y seguimos donde estabas. No se pierde nada de lo que escribiste.</p>
       <form class="adm-dialog__form" novalidate>
-        <div class="adm-field">
+        <div class="adm-field" data-reauth-step="password">
           <label class="adm-label" for="${id}-email">Correo</label>
           <input class="adm-input" id="${id}-email" type="email" autocomplete="username" />
         </div>
-        <div class="adm-field">
+        <div class="adm-field" data-reauth-step="password">
           <label class="adm-label" for="${id}-password">Contraseña</label>
           <input class="adm-input" id="${id}-password" type="password" autocomplete="current-password" />
+        </div>
+        <div class="adm-field" data-reauth-step="code" hidden>
+          <label class="adm-label" for="${id}-code">Código de la app</label>
+          <input class="adm-input adm-mfa__code" id="${id}-code" type="text"
+                 inputmode="numeric" autocomplete="one-time-code" maxlength="6"
+                 pattern="[0-9]*" placeholder="000000" />
         </div>
         <p class="adm-error" data-reauth-error hidden></p>
         <div class="adm-dialog__actions">
@@ -250,22 +260,54 @@ export async function reauthDialog(): Promise<boolean> {
     if (email) email.value = currentEmail() ?? '';
     cancel?.addEventListener('click', () => resolve(false));
 
+    const code = dialog.querySelector<HTMLInputElement>(`#${id}-code`);
+    const passwordFields = dialog.querySelectorAll<HTMLElement>('[data-reauth-step="password"]');
+    const codeField = dialog.querySelector<HTMLElement>('[data-reauth-step="code"]');
+    const title = dialog.querySelector<HTMLElement>('.adm-dialog__title');
+
+    /** false = Passwort, true = zweiter Faktor. */
+    let onCodeStep = false;
+
+    const fail = (message: string): void => {
+      if (!errorEl) return;
+      errorEl.textContent = message;
+      errorEl.hidden = false;
+    };
+
+    // Der Wechsel auf Schritt zwei passiert nur, wenn ein Faktor eingerichtet
+    // ist. Ohne Faktor bleibt der Dialog Wort fuer Wort der alte.
+    function toCodeStep(): void {
+      onCodeStep = true;
+      for (const el of passwordFields) el.hidden = true;
+      if (codeField) codeField.hidden = false;
+      if (title) title.textContent = 'Falta el código';
+      if (submit) submit.textContent = 'Confirmar y seguir';
+      if (password) password.value = '';
+      code?.focus();
+    }
+
     form?.addEventListener('submit', (event) => {
       event.preventDefault();
-      if (!password || !submit) return;
+      if (!submit) return;
       if (errorEl) errorEl.hidden = true;
       submit.disabled = true;
-      void reauthenticate(password.value, email?.value)
+
+      const step = onCodeStep
+        ? verifyCode(code?.value ?? '')
+        : reauthenticate(password?.value ?? '', email?.value);
+
+      void step
         .then((result) => {
           if (result.ok) {
             resolve(true);
             return;
           }
-          if (errorEl) {
-            errorEl.textContent = result.message ?? 'No se pudo entrar.';
-            errorEl.hidden = false;
+          if (result.needsCode && !onCodeStep) {
+            toCodeStep();
+            return;
           }
-          password.select();
+          fail(result.message ?? 'No se pudo entrar.');
+          (onCodeStep ? code : password)?.select();
         })
         .finally(() => {
           submit.disabled = false;

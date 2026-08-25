@@ -367,8 +367,8 @@ export async function mountEditor(container: HTMLElement, id: string): Promise<v
       const name = draft.title.es || 'este taller';
       const ok = await confirmDialog({
         title: `¿Eliminar “${name}”?`,
-        body: 'Se borra para siempre y no se puede deshacer. Si sólo querés sacarlo de la web, archivalo.',
-        confirmLabel: 'Eliminar para siempre',
+        body: 'Desaparece del panel y de la web, pero podés recuperarlo durante 30 días. Si sólo querés sacarlo de la web, archivalo.',
+        confirmLabel: 'Eliminar',
         tone: 'danger',
       });
       if (!ok || !row) return;

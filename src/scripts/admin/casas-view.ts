@@ -387,10 +387,14 @@ export async function mountEditor(container: HTMLElement, id: string): Promise<v
       const count = photos.items().length;
       const ok = await confirmDialog({
         title: `¿Eliminar “${name}”?`,
+        // Die Fotos bleiben unangetastet: das Soft-Delete setzt nur
+        // deleted_at, die Zeile steht weiter da, also greift auch kein
+        // "on delete cascade" auf casa_images. Der alte Satz "se borran
+        // también las N fotos" waere jetzt schlicht falsch.
         body: count
-          ? `Se borran también las ${count} fotos. No se puede deshacer. Si sólo querés sacarla de la web, archivala.`
-          : 'Se borra para siempre y no se puede deshacer. Si sólo querés sacarla de la web, archivala.',
-        confirmLabel: 'Eliminar para siempre',
+          ? `Desaparece del panel y de la web, con sus ${count} fotos, pero podés recuperarla durante 30 días. Si sólo querés sacarla de la web, archivala.`
+          : 'Desaparece del panel y de la web, pero podés recuperarla durante 30 días. Si sólo querés sacarla de la web, archivala.',
+        confirmLabel: 'Eliminar',
         tone: 'danger',
       });
       if (!ok || !row) return;

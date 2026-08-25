@@ -1,0 +1,131 @@
+# Naechtliche Sicherung der Supabase-Datenbank.
+#
+# Warum: Auf dem Supabase-Free-Tier gibt es keine Point-in-Time-Recovery.
+# Bis Migration 004 war `store.remove()` ein echtes DELETE, und `casa_images`
+# haengt per "on delete cascade" mit dran -- ein Fehlgriff auf dem Handy oder
+# ein Angreifer mit gueltiger Sitzung loeschte Inhalte endgueltig
+# (PLAN-SICHERHEIT.md, Befund B7).
+#
+# Das Soft-Delete aus 004 faengt den Fehlgriff ab. Diese Sicherung faengt
+# alles andere ab: den geloeschten Bucket, das versehentlich ausgefuehrte
+# seed.sql, das geloeschte Supabase-Projekt. Ein Dump dieser Datenbank ist
+# ein paar hundert Kilobyte -- die Sicherung ist billiger als jedes Gespraech
+# darueber, ob man sie braucht.
+#
+# NICHT enthalten: die Fotos im Storage-Bucket `casa-photos`. Die liegen
+# nicht in Postgres. Wer auch die sichern will, braucht einen zweiten Weg
+# (rclone oder die Storage-API) -- bewusst offen gelassen, weil die Fotos
+# jederzeit neu hochgeladen werden koennen, die Texte aber nicht.
+#
+# ----------------------------------------------------------------------------
+# EINMALIG EINZURICHTEN
+# ----------------------------------------------------------------------------
+# GitHub -> Settings -> Secrets and variables -> Actions -> New repository secret
+#
+#   SUPABASE_DB_URL
+#     Die vollstaendige Postgres-Verbindungszeichenkette, Form:
+#       postgresql://BENUTZER:PASSWORT@HOST:5432/postgres?sslmode=require
+#
+#     Im Supabase-Dashboard: Connect (oben) bzw. Settings -> Database ->
+#     Connection string.
+#
+#     WICHTIG -- die richtige Variante waehlen: Die "Direct connection"
+#     (db.<ref>.supabase.co) ist auf neueren Projekten nur ueber IPv6
+#     erreichbar, und GitHub-Runner haben kein IPv6. Der Job scheitert dann
+#     mit "Network is unreachable". Nimm deshalb den **Session Pooler**
+#     (Host in der Art aws-0-<region>.pooler.supabase.com, Port 5432,
+#     Benutzer postgres.<projekt-ref>) -- der ist ueber IPv4 erreichbar und
+#     haelt im Gegensatz zum Transaction Pooler die fuer pg_dump noetigen
+#     Sitzungseigenschaften.
+#
+#     Dieses Secret ist ein echtes Geheimnis: es gibt vollen Lese- und
+#     Schreibzugriff auf die Datenbank, an RLS vorbei. Es gehoert nirgendwo
+#     anders hin als in die GitHub-Secrets.
+
+name: Sicherung Datenbank
+
+on:
+  schedule:
+    # Taeglich 03:24 UTC -- nachts in Uruguay, und krumm, damit der Job nicht
+    # in der Warteschlange zur vollen Stunde steht.
+    - cron: '24 3 * * *'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  sichern:
+    name: pg_dump als Artefakt ablegen
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    steps:
+      # Der Ubuntu-Runner bringt einen aelteren pg_dump mit als die
+      # Postgres-Version von Supabase. Ein zu alter Client bricht mit
+      # "server version mismatch" ab, statt irgendetwas Halbes zu schreiben.
+      # Deshalb den offiziellen PostgreSQL-Paketstand einbinden und einen
+      # aktuellen Client installieren -- der kann auch aeltere Server.
+      - name: Aktuellen postgresql-client installieren
+        run: |
+          sudo install -d /usr/share/postgresql-common/pgdg
+          sudo curl -fsSL -o /usr/share/postgresql-common/pgdg/apt.postgresql.org.asc \
+            https://www.postgresql.org/media/keys/ACCC4CF8.asc
+          echo "deb [signed-by=/usr/share/postgresql-common/pgdg/apt.postgresql.org.asc] \
+            https://apt.postgresql.org/pub/repos/apt $(lsb_release -cs)-pgdg main" \
+            | sudo tee /etc/apt/sources.list.d/pgdg.list > /dev/null
+          sudo apt-get update -qq
+          sudo apt-get install -y --no-install-recommends postgresql-client-17
+          pg_dump --version
+
+      - name: Dump erstellen
+        env:
+          SUPABASE_DB_URL: ${{ secrets.SUPABASE_DB_URL }}
+        run: |
+          if [ -z "$SUPABASE_DB_URL" ]; then
+            echo "Es fehlt das Secret SUPABASE_DB_URL -- siehe Kopf dieser Datei." >&2
+            exit 1
+          fi
+          mkdir -p sicherung
+          datei="sicherung/retonos-$(date -u +%Y-%m-%d).sql.gz"
+
+          # --no-owner / --no-privileges: die Rollen eines Supabase-Projekts
+          # (supabase_admin & Co.) gibt es beim Zurueckspielen woanders nicht.
+          # Ohne die beiden Schalter scheitert ein restore an jeder Zeile.
+          # Nur das Schema `public`: auth, storage und die uebrigen
+          # Supabase-Schemata gehoeren der Plattform und lassen sich ohnehin
+          # nicht so zurueckspielen.
+          pg_dump "$SUPABASE_DB_URL" \
+            --schema=public \
+            --no-owner \
+            --no-privileges \
+            --clean \
+            --if-exists \
+            | gzip -9 > "$datei"
+
+          echo "datei=$datei" >> "$GITHUB_ENV"
+          ls -lh "$datei"
+
+          # Ein Dump, der praktisch leer ist, ist schlimmer als keiner: er
+          # sieht nach Sicherung aus. 1 KB ist grosszuegig -- selbst ein
+          # leeres Schema ist groesser.
+          if [ "$(stat -c%s "$datei")" -lt 1024 ]; then
+            echo "Dump ist verdaechtig klein -- als Fehlschlag gewertet." >&2
+            exit 1
+          fi
+
+      - name: Als Artefakt ablegen
+        uses: actions/upload-artifact@v4
+        with:
+          name: datenbank-sicherung-${{ github.run_id }}
+          path: sicherung/
+          retention-days: 30
+          if-no-files-found: error
+
+# Zum Zurueckspielen (von Hand, bewusst nicht automatisiert):
+#   1. Artefakt herunterladen und entpacken: gunzip retonos-JJJJ-MM-TT.sql.gz
+#   2. In ein FRISCHES Projekt einspielen, nie ueber laufende Daten druebe:
+#        psql "<verbindung>" -f retonos-JJJJ-MM-TT.sql
+#   3. Danach supabase/migrations/002_admin_allowlist.sql erneut laufen lassen
+#      -- die Allowlist haengt an auth.users, und die user_id ist im neuen
+#      Projekt eine andere.

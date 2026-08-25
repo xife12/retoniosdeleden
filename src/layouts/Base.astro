@@ -9,9 +9,15 @@ interface Props {
   lang: 'es' | 'en';
   title: string;
   description: string;
+  // Optional, Standard false -- daher für alle bestehenden Aufrufer ohne
+  // Änderung. Nur der Adminbereich setzt sie (Befund B6): eine Anmeldemaske
+  // hat in Suchmaschinen nichts verloren. robots.txt und der
+  // X-Robots-Tag-Header in vercel.json sagen dasselbe; drei unabhängige
+  // Wege für denselben Fall sind hier angemessen.
+  noindex?: boolean;
 }
 
-const { lang, title, description } = Astro.props;
+const { lang, title, description, noindex = false } = Astro.props;
 const altLang = lang === 'es' ? 'en' : 'es';
 ---
 
@@ -22,6 +28,7 @@ const altLang = lang === 'es' ? 'en' : 'es';
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>{title}</title>
     <meta name="description" content={description} />
+    {noindex && <meta name="robots" content="noindex, nofollow" />}
     {/* favicon.svg ist die reduzierte Bildmarke (Ring, Stock, Biene) mit fest
         eingetragenen Farben — Favicons erben keine Seiten-Styles. Die
         PNG-Zeile darunter ist die Rückfallebene für Browser ohne

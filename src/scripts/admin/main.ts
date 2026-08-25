@@ -6,6 +6,8 @@
  * und räumt beim Wechsel die vorherige Ansicht ab (`unmount()`).
  */
 import { initAuth, isSignedIn, mountLogin, onAuth, signOut, currentEmail } from './auth';
+import { securityDialog } from './mfa-dialog';
+import { mfaState } from './mfa';
 import { navigate, onRoute, start, type Route } from './router';
 import { clearToasts } from './toast';
 import { currentRole, type ProfileRole } from './documents-store';
@@ -203,6 +205,7 @@ onAuth((state) => {
   loginMounted = false;
   topEl?.removeAttribute('hidden');
   chatFabEl?.removeAttribute('hidden');
+  void markSecurityState();
 
   // Der Router meldet die Startadresse selbst; danach übernimmt onRoute.
   if (!routerStarted) {
@@ -250,6 +253,36 @@ for (const btn of navButtons) {
 logoutEl?.addEventListener('click', () => {
   void signOut();
 });
+
+/**
+ * Zugang zum zweiten Faktor.
+ *
+ * Der Knopf wird hier zur Laufzeit eingehaengt statt ins Markup von
+ * index.astro geschrieben: die Huelle soll weiterhin genau einen Anker haben
+ * und nichts kennen, was es ohne Anmeldung gar nicht gibt.
+ *
+ * Ist noch kein Faktor eingerichtet, traegt der Knopf `data-attention` -- ein
+ * stiller Punkt, kein Banner. Ein Backend, das bei jedem Start eine Warnung
+ * wegzuklicken verlangt, wird nach einer Woche weggeklickt, ohne gelesen zu
+ * werden.
+ */
+const securityBtn = document.createElement('button');
+securityBtn.type = 'button';
+securityBtn.className = 'btn btn--ghost btn--sm adm-top__security';
+securityBtn.textContent = 'Seguridad';
+securityBtn.addEventListener('click', () => {
+  void securityDialog().then(() => void markSecurityState());
+});
+logoutEl?.parentElement?.insertBefore(securityBtn, logoutEl);
+
+async function markSecurityState(): Promise<void> {
+  if (!isSignedIn()) return;
+  const state = await mfaState();
+  securityBtn.toggleAttribute('data-attention', !state.enrolled);
+  securityBtn.title = state.enrolled
+    ? 'Segundo factor activo'
+    : 'Todavía sin segundo factor';
+}
 
 if (mailEl) mailEl.textContent = currentEmail() ?? '';
 void initAuth();
