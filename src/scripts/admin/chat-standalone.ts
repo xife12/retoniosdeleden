@@ -93,7 +93,10 @@ function showLogin(): void {
 
 function showChat(): void {
   clearMain();
-  header.hidden = false;
+  // Bleibt versteckt, bis mountChat() unten den ersten Bildschirm meldet
+  // (onScreenChange) -- während des Ladens gibt es ohnehin noch nichts, wozu
+  // "Chat"/"Cerrar sesión" gehören könnten.
+  header.hidden = true;
   void mountChat(main, {
     // /chat hat keinen #/...-Hash-Router (der existiert nur innerhalb der
     // /admin-SPA, siehe router.ts) -- ohne dieses Argument würde mountChat()
@@ -108,6 +111,14 @@ function showChat(): void {
     // "documentos", Unterpfad "doc"), nicht etwa "#/documento/<id>".
     onOpenDocument: (id) => {
       window.location.href = `/admin/#/documentos/doc/${id}`;
+    },
+    // Eigene Kopfzeile ("Chat" + "Cerrar sesión") nur auf der Gesprächsliste:
+    // in einer offenen Konversation bzw. Vorschau steht "Chat" schon einmal
+    // in chat.css' eigener Gesprächsliste, und ein Zurück-Knopf führt ohnehin
+    // dorthin zurück -- eine zweite Kopfzeile darüber wäre nur doppelter Text
+    // auf einem Bildschirm, auf dem jeder Zentimeter zählt (Handy).
+    onScreenChange: (screen) => {
+      header.hidden = screen !== 'list';
     },
   });
   activeTeardown = unmountChat;

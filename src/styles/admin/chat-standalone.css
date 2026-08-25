@@ -12,7 +12,18 @@
 .chat-standalone {
   display: flex;
   flex-direction: column;
-  min-height: 100dvh;
+  /* ECHTE Höhe, nicht min-height: eine Flex-Spalte mit nur min-height wird
+     "auto" hoch (sie wächst mit ihrem Inhalt) -- dann hat .chat-standalone__main
+     (flex: 1 1 auto) keine feste Bezugshöhe zum Hineinwachsen, und
+     .chat-view darunter fällt auf seine eigene, für das eingebettete
+     /admin-Panel gedachte Höhenrechnung zurück (chat.css). Ergebnis: die
+     GANZE Seite wird so hoch wie ihr Inhalt und scrollt als Ganzes, statt
+     dass nur .chat-messages intern scrollt -- genau der gemeldete Fehler
+     (Kopf-/Eingabezeile nicht fixiert, ganz hoch/runter scrollen nötig).
+     overflow:hidden hier verhindert zusätzlich, dass irgendein Kind diese
+     Rechnung durch eigenes Überlaufen wieder aushebelt. */
+  height: 100dvh;
+  overflow: hidden;
   background: var(--papel);
 }
 
@@ -48,15 +59,30 @@
   padding: var(--sp-3);
 }
 
-/* .chat-view geht davon aus, in der eingebetteten Admin-Hülle unter einer
-   festen Kopf-/Navigationshöhe zu stehen (die "11rem" in chat.css). Hier
-   gibt es nur die eine schlanke Kopfzeile oben -- der Chat darf deshalb die
-   GESAMTE verbleibende Höhe des Flex-Bereichs füllen, statt der eigenen
-   svh-Rechnung zu folgen. Zwei Klassen Spezifität stechen die eine Klasse
+/* .chat-view geht davon aus, in der eingebetteten Admin-Hülle als
+   schwebendes KARTEN-Panel zu stehen: begrenzte Höhe (die "11rem"/"42rem" in
+   chat.css), abgerundete Ecken, Schlagschatten -- passend für ein
+   Slide-over neben Talleres/Casas, aber genau der gemeldete "Kasten mit
+   Schlagschatten mitten im Bildschirm" hier auf der eigenständigen,
+   bildschirmfüllenden Seite. Hier stattdessen randlos die GESAMTE
+   verbleibende Höhe des Flex-Bereichs füllen (jetzt mit echter Bezugshöhe,
+   siehe .chat-standalone). Zwei Klassen Spezifität stechen die eine Klasse
    in chat.css unabhängig von der Importreihenfolge. */
 .chat-standalone__main .chat-view {
   flex: 1 1 auto;
   height: 100%;
+  min-height: 0;
+  border-radius: 0;
+  box-shadow: none;
+}
+
+/* Die "Chat"-Überschrift der Gesprächsliste (chat.css .chat-list__title)
+   ist hier überflüssig -- die eigene Kopfzeile (.chat-standalone__top) sagt
+   bereits "Chat", siehe chat-standalone.ts. Nur ausblenden statt in
+   chat-view.ts zu entfernen: im eingebetteten /admin-Panel bleibt die
+   Überschrift die einzige "Chat"-Beschriftung und soll dort stehen. */
+.chat-standalone__main .chat-list__title {
+  display: none;
 }
 
 @media (max-width: 30rem) {
