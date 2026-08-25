@@ -1,0 +1,688 @@
+/* ============================================================
+   Chat (Phase 7a, #/documentos/chat) — Gesprächsliste + Konversation.
+   Ausschließlich Tokens aus tokens.css und Bausteine aus global.css/base.css
+   (.btn, .btn--ghost, .btn--sm, .adm-input, .visually-hidden). Alle Klassen
+   mit .chat--Präfix, siehe chat-view.ts.
+
+   Mobil zuerst, siehe Auftrag: dieser Bereich läuft später (Phase 7c) auch
+   als bildschirmfüllende Handy-App ohne die übrige Admin-Hülle -- die feste
+   Panel-Höhe unten (min(...svh, ...)) funktioniert deshalb bewusst
+   eigenständig, ohne von der Höhe der umgebenden .adm-main abzuhängen
+   (Vorbild: derselbe svh-Kniff in src/styles/libro.css).
+   ============================================================ */
+
+.chat-view {
+  display: flex;
+  flex-direction: column;
+  height: min(calc(100svh - 11rem), 42rem);
+  min-height: 24rem;
+  border-radius: var(--r-md);
+  overflow: hidden;
+  background: var(--papel);
+  box-shadow: var(--shadow-soft);
+}
+
+.chat-loading,
+.chat-empty {
+  padding: var(--sp-5) var(--sp-4);
+  color: var(--tinta-tenue);
+  text-align: center;
+}
+
+.chat-body {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+/* ---------- Gesprächsliste ---------- */
+
+.chat-list {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  overflow-y: auto;
+}
+
+.chat-list__title {
+  margin: 0;
+  padding: var(--sp-4) var(--sp-4) var(--sp-2);
+  font-size: var(--fs-700);
+  font-family: var(--font-display);
+}
+
+.chat-threads {
+  list-style: none;
+  margin: 0;
+  padding: 0 var(--sp-2) var(--sp-3);
+  display: grid;
+  gap: var(--sp-1);
+}
+
+.chat-thread__btn {
+  width: 100%;
+  min-height: var(--adm-touch);
+  display: flex;
+  align-items: center;
+  gap: var(--sp-3);
+  padding: var(--sp-2) var(--sp-3);
+  border: none;
+  border-radius: var(--r-md);
+  background: none;
+  text-align: start;
+  font: inherit;
+  color: inherit;
+  cursor: pointer;
+  transition: background var(--dur-1) var(--ease-out);
+}
+
+.chat-thread__btn:hover {
+  background: var(--papel-warm);
+}
+
+.chat-avatar {
+  flex: none;
+  width: 2.5rem;
+  height: 2.5rem;
+  border-radius: var(--r-full);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  font-size: var(--fs-300);
+}
+
+.chat-thread__info {
+  flex: 1;
+  min-width: 0;
+  display: grid;
+  gap: 0.1rem;
+}
+
+.chat-thread__folder {
+  font-size: var(--fs-200);
+  color: var(--tinta-tenue);
+}
+
+.chat-thread__title {
+  font-weight: 700;
+  font-size: var(--fs-400);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.chat-thread__preview {
+  margin: 0;
+  font-size: var(--fs-300);
+  color: var(--tinta-suave);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.chat-thread__meta {
+  flex: none;
+  display: grid;
+  justify-items: end;
+  gap: var(--sp-1);
+}
+
+.chat-thread__time {
+  font-size: var(--fs-200);
+  color: var(--tinta-tenue);
+  white-space: nowrap;
+}
+
+.chat-thread__badge {
+  min-width: 1.35rem;
+  height: 1.35rem;
+  padding-inline: 0.35rem;
+  border-radius: var(--r-full);
+  background: var(--barro-700);
+  color: var(--papel);
+  font-size: var(--fs-200);
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* ---------- Konversationsansicht ---------- */
+
+.chat-conversation {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.chat-conv__head {
+  flex: none;
+  display: flex;
+  align-items: center;
+  gap: var(--sp-2);
+  padding: var(--sp-3) var(--sp-3);
+  border-bottom: 1px solid var(--barro-100);
+  background: var(--papel);
+}
+
+.chat-conv__back {
+  flex: none;
+  min-height: var(--adm-touch);
+  padding: 0 var(--sp-2);
+  border: none;
+  background: none;
+  font: inherit;
+  font-weight: 600;
+  color: var(--barro-700);
+  cursor: pointer;
+  border-radius: var(--r-sm);
+}
+
+.chat-conv__back:hover {
+  background: var(--papel-warm);
+}
+
+.chat-conv__headinfo {
+  flex: 1;
+  min-width: 0;
+  display: grid;
+  gap: 0.1rem;
+}
+
+.chat-conv__title {
+  margin: 0;
+  font-weight: 700;
+  font-size: var(--fs-400);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.chat-conv__version {
+  margin: 0;
+  font-size: var(--fs-200);
+  color: var(--tinta-tenue);
+}
+
+.chat-conv__opendoc {
+  flex: none;
+}
+
+.chat-messages {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  padding: var(--sp-3);
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-2);
+}
+
+.chat-daysep {
+  align-self: center;
+  margin: var(--sp-2) 0;
+  padding: 0.2rem var(--sp-3);
+  border-radius: var(--r-full);
+  background: var(--papel-warm);
+  color: var(--tinta-tenue);
+  font-size: var(--fs-200);
+  font-weight: 600;
+}
+
+.chat-bubblerow {
+  display: flex;
+}
+
+.chat-bubblerow--own {
+  justify-content: flex-end;
+}
+
+.chat-bubblerow--other {
+  justify-content: flex-start;
+}
+
+/* Bündelt Sprechblase + "+ Tarea"-Link untereinander (statt nebeneinander,
+   wie es ein direktes Kind von .chat-bubblerow wäre) -- die 82%-Breiten-
+   grenze sitzt HIER statt auf .chat-bubble, damit der Link darunter dieselbe
+   Breite und Seite (eigen/fremd) einnimmt wie die Blase selbst. */
+.chat-bubblegroup {
+  max-width: 82%;
+  display: grid;
+  gap: 0.2rem;
+}
+
+.chat-bubblegroup--own {
+  justify-items: end;
+}
+
+.chat-bubblegroup--other {
+  justify-items: start;
+}
+
+.chat-bubble {
+  display: grid;
+  gap: 0.2rem;
+  padding: var(--sp-2) var(--sp-3);
+  border-radius: var(--r-md);
+}
+
+.chat-bubble--own {
+  background: var(--miel-100);
+  border: 1px solid var(--miel-300);
+  border-bottom-right-radius: var(--r-sm);
+}
+
+.chat-bubble--other {
+  background: #fffdf8;
+  box-shadow: var(--shadow-soft);
+  border-bottom-left-radius: var(--r-sm);
+}
+
+.chat-bubble__author {
+  font-size: var(--fs-200);
+  font-weight: 700;
+  color: var(--tinta-suave);
+}
+
+.chat-bubble__body {
+  overflow-wrap: anywhere;
+  white-space: pre-wrap;
+}
+
+.chat-bubble__time {
+  justify-self: end;
+  font-size: var(--fs-200);
+  color: var(--tinta-tenue);
+}
+
+/* "+ Tarea" unter jeder Nachricht (Auftrag 3.3) -- bewusst leise, kein .btn:
+   das ist ein Nebenaktion, keine Hauptaktion der Nachricht. */
+.chat-bubble__taskbtn {
+  padding: 0 var(--sp-1);
+  border: none;
+  background: none;
+  font: inherit;
+  font-size: var(--fs-200);
+  color: var(--barro-700);
+  text-decoration: underline;
+  text-underline-offset: 2px;
+  cursor: pointer;
+}
+
+/* ---------- Datei-Streifen (Auftrag 3.2, Mockup ".filestrip") ---------- */
+
+.chat-filestrip {
+  flex: none;
+  width: 100%;
+  min-height: var(--adm-touch);
+  display: flex;
+  align-items: center;
+  gap: var(--sp-2);
+  padding: var(--sp-2) var(--sp-3);
+  border: none;
+  border-bottom: 1px solid var(--barro-100);
+  background: var(--papel-warm);
+  text-align: start;
+  font: inherit;
+  font-size: var(--fs-300);
+  font-weight: 600;
+  color: var(--barro-700);
+  cursor: pointer;
+}
+
+.chat-filestrip:hover {
+  background: var(--miel-100);
+}
+
+.chat-filestrip__thumb {
+  flex: none;
+  width: 2rem;
+  height: 2rem;
+  border-radius: var(--r-sm);
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--papel);
+  color: var(--tinta-tenue);
+}
+
+.chat-filestrip__thumb svg {
+  width: 1.1rem;
+  height: 1.1rem;
+}
+
+.chat-filestrip__thumb img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.chat-filestrip__label {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* ---------- "Tareas"-Kopfbereich (Auftrag 3.3, Mockup ".tasksbox") ---------- */
+
+.chat-tasksbox {
+  flex: none;
+  border-bottom: 1px solid var(--barro-100);
+  background: var(--papel);
+}
+
+.chat-tasksbox__summary {
+  display: flex;
+  align-items: center;
+  min-height: var(--adm-touch);
+  padding: var(--sp-1) var(--sp-3);
+  font-weight: 700;
+  font-size: var(--fs-300);
+  color: var(--c-text-soft);
+  cursor: pointer;
+  list-style: none;
+}
+
+.chat-tasksbox__summary::-webkit-details-marker {
+  display: none;
+}
+
+.chat-tasksbox__summary::before {
+  content: '▸';
+  display: inline-block;
+  margin-inline-end: var(--sp-2);
+  color: var(--tinta-tenue);
+  transition: transform var(--dur-1) ease;
+}
+
+.chat-tasksbox[open] > .chat-tasksbox__summary::before {
+  transform: rotate(90deg);
+}
+
+.chat-tasksbox__body {
+  padding: 0 var(--sp-3) var(--sp-3);
+  display: grid;
+  gap: var(--sp-2);
+}
+
+.chat-tasks {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: var(--sp-1);
+}
+
+.chat-taskrow {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--sp-2);
+  padding: var(--sp-1) var(--sp-2);
+  border-radius: var(--r-sm);
+  background: var(--papel-warm);
+}
+
+.chat-taskrow__check {
+  flex: none;
+  margin-top: 0.15rem;
+  width: 1.1rem;
+  height: 1.1rem;
+  border-radius: var(--r-full);
+  border: 1.5px solid var(--barro-300);
+  background: var(--papel);
+  cursor: pointer;
+}
+
+.chat-taskrow__check:hover {
+  background: var(--pistacho-100);
+  border-color: var(--pistacho-700);
+}
+
+.chat-taskrow__info {
+  flex: 1;
+  min-width: 0;
+  display: grid;
+  gap: 0.1em;
+}
+
+.chat-taskrow__title {
+  margin: 0;
+  font-weight: 700;
+  font-size: var(--fs-300);
+  overflow-wrap: anywhere;
+}
+
+.chat-taskrow__meta {
+  margin: 0;
+  font-size: var(--fs-200);
+  color: var(--tinta-tenue);
+}
+
+.chat-taskrow--overdue .chat-taskrow__meta {
+  color: var(--barro-700);
+  font-weight: 700;
+}
+
+/* ---------- Vorschlagskarte (Auftrag 3.1, Mockup ".propcard") ---------- */
+
+.chat-proposals {
+  flex: none;
+  display: grid;
+  gap: var(--sp-2);
+  padding: var(--sp-3);
+  border-bottom: 1px solid var(--barro-100);
+}
+
+.chat-propcard {
+  display: grid;
+  gap: var(--sp-2);
+  padding: var(--sp-3);
+  border-radius: var(--r-md);
+  background: var(--miel-100);
+  border: 1.5px dashed var(--miel-300);
+}
+
+.chat-propcard__badge {
+  justify-self: start;
+  padding: 0.3em 0.75em;
+  border-radius: var(--r-full);
+  background: var(--miel-100);
+  color: var(--miel-800);
+  border: 1.5px dashed var(--miel-500);
+  font-size: var(--fs-200);
+  font-weight: 700;
+  letter-spacing: 0.01em;
+}
+
+.chat-propcard__meta {
+  margin: 0;
+  font-size: var(--fs-300);
+  color: var(--c-text-soft);
+}
+
+.chat-propcard__note {
+  margin: 0;
+  padding: var(--sp-2) var(--sp-3);
+  border-radius: var(--r-sm);
+  background: var(--papel);
+  font-size: var(--fs-300);
+}
+
+.chat-propcard__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--sp-2);
+}
+
+.chat-propcard__rejectform {
+  display: grid;
+  gap: var(--sp-2);
+  padding-top: var(--sp-2);
+  border-top: 1px solid var(--miel-300);
+}
+
+/* Eigenes "display: grid" oben schlägt sonst das native [hidden] -- siehe
+   HANDOFF-CHAT-DEPLOY.md Abschnitt 6. Ohne diese Zeile bliebe das
+   Ablehnungsformular immer sichtbar. */
+.chat-propcard__rejectform[hidden] {
+  display: none;
+}
+
+.chat-propcard__rejectfield {
+  resize: vertical;
+}
+
+.chat-propcard__rejectactions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: var(--sp-2);
+}
+
+/* ---------- Versionsvorschau (Auftrag 3.2, dritter interner Bildschirm) ---------- */
+
+.chat-preview__body {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  padding: var(--sp-3);
+  display: grid;
+  gap: var(--sp-2);
+  justify-items: center;
+  align-content: start;
+}
+
+.chat-preview__iframe {
+  width: 100%;
+  aspect-ratio: 3 / 4;
+  border: none;
+  border-radius: var(--r-sm);
+  background: var(--papel-warm);
+}
+
+.chat-preview__image {
+  max-width: 100%;
+  border-radius: var(--r-sm);
+}
+
+.chat-preview__opentab {
+  color: var(--c-link);
+}
+
+.chat-preview__gate {
+  justify-self: center;
+}
+
+.chat-preview__other {
+  display: grid;
+  justify-items: center;
+  gap: var(--sp-2);
+  padding: var(--sp-6) var(--sp-4);
+  text-align: center;
+}
+
+.chat-preview__othericon {
+  width: 3rem;
+  height: 3rem;
+  color: var(--tinta-tenue);
+}
+
+.chat-preview__othericon svg {
+  width: 100%;
+  height: 100%;
+}
+
+.chat-preview__otherfile {
+  margin: 0;
+  font-weight: 700;
+  overflow-wrap: anywhere;
+}
+
+/* ---------- Eingabefeld + @-Menü ---------- */
+
+.chat-composer {
+  flex: none;
+  display: flex;
+  align-items: flex-end;
+  gap: var(--sp-2);
+  padding: var(--sp-3);
+  border-top: 1px solid var(--barro-100);
+  background: var(--papel);
+}
+
+.chat-composer__wrap {
+  position: relative;
+  flex: 1;
+  min-width: 0;
+}
+
+.chat-composer__field {
+  display: block;
+  width: 100%;
+  resize: none;
+  max-height: 8rem;
+}
+
+.chat-composer__send {
+  flex: none;
+}
+
+/* Öffnet nach OBEN (bottom: 100%), nicht nach unten wie bei
+   document-detail.css' .docdet-mentionmenu -- das Eingabefeld sitzt hier
+   unten am Panel, ein nach unten aufklappendes Menü liefe aus dem sichtbaren
+   Bereich (besonders am Handy). */
+.chat-mentionmenu {
+  position: absolute;
+  z-index: 5;
+  bottom: 100%;
+  left: 0;
+  right: 0;
+  margin-bottom: var(--sp-1);
+  padding: var(--sp-1);
+  border-radius: var(--r-sm);
+  background: var(--papel);
+  box-shadow: var(--shadow-lift);
+  max-height: 12rem;
+  overflow-y: auto;
+  display: grid;
+  gap: 0.1rem;
+}
+
+/* mention-input.ts (attachMentionInput(), wiederverwendet und NICHT Teil
+   dieser Datei) erzeugt die Menüpunkte selbst mit der festen Klasse
+   ".docdet-mentionmenu__item" -- kein idPrefix-Parameter dafür, siehe dessen
+   render(). Hier deshalb bewusst diese Klasse ansprechen (statt einer
+   eigenen .chat-*-Klasse, die nie träfe), aber unter dem eigenen
+   .chat-mentionmenu-Container verschachtelt, damit der Chat unabhängig davon
+   funktioniert, ob document-detail.css im selben Bündel geladen ist. */
+.chat-mentionmenu .docdet-mentionmenu__item {
+  min-height: var(--adm-touch);
+  padding: 0 var(--sp-3);
+  display: flex;
+  align-items: center;
+  border: none;
+  border-radius: var(--r-sm);
+  background: none;
+  text-align: start;
+  font: inherit;
+  font-size: var(--fs-300);
+  color: var(--c-text);
+  cursor: pointer;
+}
+
+.chat-mentionmenu .docdet-mentionmenu__item.is-active {
+  background: var(--miel-100);
+  color: var(--miel-800);
+}
+
+@media (min-width: 48rem) {
+  .chat-view {
+    height: min(calc(100svh - 13rem), 46rem);
+  }
+}

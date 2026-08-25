@@ -453,9 +453,69 @@
   color: var(--tinta-tenue);
 }
 
+/* ---------- Chat-Icon: schwebt über der ganzen Hülle ---------- */
+
+.adm-fab {
+  position: fixed;
+  right: var(--sp-4);
+  bottom: var(--sp-4);
+  z-index: 40;
+  width: 56px;
+  height: 56px;
+  border-radius: var(--r-full);
+  border: none;
+  background: var(--barro-700);
+  color: var(--papel);
+  box-shadow: var(--shadow-lift);
+  display: grid;
+  place-items: center;
+  cursor: pointer;
+  transition: transform var(--dur-1) ease;
+}
+
+/* Eigenes "display: grid" oben schlägt sonst das native [hidden] --
+   Autor-CSS gewinnt gegen die User-Agent-Regel [hidden]{display:none},
+   unabhängig von der Spezifität. Ohne diese Zeile bliebe das Icon auch
+   beim Login-Formular sichtbar. */
+.adm-fab[hidden] {
+  display: none;
+}
+
+.adm-fab:hover {
+  transform: translateY(-2px);
+}
+
+.adm-fab:focus-visible {
+  outline: 2px solid var(--barro-300);
+  outline-offset: 3px;
+}
+
+.adm-fab svg {
+  width: 24px;
+  height: 24px;
+}
+
+.adm-fab__badge {
+  position: absolute;
+  top: -3px;
+  right: -3px;
+  min-width: 20px;
+  height: 20px;
+  padding: 0 0.3em;
+  border-radius: var(--r-full);
+  background: var(--miel-500);
+  color: var(--tinta);
+  font-size: 0.68rem;
+  font-weight: 800;
+  display: grid;
+  place-items: center;
+  border: 2px solid var(--papel);
+}
+
 @media (prefers-reduced-motion: reduce) {
   .adm-card,
-  .adm-nav__btn {
+  .adm-nav__btn,
+  .adm-fab {
     transition: none;
   }
 }

@@ -1,0 +1,450 @@
+/* ============================================================
+   Backend — Dokumentenablage (Ordnerübersicht, Ordnerinhalt,
+   Papierkorb). Präfix .docs- für alle Klassen hier, damit sie
+   sich nicht mit .docdet- (Dokument-Detailansicht, kommt später
+   von einem anderen Agenten) beißen. Siehe PLAN-DOCUMENTOS.md.
+
+   Nur Tokens aus tokens.css und Bausteine aus global.css/base.css
+   (.btn, .btn--ghost, .adm-dialog…, .visually-hidden) -- kein
+   eigenes Farbsystem, keine neuen Farben. Mobil zuerst: die
+   Nutzerin arbeitet oft am Telefon.
+   ============================================================ */
+
+.docs-view {
+  max-width: 60rem;
+  margin-inline: auto;
+  padding: var(--sp-5) var(--sp-4) var(--sp-9);
+  display: grid;
+  gap: var(--sp-4);
+  align-content: start;
+}
+
+/* ---------- Kopfzeile ---------- */
+
+.docs-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--sp-3);
+}
+
+.docs-head__title {
+  margin: 0;
+  font-family: var(--font-display);
+  font-size: var(--fs-800);
+}
+
+.docs-head__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--sp-2);
+}
+
+/* ---------- Brotkrumen ---------- */
+
+.docs-crumb {
+  margin-bottom: calc(var(--sp-2) * -1);
+}
+
+.docs-crumb__back {
+  min-height: var(--adm-touch);
+  padding: 0 var(--sp-2);
+  border: none;
+  background: none;
+  color: var(--c-text-soft);
+  font: inherit;
+  font-weight: 600;
+  cursor: pointer;
+  border-radius: var(--r-sm);
+}
+
+.docs-crumb__back:hover {
+  color: var(--barro-700);
+}
+
+/* ---------- Hinweistext (z. B. Ordner-Voreinstellung) ---------- */
+
+.docs-hint {
+  margin: calc(var(--sp-3) * -1) 0 0;
+  padding: var(--sp-2) var(--sp-3);
+  border-radius: var(--r-sm);
+  background: var(--papel-warm);
+  color: var(--c-text-soft);
+  font-size: var(--fs-200);
+}
+
+/* ---------- Liste ---------- */
+
+.docs-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: var(--sp-2);
+}
+
+.docs-empty {
+  margin: 0;
+  padding: var(--sp-7) var(--sp-4);
+  border: 1.5px dashed var(--barro-200);
+  border-radius: var(--r-md);
+  text-align: center;
+  color: var(--tinta-tenue);
+}
+
+.docs-section__title {
+  margin: var(--sp-2) 0 0;
+  font-size: var(--fs-500);
+}
+
+/* ---------- Karte (Ordner & Dokument) ---------- */
+
+.docs-card {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: stretch;
+  gap: var(--sp-2);
+  padding: var(--sp-2);
+  border-radius: var(--r-md);
+  background: #fffdf8;
+  box-shadow: var(--shadow-soft);
+}
+
+.docs-card__handle {
+  flex: none;
+  width: var(--adm-touch);
+  display: grid;
+  place-items: center;
+  border: none;
+  border-radius: var(--r-sm);
+  background: none;
+  color: var(--tinta-tenue);
+  cursor: grab;
+  touch-action: none;
+}
+
+.docs-card__handle:active {
+  cursor: grabbing;
+}
+
+/* Die ganze Karte als Öffnen-Knopf -- großes Ziel für den Daumen, auch
+   nach der Verkleinerung noch über der Mindest-Fingerkuppe (--adm-touch). */
+.docs-card__open {
+  flex: 1;
+  min-width: 12rem;
+  display: flex;
+  align-items: center;
+  gap: var(--sp-2);
+  padding: var(--sp-1) var(--sp-2);
+  border: none;
+  border-radius: var(--r-sm);
+  background: none;
+  font: inherit;
+  text-align: start;
+  cursor: pointer;
+}
+
+.docs-card__open:hover {
+  background: var(--papel-warm);
+}
+
+.docs-card__media {
+  flex: none;
+  width: 2.25rem;
+  height: 2.25rem;
+  display: grid;
+  place-items: center;
+  border-radius: var(--r-sm);
+  background: var(--papel-warm);
+  color: var(--barro-700);
+}
+
+.docs-card__media svg {
+  width: 1.2rem;
+  height: 1.2rem;
+}
+
+.docs-card__body {
+  flex: 1;
+  min-width: 0;
+  display: grid;
+  gap: 0.2em;
+}
+
+.docs-card__title {
+  font-weight: 700;
+  overflow-wrap: anywhere;
+}
+
+.docs-card__meta {
+  font-size: var(--fs-200);
+  color: var(--tinta-tenue);
+}
+
+.docs-card__meta--warn {
+  color: var(--miel-800);
+  font-weight: 600;
+}
+
+/* ---------- Überlaufmenü ---------- */
+/* "Mantener original"/"Tratar como foto" wohnt jetzt hier drin statt als
+   eigener, immer sichtbarer Umschalter je Karte -- siehe buildCard() in
+   documents-view.ts. Ein kurzes Warn-Badge (.docs-card__meta--warn) neben
+   der Dokumentzahl bleibt der einzige Dauerhinweis. */
+
+.docs-card__menu {
+  position: relative;
+  flex: none;
+}
+
+.docs-card__menubtn {
+  /* Trotz "kompakt" nicht unter die Fingerkuppen-Mindestgröße -- das ist ein
+     Tippziel, kein reines Zierelement wie der Ordner-Kreis daneben. */
+  width: var(--adm-touch);
+  height: var(--adm-touch);
+  display: grid;
+  place-items: center;
+  border: none;
+  border-radius: var(--r-full);
+  background: none;
+  color: var(--tinta-tenue);
+  font-size: var(--fs-500);
+  cursor: pointer;
+}
+
+.docs-card__menubtn:hover {
+  background: var(--papel-warm);
+  color: var(--c-text);
+}
+
+.docs-card__menulist {
+  position: absolute;
+  inset-inline-end: 0;
+  top: calc(100% + 4px);
+  z-index: 10;
+  min-width: 12rem;
+  display: grid;
+  padding: var(--sp-1);
+  border-radius: var(--r-md);
+  background: var(--papel);
+  box-shadow: var(--shadow-lift);
+}
+
+.docs-card__menulist button {
+  min-height: var(--adm-touch);
+  padding-inline: var(--sp-3);
+  border: none;
+  border-radius: var(--r-sm);
+  background: none;
+  font: inherit;
+  font-size: var(--fs-300);
+  text-align: start;
+  cursor: pointer;
+}
+
+.docs-card__menulist button:hover {
+  background: var(--papel-warm);
+}
+
+.docs-card__delete {
+  color: var(--barro-700);
+}
+
+/* ---------- Papierkorb ---------- */
+
+.docs-card--trashed {
+  align-items: center;
+  justify-content: space-between;
+}
+
+.docs-card--trashed .docs-card__body {
+  padding: var(--sp-2);
+}
+
+.docs-card__trashactions {
+  flex: none;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--sp-2);
+  padding: var(--sp-2);
+}
+
+/* ---------- Aufgaben (Phase 4): ausklappbare Übersicht je Ordner und
+   ordnerübergreifende "Mis tareas" ---------- */
+
+/* <details>/<summary> statt eines eigenen Auf-/Zuklapp-Gerüsts -- diese
+   Datei hatte bisher keins, und <details> ist von Haus aus tastaturbedienbar. */
+.docs-collapse {
+  border-radius: var(--r-md);
+  background: #fffdf8;
+  box-shadow: var(--shadow-soft);
+}
+
+.docs-collapse__summary {
+  display: flex;
+  align-items: center;
+  min-height: var(--adm-touch);
+  padding: var(--sp-2) var(--sp-3);
+  font-weight: 700;
+  cursor: pointer;
+  list-style: none;
+}
+
+.docs-collapse__summary::-webkit-details-marker {
+  display: none;
+}
+
+.docs-collapse__summary::before {
+  content: '▸';
+  display: inline-block;
+  margin-inline-end: var(--sp-2);
+  color: var(--tinta-tenue);
+  transition: transform var(--dur-1) ease;
+}
+
+.docs-collapse[open] > .docs-collapse__summary::before {
+  transform: rotate(90deg);
+}
+
+.docs-collapse__body {
+  padding: 0 var(--sp-2) var(--sp-2);
+}
+
+/* ---------- Aufgabenzeile (Ordnerübersicht und "Mis tareas") ---------- */
+
+.docs-task {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--sp-2);
+  padding: var(--sp-1) var(--sp-2);
+  border-radius: var(--r-sm);
+  background: var(--papel-warm);
+}
+
+.docs-task__main {
+  flex: 1;
+  min-width: 12rem;
+  display: grid;
+  gap: 0.1em;
+}
+
+.docs-task__title {
+  margin: 0;
+  font-weight: 700;
+  font-size: var(--fs-300);
+  overflow-wrap: anywhere;
+}
+
+/* Dokument/Zuständige/Fälligkeit in EINER Zeile statt drei gestapelten --
+   siehe buildTaskMain() in documents-view.ts. */
+.docs-task__meta {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 0;
+  font-size: var(--fs-200);
+  color: var(--tinta-tenue);
+  overflow-wrap: anywhere;
+}
+
+.docs-task__doclink {
+  padding: 0;
+  border: none;
+  background: none;
+  font: inherit;
+  font-size: inherit;
+  color: var(--c-link);
+  text-decoration: underline;
+  text-underline-offset: 2px;
+  cursor: pointer;
+}
+
+.docs-task__assignee {
+  font-weight: 600;
+  color: var(--c-text-soft);
+}
+
+/* Überfällig wird NICHT nur über die Farbe angezeigt (siehe Text "Vencida"
+   in documents-view.ts), die Farbe ist nur die zusätzliche Verstärkung. */
+.docs-task__due--overdue {
+  color: var(--barro-700);
+  font-weight: 700;
+}
+
+/* ---------- "Mis tareas": kurzer Bereich für gerade erledigte Aufgaben ---------- */
+
+.docs-recent {
+  display: grid;
+  gap: var(--sp-2);
+  padding-top: var(--sp-3);
+  border-top: 1.5px dashed var(--barro-200);
+}
+
+.docs-recent__title {
+  margin: 0;
+  font-size: var(--fs-300);
+  color: var(--tinta-tenue);
+}
+
+.docs-recent__list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: var(--sp-1);
+}
+
+.docs-recent__item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--sp-2);
+  padding: var(--sp-1) var(--sp-2);
+  border-radius: var(--r-sm);
+}
+
+.docs-recent__item-title {
+  color: var(--tinta-tenue);
+  overflow-wrap: anywhere;
+}
+
+/* ---------- Platzhalter (Personas) ---------- */
+
+.docs-placeholder {
+  text-align: center;
+  padding-top: var(--sp-9);
+}
+
+.docs-placeholder__text {
+  color: var(--tinta-tenue);
+}
+
+/* ---------- Fokus, sichtbar wie im übrigen Admin ---------- */
+
+.docs-crumb__back:focus-visible,
+.docs-card__open:focus-visible,
+.docs-card__handle:focus-visible,
+.docs-card__menubtn:focus-visible,
+.docs-card__menulist button:focus-visible,
+.docs-mode__btn:focus-visible,
+.docs-collapse__summary:focus-visible,
+.docs-task__doclink:focus-visible {
+  outline: 2px solid var(--barro-500);
+  outline-offset: 2px;
+}
+
+.docs-card__open:focus-visible {
+  outline-offset: -2px;
+}
+
+/* ---------- Mobil zuerst: ab hier etwas mehr Luft ---------- */
+
+@media (min-width: 40rem) {
+  .docs-card__open {
+    min-width: 16rem;
+  }
+}

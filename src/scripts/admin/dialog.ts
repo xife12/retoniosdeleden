@@ -187,7 +187,9 @@ export function confirmDialog(o: ConfirmOptions): Promise<boolean> {
 
     // Bei Gefahr steht der sichere Weg rechts und ist der gefüllte Knopf.
     if (danger) {
-      confirmBtn.className = 'adm-btn--danger';
+      // adm-btn--danger liefert nur die Farbe; .btn liefert Form, Polsterung
+      // und Rand. Ohne .btn fällt der Knopf aus dem übrigen Erscheinungsbild.
+      confirmBtn.className = 'btn adm-btn--danger';
       cancelBtn.className = 'btn';
       actions.append(confirmBtn, cancelBtn);
     } else {

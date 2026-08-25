@@ -23,7 +23,18 @@ export type Route =
   | { view: 'talleres' }
   | { view: 'taller'; id: string | 'nuevo' }
   | { view: 'casas' }
-  | { view: 'casa'; id: string | 'nuevo' };
+  | { view: 'casa'; id: string | 'nuevo' }
+  // Dokumentenablage. Anders als Talleres/Casas sind das nicht zwei Ebenen
+  // (Liste + Editor), sondern sechs gleichrangige Ansichten -- deshalb
+  // montiert dieser Bereich über `mount(container, route)` statt über
+  // mountList/mountEditor. Siehe main.ts.
+  | { view: 'documentos' }
+  | { view: 'carpeta'; id: string }
+  | { view: 'documento'; id: string }
+  | { view: 'tareas' }
+  | { view: 'papelera' }
+  | { view: 'personas' }
+  | { view: 'chat' };
 
 const HOME: Route = { view: 'talleres' };
 
@@ -44,6 +55,20 @@ export function routeToHash(route: Route): string {
       return '#/casas';
     case 'casa':
       return `#/casas/${route.id}`;
+    case 'documentos':
+      return '#/documentos';
+    case 'carpeta':
+      return `#/documentos/carpeta/${route.id}`;
+    case 'documento':
+      return `#/documentos/doc/${route.id}`;
+    case 'tareas':
+      return '#/documentos/tareas';
+    case 'papelera':
+      return '#/documentos/papelera';
+    case 'personas':
+      return '#/documentos/personas';
+    case 'chat':
+      return '#/documentos/chat';
   }
 }
 
@@ -56,6 +81,31 @@ export function parseRoute(hash: string): Route {
   }
   if (section === 'talleres') {
     return id ? { view: 'taller', id } : { view: 'talleres' };
+  }
+  // Die Ablage hat eine Ebene mehr: der zweite Teil benennt hier die
+  // Unteransicht, nicht schon den Datensatz. Unbekannte Unteransichten und
+  // Verweise ohne Kennung fallen bewusst auf die Ordnerübersicht zurück,
+  // statt die Seite leer zu lassen.
+  if (section === 'documentos') {
+    const target = parts[2];
+    switch (id) {
+      case undefined:
+        return { view: 'documentos' };
+      case 'carpeta':
+        return target ? { view: 'carpeta', id: target } : { view: 'documentos' };
+      case 'doc':
+        return target ? { view: 'documento', id: target } : { view: 'documentos' };
+      case 'tareas':
+        return { view: 'tareas' };
+      case 'papelera':
+        return { view: 'papelera' };
+      case 'personas':
+        return { view: 'personas' };
+      case 'chat':
+        return { view: 'chat' };
+      default:
+        return { view: 'documentos' };
+    }
   }
   return HOME;
 }

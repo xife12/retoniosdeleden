@@ -1,0 +1,942 @@
+/* ============================================================
+   Backend — Detailansicht eines Dokuments (Vorschau, Historie,
+   Vorschläge, Hochladen). Präfix .docdet- für alle Klassen hier,
+   damit sie sich nicht mit .docs- (Ordnerübersicht/-inhalt/
+   Papierkorb, documents.css) beißen. Siehe PLAN-DOCUMENTOS.md,
+   Abschnitte 4.2, 6 und 7.
+
+   Nur Tokens aus tokens.css und Bausteine aus global.css/base.css
+   (.btn, .btn--ghost, .adm-dialog…, .adm-field, .adm-input,
+   .adm-btn--danger, .visually-hidden) -- kein eigenes Farbsystem,
+   keine neuen Farben. Mobil zuerst: die Nutzerin arbeitet oft am
+   Telefon.
+
+   Die vier Versionszustände (current/superseded/proposal/rejected)
+   müssen auf einen Blick unterscheidbar sein, NICHT allein über
+   Farbe (Barrierefreiheit) -- deshalb zusätzlich unterschiedliche
+   Chip-Form (gefüllt/umrandet/gestrichelt/gepunktet), Symbol UND
+   Beschriftung je Zustand. Siehe .docdet-badge weiter unten.
+   ============================================================ */
+
+.docdet-view {
+  max-width: 48rem;
+  margin-inline: auto;
+  padding: var(--sp-5) var(--sp-4) var(--sp-9);
+  display: grid;
+  gap: var(--sp-5);
+  align-content: start;
+}
+
+.docdet-loading {
+  padding: var(--sp-7) var(--sp-4);
+  text-align: center;
+  color: var(--tinta-tenue);
+}
+
+/* ---------- Brotkrumen ---------- */
+
+.docdet-crumb {
+  margin-bottom: calc(var(--sp-3) * -1);
+}
+
+.docdet-crumb__back {
+  min-height: var(--adm-touch);
+  padding: 0 var(--sp-2);
+  border: none;
+  background: none;
+  color: var(--c-text-soft);
+  font: inherit;
+  font-weight: 600;
+  cursor: pointer;
+  border-radius: var(--r-sm);
+}
+
+.docdet-crumb__back:hover {
+  color: var(--barro-700);
+}
+
+/* ---------- Kopf ---------- */
+
+.docdet-head {
+  display: grid;
+  gap: var(--sp-2);
+}
+
+.docdet-head__row {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--sp-2);
+}
+
+.docdet-head__title {
+  flex: 1;
+  min-width: 0;
+  margin: 0;
+  font-family: var(--font-display);
+  font-size: var(--fs-800);
+  overflow-wrap: anywhere;
+}
+
+.docdet-head__rename {
+  flex: none;
+  width: var(--adm-touch);
+  height: var(--adm-touch);
+  display: grid;
+  place-items: center;
+  margin-top: 0.2em;
+  border: none;
+  border-radius: var(--r-full);
+  background: none;
+  color: var(--tinta-tenue);
+  cursor: pointer;
+}
+
+.docdet-head__rename svg {
+  width: 1.15rem;
+  height: 1.15rem;
+}
+
+.docdet-head__rename:hover {
+  background: var(--papel-warm);
+  color: var(--barro-700);
+}
+
+.docdet-head__meta {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--sp-2) var(--sp-3);
+}
+
+.docdet-head__version {
+  font-weight: 700;
+  color: var(--c-text);
+}
+
+.docdet-head__by {
+  font-size: var(--fs-300);
+  color: var(--tinta-tenue);
+}
+
+.docdet-head__meta .btn,
+.docdet-head__meta .btn--ghost {
+  margin-inline-start: auto;
+}
+
+/* ---------- Vorschau (Plan Abschnitt 6) ---------- */
+
+.docdet-preview {
+  display: grid;
+  gap: var(--sp-3);
+}
+
+.docdet-empty {
+  margin: 0;
+  padding: var(--sp-7) var(--sp-4);
+  border: 1.5px dashed var(--barro-200);
+  border-radius: var(--r-md);
+  text-align: center;
+  color: var(--tinta-tenue);
+}
+
+.docdet-preview__frame {
+  border-radius: var(--r-md);
+  overflow: hidden;
+  background: #fffdf8;
+  box-shadow: var(--shadow-soft);
+  min-height: 20rem;
+}
+
+.docdet-preview__iframe {
+  display: block;
+  width: 100%;
+  height: 70svh;
+  min-height: 20rem;
+  border: none;
+}
+
+.docdet-preview__hint {
+  margin: 0;
+  font-size: var(--fs-200);
+  color: var(--tinta-tenue);
+}
+
+.docdet-preview__opentab {
+  justify-self: start;
+  padding: var(--sp-2) var(--sp-3);
+  border-radius: var(--r-sm);
+  color: var(--barro-700);
+  font-weight: 600;
+  text-decoration: none;
+}
+
+.docdet-preview__opentab:hover {
+  text-decoration: underline;
+}
+
+.docdet-preview__imagewrap {
+  display: grid;
+  place-items: center;
+  padding: var(--sp-3);
+  border-radius: var(--r-md);
+  background: #fffdf8;
+  box-shadow: var(--shadow-soft);
+  min-height: 12rem;
+}
+
+.docdet-preview__image {
+  max-width: 100%;
+  max-height: 70svh;
+  border-radius: var(--r-sm);
+  object-fit: contain;
+}
+
+/* LADEBREMSE: ab PREVIEW_AUTOLOAD_LIMIT (5 MB) steht dieser Knopf statt
+   dass die Datei automatisch gezogen wird -- siehe document-detail.ts. */
+.docdet-preview__gate {
+  justify-self: start;
+}
+
+.docdet-preview__other {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-3);
+  padding: var(--sp-4);
+  border-radius: var(--r-md);
+  background: #fffdf8;
+  box-shadow: var(--shadow-soft);
+}
+
+.docdet-preview__othericon {
+  flex: none;
+  width: 3rem;
+  height: 3rem;
+  display: grid;
+  place-items: center;
+  border-radius: var(--r-sm);
+  background: var(--papel-warm);
+  color: var(--barro-700);
+}
+
+.docdet-preview__othericon svg {
+  width: 1.6rem;
+  height: 1.6rem;
+}
+
+.docdet-preview__otherinfo {
+  flex: 1;
+  min-width: 0;
+  display: grid;
+  gap: var(--sp-1);
+  justify-items: start;
+}
+
+.docdet-preview__otherfile {
+  margin: 0;
+  font-weight: 700;
+  overflow-wrap: anywhere;
+}
+
+.docdet-preview__othermeta {
+  margin: 0;
+  font-size: var(--fs-200);
+  color: var(--tinta-tenue);
+}
+
+/* ---------- "Subir nueva versión" ---------- */
+
+.docdet-uploadrow {
+  display: flex;
+}
+
+/* ---------- Abschnittstitel ---------- */
+
+/* versionsSection ist ein einfacher Block ohne eigenes Grid -- anders als
+   die direkten Kinder von .docdet-view bekommt die Überschrift hier also
+   KEINEN Gap-Puffer vom Elternelement. Ein negativer Rand hätte die Karte
+   direkt über den Text gezogen; deshalb positiver Abstand. */
+.docdet-section__title {
+  margin: 0 0 var(--sp-2);
+  font-size: var(--fs-500);
+}
+
+/* ---------- Zustands-Chips: Form + Symbol + Text, nicht nur Farbe ---------- */
+
+.docdet-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35em;
+  padding: 0.3em 0.75em;
+  border-radius: var(--r-full);
+  font-size: var(--fs-200);
+  font-weight: 700;
+  letter-spacing: 0.01em;
+}
+
+.docdet-badge svg {
+  width: 1em;
+  height: 1em;
+  flex: none;
+}
+
+/* Aktuell: gefüllte Fläche, durchgezogener Rand, Häkchen-Symbol. */
+.docdet-badge--current {
+  background: var(--pistacho-700);
+  color: var(--papel);
+  border: 1.5px solid var(--pistacho-700);
+}
+
+/* Abgelöst: nur Umriss, kein Symbol -- eine reine Nummer reicht als Text. */
+.docdet-badge--superseded {
+  background: transparent;
+  color: var(--c-text-soft);
+  border: 1.5px solid var(--barro-200);
+}
+
+/* Vorschlag: gestrichelter Rand, Uhr-Symbol, honigfarben (Warnung/„wartet"). */
+.docdet-badge--proposal {
+  background: var(--miel-100);
+  color: var(--miel-800);
+  border: 1.5px dashed var(--miel-500);
+}
+
+/* Abgelehnt: gepunkteter Rand, X-Symbol, gedeckter Barro-Ton. */
+.docdet-badge--rejected {
+  background: transparent;
+  color: var(--barro-700);
+  border: 1.5px dotted var(--barro-300);
+}
+
+/* ---------- Vorschläge ---------- */
+
+.docdet-proposals {
+  display: grid;
+  gap: var(--sp-3);
+}
+
+.docdet-proposal {
+  display: grid;
+  gap: var(--sp-2);
+  padding: var(--sp-4);
+  border-radius: var(--r-md);
+  background: var(--miel-100);
+  border: 1.5px dashed var(--miel-300);
+}
+
+.docdet-proposal.is-active {
+  box-shadow: var(--shadow-lift);
+}
+
+.docdet-proposal__meta {
+  margin: 0;
+  font-size: var(--fs-300);
+  color: var(--c-text-soft);
+}
+
+.docdet-proposal__note {
+  margin: 0;
+  padding: var(--sp-2) var(--sp-3);
+  border-radius: var(--r-sm);
+  background: var(--papel);
+  font-size: var(--fs-300);
+}
+
+.docdet-proposal__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--sp-2);
+}
+
+/* ---------- Ablehnungsgrund: Pflichtfeld, erscheint inline ---------- */
+
+.docdet-reject {
+  display: grid;
+  gap: var(--sp-2);
+  padding-top: var(--sp-2);
+  border-top: 1px solid var(--miel-300);
+}
+
+.docdet-reject__field {
+  resize: vertical;
+}
+
+.docdet-reject__actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: var(--sp-2);
+}
+
+/* ---------- Versionsliste ---------- */
+
+.docdet-versions {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: var(--sp-3);
+}
+
+.docdet-version {
+  display: grid;
+  gap: var(--sp-2);
+  padding: var(--sp-3);
+  border-radius: var(--r-md);
+  background: #fffdf8;
+  box-shadow: var(--shadow-soft);
+}
+
+.docdet-version--current {
+  border: 1.5px solid var(--pistacho-300);
+}
+
+.docdet-version.is-active {
+  outline: 2px solid var(--barro-300);
+  outline-offset: 2px;
+}
+
+.docdet-version__row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--sp-2) var(--sp-3);
+}
+
+.docdet-version__info {
+  flex: 1;
+  min-width: 10rem;
+  display: grid;
+  gap: 0.2em;
+}
+
+.docdet-version__meta {
+  margin: 0;
+  font-size: var(--fs-200);
+  color: var(--tinta-tenue);
+}
+
+.docdet-version__note {
+  margin: 0;
+  font-size: var(--fs-300);
+  color: var(--c-text);
+  overflow-wrap: anywhere;
+}
+
+.docdet-version__actions {
+  flex: none;
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--sp-2);
+}
+
+/* ---------- Abgelehnte Vorschläge: kompakt, unter ihrer Zielversion ---------- */
+
+.docdet-rejected {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--sp-2) var(--sp-3);
+  margin-inline-start: var(--sp-4);
+  padding: var(--sp-2) var(--sp-3);
+  border-radius: var(--r-sm);
+  border-inline-start: 3px dotted var(--barro-300);
+  background: var(--papel-warm);
+}
+
+.docdet-rejected.is-active {
+  outline: 2px solid var(--barro-300);
+  outline-offset: 2px;
+}
+
+.docdet-rejected__info {
+  flex: 1;
+  min-width: 8rem;
+  display: grid;
+  gap: 0.2em;
+}
+
+.docdet-rejected__meta {
+  margin: 0;
+  font-size: var(--fs-200);
+  color: var(--tinta-tenue);
+}
+
+.docdet-rejected__reason {
+  margin: 0;
+  font-size: var(--fs-300);
+  font-style: italic;
+  overflow-wrap: anywhere;
+}
+
+.docdet-rejected__actions {
+  flex: none;
+  display: flex;
+  gap: var(--sp-2);
+}
+
+/* ---------- Upload-Dialog ---------- */
+
+.docdet-uploaddialog {
+  width: min(100%, 34rem);
+}
+
+.docdet-uploaddialog__filename {
+  margin: 0;
+  font-size: var(--fs-300);
+  color: var(--c-text-soft);
+  overflow-wrap: anywhere;
+}
+
+.docdet-modegroup {
+  display: inline-flex;
+  gap: var(--sp-1);
+  padding: var(--sp-1);
+  border-radius: var(--r-full);
+  background: var(--papel-warm);
+}
+
+.docdet-modegroup__btn {
+  min-height: 2.25rem;
+  padding: 0 var(--sp-3);
+  border: none;
+  border-radius: var(--r-full);
+  background: none;
+  font: inherit;
+  font-size: var(--fs-200);
+  color: var(--c-text-soft);
+  cursor: pointer;
+}
+
+.docdet-modegroup__btn.is-on {
+  background: var(--papel);
+  color: var(--barro-700);
+  font-weight: 700;
+  box-shadow: var(--shadow-soft);
+}
+
+/* "Als Foto" verkleinert dauerhaft -- deutlich sichtbare Warnung, kein Kleingedrucktes. */
+.docdet-modegroup__warn {
+  margin: var(--sp-2) 0 0;
+  padding: var(--sp-2) var(--sp-3);
+  border-radius: var(--r-sm);
+  background: var(--miel-100);
+  color: var(--miel-800);
+  font-size: var(--fs-200);
+  font-weight: 600;
+}
+
+.docdet-uploaddialog__pathhint {
+  margin: 0;
+  font-size: var(--fs-200);
+  color: var(--tinta-tenue);
+}
+
+.docdet-uploaddialog__actions {
+  justify-content: flex-end;
+}
+
+/* ---------- Rückverweis "Mencionado en un comentario de …" ---------- */
+
+.docdet-version__mentionlink {
+  justify-self: start;
+  margin: 0;
+  padding: 0;
+  border: none;
+  background: none;
+  font-size: var(--fs-200);
+  font-weight: 600;
+  color: var(--barro-700);
+  text-decoration: underline;
+  text-underline-offset: 0.15em;
+  cursor: pointer;
+}
+
+.docdet-version__mentionlink:hover {
+  color: var(--barro-500);
+}
+
+/* Kurzes Aufblitzen, wenn eine Version oder ein Kommentar per Rückverweis
+   angesprungen wird -- reine Hervorhebung, kein Layoutsprung. */
+.docdet-flash {
+  animation: docdet-flash 1.6s ease-out;
+}
+
+@keyframes docdet-flash {
+  0%,
+  35% {
+    box-shadow: 0 0 0 3px var(--miel-500);
+  }
+  100% {
+    box-shadow: none;
+  }
+}
+
+/* ============================================================
+   Comentarios (Plan Phase 3) -- eine flache, chronologisch
+   aufsteigende Liste je Dokument (nicht pro Version aufgeteilt).
+   ============================================================ */
+
+.docdet-comments {
+  list-style: none;
+  margin: 0 0 var(--sp-4);
+  padding: 0;
+  display: grid;
+  gap: var(--sp-3);
+}
+
+.docdet-comment {
+  display: grid;
+  gap: var(--sp-2);
+  padding: var(--sp-3);
+  border-radius: var(--r-md);
+  background: #fffdf8;
+  box-shadow: var(--shadow-soft);
+}
+
+.docdet-comment__head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: var(--sp-2);
+}
+
+.docdet-comment__author {
+  font-weight: 700;
+  color: var(--c-text);
+}
+
+.docdet-comment__when {
+  font-size: var(--fs-200);
+  color: var(--tinta-tenue);
+}
+
+.docdet-comment__body {
+  overflow-wrap: anywhere;
+  white-space: pre-wrap;
+}
+
+.docdet-comment__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--sp-2);
+}
+
+/* Erwähnungs-Chips (mentions.ts, gemeinsam von allen @-Erwähnungen benutzt
+   -- unpräfixiert, weil mentions.ts sie unabhängig von dieser Ansicht
+   rendert). Form + Farbe je Typ, nicht nur Farbe (Barrierefreiheit). */
+/* inline-block statt inline: Dokument-/Dateititel können lang sein --
+   Kürzung per Ellipse (siehe max-width) funktioniert bei reinem "inline"
+   nicht zuverlässig. Der volle Text bleibt über den Tooltip (title-Attribut,
+   siehe mentions.ts) erreichbar. */
+.mention-chip {
+  display: inline-block;
+  max-width: 12rem;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  vertical-align: bottom;
+  padding: 0.05em 0.4em;
+  border-radius: var(--r-sm);
+  font-weight: 600;
+}
+
+.mention-chip--person {
+  background: var(--lavanda-100);
+  color: var(--lavanda-700);
+}
+
+.mention-chip--document {
+  background: var(--pistacho-100);
+  color: var(--pistacho-700);
+  border: 1px solid var(--pistacho-200);
+}
+
+.mention-chip--version {
+  background: var(--miel-100);
+  color: var(--miel-800);
+  border: 1px dashed var(--miel-500);
+}
+
+.mention-chip--clickable {
+  border: none;
+  font: inherit;
+  cursor: pointer;
+}
+
+.mention-chip--document.mention-chip--clickable,
+.mention-chip--version.mention-chip--clickable {
+  border-style: solid;
+}
+
+.mention-chip--clickable:hover {
+  filter: brightness(0.95);
+}
+
+/* ---------- Eingabefeld + @-Menü ---------- */
+
+.docdet-commentform {
+  display: grid;
+  gap: var(--sp-2);
+}
+
+.docdet-commentform__wrap {
+  position: relative;
+}
+
+.docdet-commentform__field {
+  display: block;
+  width: 100%;
+  resize: vertical;
+}
+
+.docdet-commentform__actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: var(--sp-2);
+}
+
+/* Siehe Entscheidung 13 im Dateikopf von document-detail.ts: fest unterhalb
+   des Felds, keine Caret-Pixelberechnung -- robust, auch mit virtueller
+   Tastatur am Handy. */
+.docdet-mentionmenu {
+  position: absolute;
+  z-index: 5;
+  top: 100%;
+  left: 0;
+  right: 0;
+  margin-top: var(--sp-1);
+  padding: var(--sp-1);
+  border-radius: var(--r-sm);
+  background: var(--papel);
+  box-shadow: var(--shadow-lift);
+  max-height: 12rem;
+  overflow-y: auto;
+  display: grid;
+  gap: 0.1rem;
+}
+
+.docdet-mentionmenu__item {
+  min-height: var(--adm-touch);
+  padding: 0 var(--sp-3);
+  display: flex;
+  align-items: center;
+  border: none;
+  border-radius: var(--r-sm);
+  background: none;
+  text-align: start;
+  font: inherit;
+  font-size: var(--fs-300);
+  color: var(--c-text);
+  cursor: pointer;
+}
+
+.docdet-mentionmenu__item.is-active {
+  background: var(--miel-100);
+  color: var(--miel-800);
+}
+
+/* ============================================================
+   Tareas (Plan Phase 4)
+   ============================================================ */
+
+.docdet-tasks-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--sp-2);
+  margin-bottom: var(--sp-2);
+}
+
+.docdet-tasks-head .docdet-section__title {
+  margin: 0;
+}
+
+.docdet-tasks {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: var(--sp-2);
+}
+
+.docdet-task {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--sp-2) var(--sp-3);
+  padding: var(--sp-3);
+  border-radius: var(--r-md);
+  background: #fffdf8;
+  box-shadow: var(--shadow-soft);
+}
+
+.docdet-task--done {
+  opacity: 0.7;
+}
+
+.docdet-task--overdue {
+  border: 1.5px solid var(--barro-300);
+}
+
+.docdet-task__info {
+  flex: 1;
+  min-width: 10rem;
+  display: grid;
+  gap: 0.2em;
+}
+
+.docdet-task__title {
+  margin: 0;
+  font-weight: 700;
+}
+
+.docdet-task--done .docdet-task__title {
+  text-decoration: line-through;
+  text-decoration-color: var(--tinta-tenue);
+}
+
+.docdet-task__meta {
+  margin: 0;
+  font-size: var(--fs-200);
+  color: var(--tinta-tenue);
+}
+
+.docdet-task__overduetag {
+  display: inline-block;
+  padding: 0.05em 0.5em;
+  border-radius: var(--r-full);
+  background: var(--barro-100);
+  color: var(--barro-700);
+  font-weight: 700;
+}
+
+.docdet-task__actions {
+  flex: none;
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--sp-2);
+}
+
+/* "Hechas" eingeklappt -- <details> ist von Haus aus tastaturbedienbar. */
+.docdet-tasks-done {
+  margin-top: var(--sp-3);
+}
+
+.docdet-tasks-done > summary {
+  min-height: var(--adm-touch);
+  display: flex;
+  align-items: center;
+  padding: 0 var(--sp-2);
+  border-radius: var(--r-sm);
+  font-weight: 600;
+  color: var(--c-text-soft);
+  cursor: pointer;
+}
+
+.docdet-tasks-done > summary:hover {
+  color: var(--barro-700);
+}
+
+.docdet-tasks--done {
+  margin-top: var(--sp-2);
+}
+
+/* ---------- "Ver historial" je Version: Zeitleiste aus Kommentaren und
+   Aufgaben aus dem Zeitraum, in dem diese Version die vigente war (siehe
+   buildHistorySection() in document-detail.ts). <details> wie bei den
+   erledigten Aufgaben oben -- tastaturbedienbar ohne eigenes JS. ---------- */
+
+.docdet-history {
+  margin-top: var(--sp-1);
+}
+
+.docdet-history__summary {
+  min-height: 2rem;
+  display: inline-flex;
+  align-items: center;
+  padding: 0 var(--sp-2);
+  border-radius: var(--r-sm);
+  font-size: var(--fs-200);
+  font-weight: 600;
+  color: var(--c-text-soft);
+  cursor: pointer;
+}
+
+.docdet-history__summary:hover {
+  color: var(--barro-700);
+}
+
+.docdet-history__body {
+  margin-top: var(--sp-2);
+  padding-inline-start: var(--sp-3);
+  border-inline-start: 2px solid var(--barro-100);
+}
+
+.docdet-history__list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: var(--sp-3);
+}
+
+.docdet-history__item {
+  display: grid;
+  gap: 0.2em;
+}
+
+.docdet-history__item--task {
+  color: var(--c-text-soft);
+}
+
+.docdet-history__meta {
+  margin: 0;
+  font-size: var(--fs-200);
+  color: var(--tinta-tenue);
+}
+
+/* Markiert einen Eintrag, der NUR wegen einer expliziten @-Erwähnung hier
+   auftaucht -- zeitlich läge er sonst nicht im Fenster dieser Version
+   (siehe buildHistorySection() Entscheidung "extraFromMentions"). */
+.docdet-history__viatag {
+  font-weight: 600;
+  color: var(--miel-800);
+}
+
+.docdet-history__text {
+  margin: 0;
+  font-size: var(--fs-300);
+  overflow-wrap: anywhere;
+  white-space: pre-wrap;
+}
+
+/* ---------- Fokus, sichtbar wie im übrigen Admin ---------- */
+
+.docdet-crumb__back:focus-visible,
+.docdet-head__rename:focus-visible,
+.docdet-modegroup__btn:focus-visible,
+.docdet-preview__opentab:focus-visible,
+.docdet-version__mentionlink:focus-visible,
+.docdet-history__summary:focus-visible,
+.docdet-tasks-done > summary:focus-visible {
+  outline: 2px solid var(--barro-500);
+  outline-offset: 2px;
+}
+
+/* ---------- Mobil zuerst: ab hier etwas mehr Luft ---------- */
+
+@media (min-width: 40rem) {
+  .docdet-uploaddialog__actions {
+    flex-wrap: nowrap;
+  }
+
+  .docdet-task {
+    flex-wrap: nowrap;
+  }
+}
+
+/* .docdet-version__row bleibt bei JEDER Breite umbrechend (kein nowrap ab
+   40rem wie früher) -- eine Zeile kann inzwischen bis zu vier Aktions-
+   knöpfe (Ver/Descargar/Mencionar/Reactivar) plus Badge und Metadaten
+   tragen. Erzwungenes nowrap lief dort in einen echten Overflow. */
