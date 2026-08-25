@@ -1,0 +1,56 @@
+---
+/**
+ * Eigenständige Chat-App (Phase 7c, PLAN-CHAT.md Abschnitt 5 + 7c).
+ *
+ * BEWUSST kein <Base> (../layouts/Base.astro): Base bindet
+ * public/site.webmanifest ein (start_url "/es/", die Marketing-
+ * Startseite) -- ein auf dem Homescreen installiertes Chat-Icon würde beim
+ * erneuten Öffnen dann die Startseite zeigen statt den Chat, statt das
+ * eigene public/chat.webmanifest (start_url/scope "/chat") zu greifen. Genau
+ * das warnt PLAN-CHAT.md Abschnitt 5.1 ausdrücklich zu vermeiden.
+ *
+ * Struktur wie src/pages/admin/index.astro: ein einziger Anker
+ * ([data-chat-root]), den ein Bootstrap-Skript zur Laufzeit füllt --
+ * src/scripts/admin/chat-standalone.ts, siehe dort (Anmeldung, Kopfzeile,
+ * Mounten von Login/Chat, Service-Worker-Registrierung).
+ *
+ * Tokens/Grundlayout/Schrift werden hier von Hand nachgebaut statt über
+ * Base, weil Base untrennbar am Marketing-<head> hängt -- die Bausteine
+ * selbst (tokens.css, global.css, dieselben Schriftschnitte) sind dieselben
+ * wie überall sonst, für ein einheitliches Erscheinungsbild.
+ */
+import '@fontsource-variable/fraunces';
+import '@fontsource-variable/outfit';
+import '../styles/tokens.css';
+import '../styles/global.css';
+---
+
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Chat — Retoños del Edén</title>
+    {/* Private, angemeldete Fläche -- nichts für Suchmaschinen, wie /admin
+        (siehe robots.txt und vercel.json, dort dieselbe Begründung). */}
+    <meta name="robots" content="noindex, nofollow" />
+
+    {/* Eigenes Manifest statt site.webmanifest, siehe Kommentar oben. */}
+    <link rel="manifest" href="/chat.webmanifest" />
+    {/* iOS braucht für "Zum Home-Bildschirm" keinen Service Worker, nur
+        diese beiden Tags (PLAN-CHAT.md Abschnitt 5.4) -- dieselbe Datei wie
+        die Marketing-Seite, eine Bildmarke reicht (Abschnitt 5.2). */}
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+    <meta name="theme-color" content="#fbf6ec" />
+  </head>
+  <body>
+    <div class="chat-standalone" data-chat-root></div>
+
+    {/* Verdrahtung (Anmeldung + Mounten) UND die Service-Worker-Registrierung
+        stecken beide in diesem einen Modul -- absichtlich nicht global (nicht
+        in Base.astro), siehe chat-standalone.ts und PLAN-CHAT.md 5.3. */}
+    <script>
+      import '../scripts/admin/chat-standalone';
+    </script>
+  </body>
+</html>

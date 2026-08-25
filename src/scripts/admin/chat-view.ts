@@ -34,8 +34,22 @@ import '../../styles/admin/chat.css';
  * verdrahtet)
  * ============================================================================
  *
- *   mountChat(container: HTMLElement): Promise<void>
+ *   mountChat(container: HTMLElement, opts?: MountChatOptions): Promise<void>
  *   unmountChat(): void
+ *
+ *   `opts.onOpenDocument` ist NUR für die eigenständige Chat-App gedacht
+ *   (Phase 7c, PLAN-CHAT.md Abschnitt 5/7c, /chat): dort gibt es den
+ *   #/...-Hash-Router aus router.ts nicht, ein bare navigate() dorthin
+ *   würde nur den URL-Hash ändern, ohne dass jemand reagiert. Ruft man
+ *   mountChat() OHNE zweites Argument auf (wie documents-view.ts es
+ *   innerhalb von /admin unverändert weiter tut), bleibt das Verhalten exakt
+ *   wie bisher: intern weiterhin navigate({ view: 'documento', id }) über
+ *   goToDocument() weiter unten. Betrifft nicht nur die zwei im Auftrag
+ *   genannten Stellen (Kopfzeilen-Knopf, Dokument-Erwähnungs-Chip), sondern
+ *   aus Konsistenz auch den dritten, selteneren Fall: den Rückfall in
+ *   onVersionClick, wenn eine referenzierte Version nicht mehr in
+ *   `activeVersions` auftaucht -- auch der würde in /chat sonst ins Leere
+ *   laufen.
  *
  * ----------------------------------------------------------------------------
  * ENTSCHEIDUNGEN, DIE DAS MOCKUP/DER AUFTRAG OFFENLIESS:
@@ -143,6 +157,11 @@ import '../../styles/admin/chat.css';
  * ============================================================================
  */
 
+/** Siehe Entscheidung im Dateikopf zu `opts.onOpenDocument`. */
+export interface MountChatOptions {
+  onOpenDocument?: (documentId: string) => void;
+}
+
 let teardown: (() => void) | null = null;
 
 // Feste Farbpalette für Avatar-Initialen -- siehe Entscheidung 4 im Dateikopf.
@@ -153,9 +172,20 @@ const AVATAR_PALETTE: Array<{ bg: string; fg: string }> = [
   { bg: 'var(--barro-100)', fg: 'var(--barro-700)' },
 ];
 
-export async function mountChat(container: HTMLElement): Promise<void> {
+export async function mountChat(container: HTMLElement, opts?: MountChatOptions): Promise<void> {
   const root = el('div', 'chat-view');
   container.append(root);
+
+  /**
+   * Einziger Ausgang aus dem Chat zu einem Dokument -- alle drei Stellen
+   * weiter unten (Kopfzeilen-Knopf, Dokument-Erwähnungs-Chip, Rückfall bei
+   * unauffindbarer Version) rufen NUR NOCH diese Funktion, nie mehr direkt
+   * navigate(). Siehe Entscheidung im Dateikopf.
+   */
+  function goToDocument(id: string): void {
+    if (opts?.onOpenDocument) opts.onOpenDocument(id);
+    else navigate({ view: 'documento', id });
+  }
 
   // Lade-Zustand, bevor überhaupt etwas zu zeigen ist -- wie document-detail.ts.
   const loadingEl = el('p', 'chat-loading', 'Cargando…');
@@ -374,7 +404,7 @@ export async function mountChat(container: HTMLElement): Promise<void> {
 
     const openDocBtn = el('button', 'btn btn--ghost btn--sm chat-conv__opendoc', 'Ver documento →');
     openDocBtn.type = 'button';
-    openDocBtn.addEventListener('click', () => navigate({ view: 'documento', id: doc.id }));
+    openDocBtn.addEventListener('click', () => goToDocument(doc.id));
     head.append(openDocBtn);
     wrap.append(head);
 
@@ -446,7 +476,7 @@ export async function mountChat(container: HTMLElement): Promise<void> {
         // onPersonClick baut renderCommentBody() dafür ein <span>, siehe
         // mentions.ts, Entscheidung 7.
         onDocumentClick: (id) => {
-          if (id !== documentId) navigate({ view: 'documento', id });
+          if (id !== documentId) goToDocument(id);
         },
         // Öffnet die Vorschau GENAU dieser Version (Auftrag 3.2), siehe
         // Entscheidung 6/9 im Dateikopf. Ohne Treffer in `activeVersions`
@@ -455,7 +485,7 @@ export async function mountChat(container: HTMLElement): Promise<void> {
         onVersionClick: (id) => {
           const version = activeVersions.find((v) => v.id === id);
           if (!version || !activeDoc) {
-            navigate({ view: 'documento', id: documentId });
+            goToDocument(documentId);
             return;
           }
           void openVersionOrTab(version, activeDoc);
