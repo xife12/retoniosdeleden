@@ -42,6 +42,7 @@ import Base from '../../layouts/Base.astro';
         <nav class="adm-nav" aria-label="Secciones del panel">
           <button type="button" class="adm-nav__btn" data-admin-nav="talleres">Talleres</button>
           <button type="button" class="adm-nav__btn" data-admin-nav="casas">Casas de barro</button>
+          <button type="button" class="adm-nav__btn" data-admin-nav="documentos">Documentos</button>
         </nav>
 
         <div class="adm-top__user">
@@ -55,6 +56,17 @@ import Base from '../../layouts/Base.astro';
 
     <!-- Einziger Anker: hier hängen Login, Listen und Editoren. -->
     <main class="adm-main" data-admin-view></main>
+
+    <!-- Chat-Icon (Plan Abschnitt 3): in der GANZEN Hülle sichtbar, nicht nur
+         innerhalb von Documentos -- eine Nachricht kann ankommen, während man
+         gerade auf Talleres oder Casas arbeitet. Versteckt bis angemeldet,
+         genauso wie die Kopfzeile oben. -->
+    <button type="button" class="adm-fab" data-admin-chat-fab hidden aria-label="Abrir chat">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true">
+        <path d="M4 5.5h16v10H9l-4 3.5v-3.5H4z" stroke-linejoin="round" />
+      </svg>
+      <span class="adm-fab__badge" data-admin-chat-badge hidden></span>
+    </button>
   </div>
 
   <script>

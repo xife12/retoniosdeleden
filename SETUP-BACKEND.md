@@ -263,3 +263,99 @@ Der Website-Build bricht mit einer deutschen Erklärung ab, wenn
 Beim Löschen eines Hauses räumt die Datenbank nur die Zeilen in `casa_images`
 ab. Die Dateien im Bucket löscht das Backend vorher selbst — Reihenfolge
 immer erst Storage, dann Datenbankzeile.
+
+---
+
+## E. Dokumentenablage einrichten (Talleres/Casas + Documentos)
+
+Die dritte Sektion im Backend — Baupläne, Anträge, Verträge statt WhatsApp —
+braucht zwei weitere Migrationen. Der Hintergrund und alle Entscheidungen
+dazu stehen in `PLAN-DOCUMENTOS.md`; hier geht es nur um die Einrichtung.
+
+### 1. Die zwei Dateien, in genau dieser Reihenfolge
+
+Dashboard → **SQL Editor**, nacheinander einfügen und **Run**:
+
+1. [`supabase/migrations/002_roles.sql`](supabase/migrations/002_roles.sql)
+2. [`supabase/migrations/003_documentos.sql`](supabase/migrations/003_documentos.sql)
+
+**Warum die Reihenfolge zählt:** `002_roles.sql` führt zum ersten Mal ein
+Rollenmodell ein (`owner` / `editor` / `member`). Bisher durfte jede
+angemeldete Person auf Talleres und Casas de barro alles — vertretbar,
+solange nur ein Zugang existierte. Sobald über die Dokumentenablage weitere
+Personen einen Login bekommen können, wäre das nicht mehr sicher: ohne
+Rollenprüfung könnte jede neue Person auch die öffentliche Website
+bearbeiten. `002_roles.sql` legt deshalb zuerst für **alle bereits
+bestehenden Zugänge** automatisch ein Profil mit der höchsten Rolle
+(`owner`) an, und **erst danach** stellt sie die Zugriffsregeln auf
+Talleres/Casas um. In dieser Reihenfolge sperrt die Migration niemanden
+aus — würde man sie umdrehen, wäre der bestehende Zugang für einen Moment
+ausgesperrt.
+
+`003_documentos.sql` baut darauf auf (Ordner, Dokumente, Versionen,
+Kommentare, Aufgaben, der private Speicher-Bucket) und muss deshalb danach
+laufen. Beide Skripte sind idempotent: ein zweiter Lauf ändert nichts mehr.
+
+### 2. Weitere Personen anlegen
+
+Dashboard → **Authentication → Users → Add user** (Add user → Create new
+user). E-Mail-Adresse und ein Passwort vergeben, **„Auto Confirm User"**
+aktivieren — sonst wartet der Zugang auf eine Bestätigungs-Mail, die nie
+verschickt wird.
+
+Beim ersten Login legt ein Trigger automatisch ein Profil mit der
+Einstiegsrolle `member` an (Zugriff auf die Dokumentenablage, aber nicht auf
+Talleres/Casas). Den Namen und ggf. eine höhere Rolle vergibt danach eine
+Person mit der Rolle `owner` — siehe nächster Punkt.
+
+### 3. Rollen vergeben
+
+Rollen ändert man direkt in der Tabelle `profiles`, im **SQL Editor**. Erst
+die E-Mail-Adresse der Person nachsehen:
+
+```sql
+select id, display_name, role, is_active from public.profiles;
+```
+
+Dann die passende Zeile aktualisieren — `<UUID>` durch die `id` aus der
+Abfrage oben ersetzen:
+
+```sql
+-- Rolle setzen: 'owner' (alles, plus Personen verwalten),
+-- 'editor' (Dokumente + Talleres/Casas), oder 'member' (nur Dokumente).
+update public.profiles set role = 'editor' where id = '<UUID>';
+
+-- Anzeigenamen korrigieren (der Trigger leitet ihn nur grob aus der
+-- E-Mail-Adresse ab).
+update public.profiles set display_name = 'Catalina', initials = 'CM' where id = '<UUID>';
+
+-- Zugang sperren, ohne den Auth-Account zu löschen.
+update public.profiles set is_active = false where id = '<UUID>';
+```
+
+Wichtig: **`owner` darf Personen hinzufügen und Rollen vergeben, `editor`
+darf zusätzlich Talleres und Casas de barro bearbeiten.** Wer nur mit
+Dokumenten zu tun hat — die meisten neuen Zugänge — bleibt bei `member`.
+
+### 4. Der Bucket `documentos` ist privat — und muss es bleiben
+
+Anders als `casa-photos` (öffentlich, weil Hausfotos auf der Website
+landen sollen) ist der Bucket `documentos` mit `public = false` angelegt.
+Das ist kein Versehen, sondern der ganze Sinn der Sache: Verträge und
+Baupläne dürfen nur nach Login abrufbar sein, nicht über eine erratbare
+Adresse im Netz. `003_documentos.sql` erzwingt diese Einstellung sogar bei
+einem erneuten Lauf (`on conflict ... do update set public = false`), falls
+der Bucket aus Versehen einmal anders angelegt worden wäre.
+
+**Das darf niemand ändern** — auch nicht „nur kurz zum Testen". Anzeigen
+und Herunterladen laufen im Backend über zeitlich begrenzte, signierte
+Adressen (`createSignedUrl`), nicht über die öffentliche Foto-URL.
+
+### 5. Kein Deploy-Hook für Dokumente
+
+Die Dokumentenablage taucht auf der öffentlichen Website nicht auf.
+`003_documentos.sql` richtet deshalb bewusst **keinen** Trigger nach dem
+Muster aus Abschnitt D dieses Dokuments ein — ein neuer Kommentar oder eine
+neue Dokumentversion darf keinen Vercel-Build auslösen. Die bestehenden
+Deploy-Hook-Trigger bleiben unverändert auf `workshops` und `casas`
+beschränkt.
