@@ -157,9 +157,19 @@ import '../../styles/admin/chat.css';
  * ============================================================================
  */
 
-/** Siehe Entscheidung im Dateikopf zu `opts.onOpenDocument`. */
+/**
+ * Siehe Entscheidung im Dateikopf zu `opts.onOpenDocument`.
+ *
+ * `onScreenChange` ist NUR für die eigenständige Chat-App gedacht (/chat):
+ * dort zeigt eine eigene, feste Kopfzeile "Chat" + "Cerrar sesión" -- doppelt
+ * zur Gesprächsliste ("Chat"-Überschrift) bzw. überflüssig, sobald ohnehin
+ * schon ein Gespräch mit eigenem Zurück-Knopf offen ist. Der Gastgeber
+ * (chat-standalone.ts) blendet seine Kopfzeile darüber nur bei `'list'` ein.
+ * Innerhalb von /admin bleibt das Argument einfach weg, nichts ändert sich.
+ */
 export interface MountChatOptions {
   onOpenDocument?: (documentId: string) => void;
+  onScreenChange?: (screen: 'list' | 'conversation' | 'preview') => void;
 }
 
 let teardown: (() => void) | null = null;
@@ -272,6 +282,7 @@ export async function mountChat(container: HTMLElement, opts?: MountChatOptions)
   function showList(): void {
     body.replaceChildren();
     body.append(buildThreadList());
+    opts?.onScreenChange?.('list');
   }
 
   function buildThreadList(): HTMLElement {
@@ -368,6 +379,7 @@ export async function mountChat(container: HTMLElement, opts?: MountChatOptions)
     currentConvRoot = convEl;
     body.append(convEl);
     scrollToBottom(messagesEl);
+    opts?.onScreenChange?.('conversation');
 
     // Gelesen markieren, sobald der Verlauf offen ist (Plan Abschnitt 8,
     // Punkt 4: Öffnen reicht, kein Bildlauf-Tracking) -- läuft im
@@ -580,11 +592,13 @@ export async function mountChat(container: HTMLElement, opts?: MountChatOptions)
     if (!currentConvRoot) return;
     body.replaceChildren();
     body.append(currentConvRoot);
+    opts?.onScreenChange?.('conversation');
   }
 
   function showVersionPreview(version: VersionRow, doc: DocumentWithCurrentVersion): void {
     body.replaceChildren();
     body.append(buildVersionPreviewScreen(version, doc));
+    opts?.onScreenChange?.('preview');
   }
 
   function buildVersionPreviewScreen(version: VersionRow, doc: DocumentWithCurrentVersion): HTMLElement {
