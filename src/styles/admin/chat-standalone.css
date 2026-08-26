@@ -76,12 +76,15 @@
   box-shadow: none;
 }
 
-/* Die "Chat"-Überschrift der Gesprächsliste (chat.css .chat-list__title)
+/* Die "Chat"-Überschrift der Gesprächsliste (chat.css .chat-list__headrow)
    ist hier überflüssig -- die eigene Kopfzeile (.chat-standalone__top) sagt
-   bereits "Chat", siehe chat-standalone.ts. Nur ausblenden statt in
-   chat-view.ts zu entfernen: im eingebetteten /admin-Panel bleibt die
-   Überschrift die einzige "Chat"-Beschriftung und soll dort stehen. */
-.chat-standalone__main .chat-list__title {
+   bereits "Chat", siehe chat-standalone.ts. Die GANZE Reihe ausblenden, nicht
+   nur die Überschrift darin: /chat übergibt kein opts.onClose (siehe
+   chat-standalone.ts -- da gibt es nichts, wohin man "schließen" könnte),
+   der Schließen-Knopf steht also nie neben ihr -- eine leere, aber gepolsterte
+   Reihe bliebe sonst als unnötiger Leerraum stehen. Im eingebetteten
+   /admin-Panel bleibt die Reihe unverändert sichtbar (dort mit ×). */
+.chat-standalone__main .chat-list__headrow {
   display: none;
 }
 

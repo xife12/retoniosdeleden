@@ -22,6 +22,35 @@
   box-shadow: var(--shadow-soft);
 }
 
+/* Nur vorhanden, wenn mountChat() mit opts.onClose aufgerufen wurde (das
+   eingebettete /admin-Panel, siehe documents-view.ts). Bewusst ein normales
+   flex:none-Element am Ende der jeweiligen Kopfzeile (siehe buildCloseBtn()
+   in chat-view.ts) statt eines schwebenden Overlays -- eine absolute
+   Positionierung oben rechts läge in der Konversation genau auf dem
+   bestehenden "Ver documento →"-Knopf. */
+.chat-close {
+  flex: none;
+  width: 2rem;
+  height: 2rem;
+  border: none;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  background: none;
+  color: var(--tinta-suave);
+  cursor: pointer;
+}
+
+.chat-close:hover {
+  background: var(--papel-warm);
+  color: var(--barro-700);
+}
+
+.chat-close svg {
+  width: 1rem;
+  height: 1rem;
+}
+
 .chat-loading,
 .chat-empty {
   padding: var(--sp-5) var(--sp-4);
@@ -46,9 +75,20 @@
   overflow-y: auto;
 }
 
+/* Reihe statt nur der Überschrift, seit .chat-close hier mit hineinreiht
+   (nur gesetzt, wenn mountChat() mit opts.onClose lief -- siehe dort). Ohne
+   Schließen-Knopf bleibt die Reihe ein einzelniges Flex-Kind und verhält sich
+   optisch wie zuvor die nackte Überschrift. */
+.chat-list__headrow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--sp-2);
+  padding: var(--sp-4) var(--sp-4) var(--sp-2);
+}
+
 .chat-list__title {
   margin: 0;
-  padding: var(--sp-4) var(--sp-4) var(--sp-2);
   font-size: var(--fs-700);
   font-family: var(--font-display);
 }
@@ -631,6 +671,32 @@
 
 .chat-composer__send {
   flex: none;
+}
+
+/* "+ Subir" -- öffnet chatUploadDialog() (chat-view.ts), derselbe visuelle
+   Rang wie .chat-composer__send (beide flex:none, gleiche Zeile), aber
+   zurückhaltender (Rahmen statt Füllfarbe), weil das Senden einer Nachricht
+   die häufigere Handlung bleibt. */
+.chat-composer__attach {
+  flex: none;
+  width: 2.4rem;
+  height: 2.4rem;
+  border: 1.5px solid var(--barro-200);
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  background: var(--papel);
+  color: var(--barro-700);
+  cursor: pointer;
+}
+
+.chat-composer__attach:hover {
+  background: var(--papel-warm);
+}
+
+.chat-composer__attach svg {
+  width: 1.15rem;
+  height: 1.15rem;
 }
 
 /* Öffnet nach OBEN (bottom: 100%), nicht nach unten wie bei
