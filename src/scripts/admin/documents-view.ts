@@ -119,7 +119,11 @@ export async function mount(container: HTMLElement, route: Route): Promise<void>
       await mountMyTasks(container);
       return;
     case 'chat':
-      await mountChat(container);
+      // onClose: bisher gab es keine eigene Schließen-Fläche im Chat-Panel,
+      // nur den Umweg über den "Documentos"-Knopf in der Kopfzeile -- dorthin
+      // navigiert das × jetzt direkt (siehe chat-view.ts, Entscheidung zu
+      // opts.onClose).
+      await mountChat(container, { onClose: () => navigate({ view: 'documentos' }) });
       teardown = unmountChat;
       return;
     case 'personas':

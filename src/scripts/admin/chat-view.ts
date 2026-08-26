@@ -11,10 +11,12 @@ import {
   type DocumentWithCurrentVersion,
   type ProfileRow,
   type TaskRow,
+  type UploadMode,
   type VersionRow,
 } from './documents-store';
 import { getOriginalUrl, getThumbnailUrl, previewKindFor, shouldAutoload } from './documents-preview';
 import { createTask, createTaskFromComment, listTasksForDocument, markTaskDone, reopenTask } from './documents-tasks';
+import { MAX_UPLOAD_BYTES, publishNewVersion, submitVersionProposal } from './documents-upload';
 import { attachMentionInput } from './mention-input';
 import { renderCommentBody } from './mentions';
 import { humanError, isSessionCancelled } from './errors';
@@ -166,10 +168,19 @@ import '../../styles/admin/chat.css';
  * schon ein Gespräch mit eigenem Zurück-Knopf offen ist. Der Gastgeber
  * (chat-standalone.ts) blendet seine Kopfzeile darüber nur bei `'list'` ein.
  * Innerhalb von /admin bleibt das Argument einfach weg, nichts ändert sich.
+ *
+ * `onClose` ist NUR für das eingebettete /admin-Panel gedacht: dort gab es
+ * bisher keine eigene Schließen-Fläche, nur der Umweg über den
+ * "Documentos"-Knopf in der äußeren Kopfzeile (siehe documents-view.ts).
+ * Gesetzt, erscheint ein feststehendes ×-Symbol oben rechts über allen drei
+ * internen Bildschirmen (Liste/Konversation/Vorschau). In der eigenständigen
+ * App (/chat) bleibt das Argument weg -- da gibt es nichts, wohin man
+ * "schließen" könnte, das Fenster selbst zu verlassen ist Sache des Systems.
  */
 export interface MountChatOptions {
   onOpenDocument?: (documentId: string) => void;
   onScreenChange?: (screen: 'list' | 'conversation' | 'preview') => void;
+  onClose?: () => void;
 }
 
 let teardown: (() => void) | null = null;
@@ -185,6 +196,29 @@ const AVATAR_PALETTE: Array<{ bg: string; fg: string }> = [
 export async function mountChat(container: HTMLElement, opts?: MountChatOptions): Promise<void> {
   const root = el('div', 'chat-view');
   container.append(root);
+
+  /**
+   * Siehe Entscheidung im Dateikopf zu `opts.onClose`. Bewusst KEIN einzelner,
+   * schwebender Knopf über allen drei Bildschirmen (erste Fassung) -- der
+   * Gesprächskopf hat mit "‹ Volver" links und "Ver documento →" rechts schon
+   * beide Ecken belegt, ein absolut positioniertes × oben rechts läge exakt
+   * auf "Ver documento →". Stattdessen hängt jeder der drei Bildschirme
+   * (Liste/Konversation/Vorschau) den Knopf selbst als normales, flex:none
+   * Element ans Ende seiner eigenen Kopfzeile -- reiht sich dadurch natürlich
+   * neben das dort schon Vorhandene ein, keine Überlappung möglich.
+   */
+  function buildCloseBtn(): HTMLButtonElement | null {
+    if (!opts?.onClose) return null;
+    const btn = document.createElement('button');
+    btn.type = 'button';
+    btn.className = 'chat-close';
+    btn.setAttribute('aria-label', 'Cerrar chat');
+    btn.innerHTML =
+      '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true">' +
+      '<path d="M6 6l12 12M18 6L6 18"/></svg>';
+    btn.addEventListener('click', () => opts.onClose?.());
+    return btn;
+  }
 
   /**
    * Einziger Ausgang aus dem Chat zu einem Dokument -- alle drei Stellen
@@ -287,7 +321,11 @@ export async function mountChat(container: HTMLElement, opts?: MountChatOptions)
 
   function buildThreadList(): HTMLElement {
     const wrap = el('div', 'chat-list');
-    wrap.append(el('h1', 'chat-list__title', 'Chat'));
+    const headRow = el('div', 'chat-list__headrow');
+    headRow.append(el('h1', 'chat-list__title', 'Chat'));
+    const closeBtn = buildCloseBtn();
+    if (closeBtn) headRow.append(closeBtn);
+    wrap.append(headRow);
 
     if (threads.length === 0) {
       wrap.append(
@@ -418,6 +456,9 @@ export async function mountChat(container: HTMLElement, opts?: MountChatOptions)
     openDocBtn.type = 'button';
     openDocBtn.addEventListener('click', () => goToDocument(doc.id));
     head.append(openDocBtn);
+
+    const closeBtn = buildCloseBtn();
+    if (closeBtn) head.append(closeBtn);
     wrap.append(head);
 
     // Datei-Streifen mit der aktuellen Version, direkt unter dem Kopf --
@@ -616,6 +657,9 @@ export async function mountChat(container: HTMLElement, opts?: MountChatOptions)
       el('p', 'chat-conv__version', version.version_no != null ? `Versión ${version.version_no}` : 'Propuesta'),
     );
     head.append(headInfo);
+
+    const closeBtn = buildCloseBtn();
+    if (closeBtn) head.append(closeBtn);
     wrap.append(head);
 
     const previewBody = el('div', 'chat-preview__body');
@@ -923,11 +967,86 @@ export async function mountChat(container: HTMLElement, opts?: MountChatOptions)
     })();
   }
 
+  /* ------------------------------------------------------------------- *
+   * Neue Fassung direkt aus dem Chat hochladen ("+" im Eingabebereich)
+   * ------------------------------------------------------------------- */
+
+  function openUploadFromComposer(documentId: string): void {
+    void (async () => {
+      // Voreinstellung immer 'original' -- anders als document-detail.ts
+      // (dort Entscheidung 8) gibt es hier keine geladene Ordnerliste, aus
+      // der sich das upload_mode des Ordners nachschlagen ließe, und der
+      // Chat lädt sie extra dafür auch nicht nach. 'original' ist ohnehin
+      // der sichere Standard (dieselbe Rückfallebene wie dort, wenn der
+      // Ordner nicht mehr auffindbar ist) und im Dialog selbst umschaltbar.
+      const result = await chatUploadDialog('original');
+      if (!result) return;
+
+      if (result.file.size > MAX_UPLOAD_BYTES) {
+        toast(
+          `Este archivo pesa ${formatMegabytes(result.file.size)} y supera el límite de 50 MB del plan ` +
+            'gratuito de Supabase. Elegí un archivo más chico, o pedile a Maxi que revise el plan de almacenamiento.',
+          { tone: 'error' },
+        );
+        return;
+      }
+
+      await guardSoft(async () => {
+        if (result.path === 'directo') {
+          const outcome = await publishNewVersion({
+            documentId,
+            file: result.file,
+            mode: result.mode,
+            note: result.note,
+          });
+          toast(
+            outcome.wasDeduplicated
+              ? 'Nueva versión establecida. Ya teníamos ese archivo -- no ocupa espacio de nuevo.'
+              : 'Nueva versión establecida.',
+            { tone: 'ok' },
+          );
+        } else {
+          const outcome = await submitVersionProposal({
+            documentId,
+            file: result.file,
+            mode: result.mode,
+            note: result.note,
+          });
+          toast(
+            outcome.wasDeduplicated
+              ? 'Propuesta enviada (ya teníamos ese archivo, no ocupa espacio de nuevo). Queda a la espera de aprobación.'
+              : 'Propuesta enviada. Queda a la espera de aprobación.',
+            { tone: 'ok' },
+          );
+        }
+        // Ganze Konversation neu laden -- wie nach Aceptar/Rechazar auf der
+        // Vorschlagskarte (Entscheidung 10 im Dateikopf): zeigt sofort den
+        // aktualisierten Datei-Streifen bzw. die neue Vorschlagskarte.
+        await openThread(documentId);
+      });
+    })();
+  }
+
   function buildComposer(documentId: string, messagesEl: HTMLElement): HTMLElement {
     const idPrefix = 'chat-composer';
     const form = document.createElement('form');
     form.className = 'chat-composer';
     form.noValidate = true;
+
+    // "+ Subir" -- direkt aus dem Chat eine neue Fassung hochladen/vorschlagen,
+    // ohne erst zum vollen Dokument wechseln zu müssen (siehe Auftrag: gerade
+    // am Handy soll das der schnelle Weg sein). Derselbe Dialog/Ablauf wie
+    // "+ Subir nueva versión" in document-detail.ts, siehe chatUploadDialog().
+    const attachBtn = document.createElement('button');
+    attachBtn.type = 'button';
+    attachBtn.className = 'chat-composer__attach';
+    attachBtn.setAttribute('aria-label', 'Subir nueva versión');
+    attachBtn.title = 'Subir nueva versión';
+    attachBtn.innerHTML =
+      '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">' +
+      '<path d="M12 5v14M5 12h14"/></svg>';
+    attachBtn.addEventListener('click', () => openUploadFromComposer(documentId));
+    form.append(attachBtn);
 
     const wrap = el('div', 'chat-composer__wrap');
     const label = el('label', 'visually-hidden', 'Mensaje');
@@ -1253,6 +1372,193 @@ function chatTaskFormDialog(profiles: ProfileRow[], opts: ChatTaskFormOptions): 
       overlay.classList.add('is-in');
       titleInput.focus();
       titleInput.select();
+    });
+  });
+}
+
+/* ===========================================================================
+   "+ Subir" im Eingabebereich -- Kopie von uploadDialog() aus
+   document-detail.ts (dort nicht exportiert), siehe Entscheidung 12 im
+   Dateikopf (derselbe Grund wie bei chatTaskFormDialog()): Optik und Ablauf
+   sollen exakt zusammenpassen. Nutzt dieselben CSS-Klassen
+   (.docdet-uploaddialog, .docdet-modegroup…) aus document-detail.css -- in
+   /admin ohnehin immer geladen (documents-view.ts importiert
+   document-detail.ts), in der eigenständigen Chat-App explizit von
+   chat-standalone.ts mitgeladen (dort schon für die Erwähnungs-Chips nötig).
+   =========================================================================== */
+
+interface ChatUploadDialogResult {
+  file: File;
+  note: string | undefined;
+  mode: UploadMode;
+  path: 'directo' | 'propuesta';
+}
+
+function formatBytes(bytes: number): string {
+  if (bytes < 1024) return `${bytes} B`;
+  const units = ['KB', 'MB', 'GB'];
+  let value = bytes / 1024;
+  let i = 0;
+  while (value >= 1024 && i < units.length - 1) {
+    value /= 1024;
+    i += 1;
+  }
+  return `${value.toFixed(value < 10 ? 1 : 0)} ${units[i]}`;
+}
+
+function chatUploadDialog(defaultMode: UploadMode): Promise<ChatUploadDialogResult | null> {
+  return new Promise((resolve) => {
+    const opener = document.activeElement instanceof HTMLElement ? document.activeElement : null;
+    const id = `chat-upload-${(dialogSeq += 1)}`;
+
+    const overlay = el('div', 'adm-dialog-backdrop');
+    const dialog = el('div', 'adm-dialog docdet-uploaddialog');
+    dialog.setAttribute('role', 'dialog');
+    dialog.setAttribute('aria-modal', 'true');
+    dialog.setAttribute('aria-labelledby', id);
+
+    const title = el('h2', 'adm-dialog__title', 'Subir nueva versión');
+    title.id = id;
+    dialog.append(title);
+
+    const form = document.createElement('form');
+    form.className = 'adm-dialog__form';
+    form.noValidate = true;
+
+    // Datei
+    const fileField = el('div', 'adm-field');
+    fileField.append(el('label', 'adm-label', 'Archivo'));
+    const fileInput = el('input', 'visually-hidden');
+    fileInput.type = 'file';
+    fileInput.tabIndex = -1;
+    const pickBtn = el('button', 'btn btn--ghost', 'Elegir archivo');
+    pickBtn.type = 'button';
+    const fileName = el('p', 'docdet-uploaddialog__filename', 'Ningún archivo elegido todavía.');
+    pickBtn.addEventListener('click', () => fileInput.click());
+    fileInput.addEventListener('change', () => {
+      const f = fileInput.files?.[0] ?? null;
+      fileName.textContent = f ? `${f.name} · ${formatBytes(f.size)}` : 'Ningún archivo elegido todavía.';
+      confirmDirectBtn.disabled = !f;
+      confirmProposalBtn.disabled = !f;
+    });
+    fileField.append(pickBtn, fileName, fileInput);
+    form.append(fileField);
+
+    // Notiz
+    const noteField = el('div', 'adm-field');
+    const noteLabel = el('label', 'adm-label', '¿Qué cambió? (opcional)');
+    noteLabel.htmlFor = `${id}-note`;
+    const noteInput = document.createElement('textarea');
+    noteInput.id = `${id}-note`;
+    noteInput.className = 'adm-input';
+    noteInput.rows = 2;
+    noteInput.placeholder = 'Ej: se agregó el detalle de la escalera.';
+    noteField.append(noteLabel, noteInput);
+    form.append(noteField);
+
+    // Modo -- Voreinstellung 'original' (siehe openUploadFromComposer()).
+    let mode: UploadMode = defaultMode;
+    const modeField = el('div', 'adm-field');
+    modeField.append(el('label', 'adm-label', 'Cómo guardar el archivo'));
+    const modeGroup = el('div', 'docdet-modegroup');
+    modeGroup.setAttribute('role', 'group');
+    modeGroup.setAttribute('aria-label', 'Cómo guardar el archivo');
+    const originalBtn = el('button', 'docdet-modegroup__btn', 'Mantener original');
+    originalBtn.type = 'button';
+    const fotoBtn = el('button', 'docdet-modegroup__btn', 'Tratar como foto');
+    fotoBtn.type = 'button';
+    const modeWarn = el(
+      'p',
+      'docdet-modegroup__warn',
+      'Achica la imagen para siempre y la vuelve a guardar como JPEG. No lo uses con archivos de imprenta, ' +
+        'planos u otros documentos que tienen que quedar exactamente como se subieron.',
+    );
+    modeWarn.hidden = true;
+
+    function paintMode(): void {
+      originalBtn.classList.toggle('is-on', mode === 'original');
+      originalBtn.setAttribute('aria-pressed', String(mode === 'original'));
+      fotoBtn.classList.toggle('is-on', mode === 'foto');
+      fotoBtn.setAttribute('aria-pressed', String(mode === 'foto'));
+      modeWarn.hidden = mode !== 'foto';
+    }
+    paintMode();
+    originalBtn.addEventListener('click', () => {
+      mode = 'original';
+      paintMode();
+    });
+    fotoBtn.addEventListener('click', () => {
+      mode = 'foto';
+      paintMode();
+    });
+    modeGroup.append(originalBtn, fotoBtn);
+    modeField.append(modeGroup, modeWarn);
+    form.append(modeField);
+
+    const pathHint = el(
+      'p',
+      'docdet-uploaddialog__pathhint',
+      'Elegí cómo entra la nueva versión: directa, o como propuesta que alguien más tiene que aprobar.',
+    );
+    form.append(pathHint);
+
+    const actions = el('div', 'adm-dialog__actions docdet-uploaddialog__actions');
+    const cancelBtn = el('button', 'btn btn--ghost', 'Cancelar');
+    cancelBtn.type = 'button';
+
+    const confirmDirectBtn = el('button', 'btn btn--ghost', 'Establecer directamente');
+    confirmDirectBtn.type = 'button';
+    confirmDirectBtn.disabled = true;
+
+    const confirmProposalBtn = el('button', 'btn', 'Subir como propuesta');
+    confirmProposalBtn.type = 'submit';
+    confirmProposalBtn.disabled = true;
+
+    actions.append(cancelBtn, confirmDirectBtn, confirmProposalBtn);
+    form.append(actions);
+    dialog.append(form);
+    overlay.append(dialog);
+
+    let settled = false;
+    const finish = (value: ChatUploadDialogResult | null): void => {
+      if (settled) return;
+      settled = true;
+      document.removeEventListener('keydown', onKeydown, true);
+      overlay.classList.add('is-leaving');
+      window.setTimeout(() => overlay.remove(), 200);
+      if (opener && opener.isConnected) opener.focus();
+      resolve(value);
+    };
+
+    function onKeydown(event: KeyboardEvent): void {
+      if (event.key === 'Escape') {
+        event.preventDefault();
+        finish(null);
+      }
+    }
+
+    overlay.addEventListener('pointerdown', (event) => {
+      if (event.target === overlay) finish(null);
+    });
+    cancelBtn.addEventListener('click', () => finish(null));
+
+    function submitWith(path: 'directo' | 'propuesta'): void {
+      const file = fileInput.files?.[0];
+      if (!file) return;
+      finish({ file, note: noteInput.value.trim() || undefined, mode, path });
+    }
+
+    confirmDirectBtn.addEventListener('click', () => submitWith('directo'));
+    form.addEventListener('submit', (event) => {
+      event.preventDefault();
+      submitWith('propuesta');
+    });
+
+    document.addEventListener('keydown', onKeydown, true);
+    document.body.append(overlay);
+    requestAnimationFrame(() => {
+      overlay.classList.add('is-in');
+      pickBtn.focus();
     });
   });
 }
