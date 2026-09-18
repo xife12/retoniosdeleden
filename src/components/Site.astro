@@ -15,6 +15,8 @@ import Herbario from './Herbario.astro';
 import Products from './Products.astro';
 import Quiz from './Quiz.astro';
 import Workshops from './Workshops.astro';
+import AbejasEducan from './AbejasEducan.astro';
+import OnTour from './OnTour.astro';
 import Stay from './Stay.astro';
 import Contact from './Contact.astro';
 import Footer from './Footer.astro';
@@ -61,6 +63,13 @@ const t = getDict(lang);
     <SectionDivider color="var(--miel-100)" flip />
     <Quiz t={t} />
     <Workshops t={t} lang={lang} />
+    <SectionDivider color="var(--papel-warm)" flip />
+    <AbejasEducan t={t} lang={lang} />
+    {/* On Tour schliesst unmittelbar an die Schulmodule an: dort kommen
+        wir in die Schule, hier zu allen anderen. Der Uebergang traegt
+        deshalb das Papierweiss von On Tour, nicht das Lehmrot danach. */}
+    <SectionDivider color="var(--papel)" />
+    <OnTour t={t} lang={lang} />
     <SectionDivider color="var(--barro-100)" />
     <Stay t={t} />
     <SectionDivider color="var(--lavanda-100)" flip />

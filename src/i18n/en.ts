@@ -15,8 +15,11 @@ export const en: Dict = {
     herbario: 'Herbarium',
     productos: 'Products',
     talleres: 'Workshops',
+    experiencias: 'Experiences',
+    escuelas: 'Bees teach',
+    onTour: 'On Tour',
     visita: 'Visit us',
-    nosotros: 'About us',
+    nosotros: 'Our Hive',
     contacto: 'Contact',
     menu: 'Menu',
     closeMenu: 'Close menu',
@@ -42,18 +45,18 @@ export const en: Dict = {
     chapters: [
       {
         year: '2015',
-        title: 'A branch, a bird, a seed',
-        text: "Family legend says it all started with grandmother Alba: she stuck a dry branch into the ground, with no real intention beyond seeing what would happen. A white bird landed on it and, without knowing it, dropped the first seed. That's how the farm's first tree was born, almost by accident — and with it, the idea of feeding the soil with what it gives us. We started caring for the ground with microorganisms, long before we knew pistachios would ever grow here.",
+        title: 'A stick, a bird, a seed',
+        text: "Legend says it all started with grandmother Alba: she stuck a stick into the ground, with no real intention beyond seeing what would happen. A white and lilac bird (today we know it as the monjita, the white widow-bird) landed on it and, without knowing it, dropped the first seed. That's how the farm's first tree was born, almost by accident — and with it, the idea of feeding the soil with what it gives us. We started caring for the ground with effective microorganisms, long before we knew pistachios would ever grow here.",
       },
       {
         year: 'The early years',
         title: 'Goji berries, the first in the country',
-        text: "We planted Uruguay's first plot of goji berries, and everything else followed: over 350 native and fruit trees joined the land. The farm's first roof was the nursery — today it's being transformed, mud brick by mud brick, into one of our houses.",
+        text: "We planted Uruguay's first plot of goji berries, and everything else followed: over 350 native and fruit trees joined the land. The farm's first shade was the nursery – today it is being transformed, centimetre by centimetre of clay, into one of the houses we will rent out.",
       },
       {
         year: '2025',
         title: 'The soil says yes',
-        text: 'After years of caring for the land, sweet news arrived: pistachios can grow here too. We set aside a plot for a first pilot planting — organic and biodynamic from day one, no chemicals, all by hand.',
+        text: 'After years of caring for the land and waiting for an answer, the sweet news arrived: pistachios can grow here. We set aside a plot for a first pilot planting — organic and biodynamic from day one, no chemicals, all by hand.',
       },
       {
         year: 'Coming up',
@@ -61,9 +64,9 @@ export const en: Dict = {
         text: "The last trees are still on their way. When exactly depends on a couple of permits, so for now we're leaving it open. Meanwhile lavender is already blooming between the rows for oils and soaps, calendula has its own corner for tea, the hives arrive (my family!), and the second mud house is growing — soon available to rent. The third is already dreamed up.",
       },
       {
-        year: '~2030',
+        year: '~2031',
         title: 'The first harvest',
-        text: 'A pistachio tree takes about five years to bear its first real fruit. Patience is like honey: slow, and worth every drop.',
+        text: 'A pistachio tree takes about five years to show us some of its fruit. Patience is like honey: slow, and worth every drop.',
       },
     ],
   },
@@ -77,8 +80,8 @@ export const en: Dict = {
     status: { listo: 'Ready', enObra: 'Under construction', planeado: 'Planned' },
     stations: [
       {
-        name: 'The gate',
-        desc: 'The entrance, on the western edge. Every path, and every visit, starts here.',
+        name: 'La tranquera',
+        desc: 'The farm gate, on the western edge. Every path, and every visit, starts here.',
       },
       {
         name: 'The ash-tree avenue',
@@ -97,12 +100,12 @@ export const en: Dict = {
         desc: 'My neighborhood: the northwest corner. Adobe hives among the orange calendula, blue and white wormwood for tea, and thousands of aromatic plants.',
       },
       {
-        name: 'Clay house 2: the oven house',
+        name: 'La hornera',
         desc: "Built with clay from the land itself. Soon you'll be able to spend the night here and enjoy the sunrises.",
       },
       {
-        name: 'Clay houses 3 (the white monjita) & 4 (the yellow-hooded blackbird)',
-        desc: "We're still dreaming them up — they'll sit on the ring, facing the sunset.",
+        name: 'La monjita blanca & el tordo amarillo',
+        desc: "We're still dreaming them up: they carry the names of two birds that nest here, and they'll sit on the ring, facing the sunset.",
       },
       {
         name: 'The lookout',
@@ -126,7 +129,7 @@ export const en: Dict = {
       },
     ],
     border:
-      'The whole perimeter is hugged by a belt of eucalyptus trees, with oaks and maples along some stretches.',
+      'The whole perimeter is hugged by a curtain of trees that breaks the wind, with oaks and maples along some stretches.',
   },
   products: {
     kicker: 'Harvests on their way',
@@ -137,7 +140,7 @@ export const en: Dict = {
       {
         name: 'Pistachios',
         desc: "Uruguay's first, certified organic to the European standard.",
-        badge: 'First harvest ~2030',
+        badge: 'First harvest ~2031',
       },
       {
         name: 'Lavender oil & soaps',
@@ -325,8 +328,8 @@ export const en: Dict = {
         d: 'It gives oil and soaps years before the first pistachio harvest.',
       },
     ],
-    processTitle: 'From blossom to soap',
-    processHint: 'Follow the path, step by step.',
+    processTitle: 'From blossom to soap and candle',
+    processHint: 'One single path that opens into two at the end.',
     process: [
       {
         t: 'Harvest',
@@ -337,12 +340,36 @@ export const en: Dict = {
         d: 'Steam passes through the blossoms and carries the essential oil away with it.',
       },
       {
-        t: 'Oil',
-        d: 'A few golden drops for every armful of flowers. Pure, intense, concentrated.',
+        t: 'Oil and hydrosol',
+        d: 'Two things come off the still: the essential oil, which floats on top and is skimmed drop by drop, and the hydrosol, the fragrant flower water. Both travel on down each of the two paths.',
+      },
+    ],
+    processBranches: [
+      {
+        label: 'Soap',
+        steps: [
+          {
+            t: 'Saponification',
+            d: 'Fat and lye meet in the pot. In go the oil and the hydrosol, and dried blossoms settle on top of it all.',
+          },
+          {
+            t: 'Curing',
+            d: 'The bars rest for six weeks until they are firm, mild and ready to use.',
+          },
+        ],
       },
       {
-        t: 'Soap',
-        d: 'The oil is blended with plant oils and rests for six weeks until cured.',
+        label: 'Candle',
+        steps: [
+          {
+            t: 'Wax',
+            d: 'The wax comes from our own hives, a few steps from the lavender: the same bees that visit these flowers give the candle its body. It melts slowly over low heat.',
+          },
+          {
+            t: 'Wick and blossoms',
+            d: 'The essential oil is stirred in, the wick is centered and a few dried flowers are left peeking out of the wax.',
+          },
+        ],
       },
     ],
     rubHint: 'Run your finger over the lavender to release its scent',
@@ -396,12 +423,12 @@ export const en: Dict = {
         d: 'Lemon, orange, mandarin, apple, plum, cashew, date trees and so many others. Fresh fruit for guests, workshop visitors and birds alike.',
       },
       {
-        n: 'Fugus',
+        n: 'Golden ash trees',
         d: 'The welcome avenue, planted in 2015 in honor of Stefan. Slim, tall and lined up like a friendly guard.',
       },
       {
-        n: 'Eucalyptus, oaks & maples',
-        d: 'Different types of eucalyptus form the belt hugging part of the perimeter alongside oaks and maples: they cut the wind and scent the air.',
+        n: 'Oaks & maples',
+        d: 'Part of the tree belt hugging the perimeter: they break the wind, shade the edge of the farm and turn every colour in autumn.',
       },
       {
         n: 'Arrayanes',

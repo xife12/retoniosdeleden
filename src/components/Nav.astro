@@ -22,6 +22,8 @@ const allLinks = [
   { href: '#herbario', label: t.nav.herbario },
   { href: '#productos', label: t.nav.productos },
   { href: '#talleres', label: t.nav.talleres },
+  { href: '#escuelas', label: t.nav.escuelas },
+  { href: '#on-tour', label: t.nav.onTour },
   { href: '#visita', label: t.nav.visita },
   // Eigene Unterseite, kein Anker: die Familie hinter der Chacra
   { href: `/${lang}/${lang === 'es' ? 'nosotros' : 'about'}`, label: t.nav.nosotros, external: true },
@@ -38,8 +40,37 @@ const allLinks = [
 // Die vier neueren Detail-Sektionen (Pistacho, Lavanda, Abejas, Herbario)
 // sind Vertiefungen innerhalb der Chacra-Übersicht und leben vollständig
 // im Mobilmenü sowie im normalen Scroll-Fluss der Seite.
-const desktopHrefs = new Set(['#historia', '#chacra', '#productos', '#talleres', '#visita', '#contacto']);
+const desktopHrefs = new Set(['#historia', '#chacra', '#productos', '#visita', '#contacto']);
 const desktopLinks = allLinks.filter((l) => desktopHrefs.has(l.href));
+
+/*
+ * TESTFASSUNG der Navigation (1. September 2026).
+ *
+ * Das Problem, das sie löst: die Leiste hatte zuletzt sechs Abschnitte
+ * plus zwei Verweise auf eigene Seiten plus Sprachumschalter — und weil
+ * alle Kinder von `.site-nav` `white-space: nowrap` tragen und nirgends
+ * schrumpfen dürfen, liefen sie ineinander statt umzubrechen. Auf dem
+ * Schreibtisch überlappte der Schriftzug bereits „Historia".
+ *
+ * Zwei Eingriffe:
+ *
+ * 1. Die drei ANGEBOTE — Talleres, Las abejas educan, On Tour — stehen
+ *    nicht mehr einzeln nebeneinander, sondern unter einem Punkt. Sie
+ *    beantworten dieselbe Frage („was kann ich hier machen?") und
+ *    konkurrierten vorher um drei Plätze in einer Zeile, die keine drei
+ *    Plätze frei hat. Mit jedem weiteren Angebot wäre es schlimmer
+ *    geworden.
+ * 2. Der Schriftzug neben dem Zeichen verschwindet, bevor es eng wird
+ *    (siehe CSS). Das Zeichen allein bleibt anklickbar und führt nach
+ *    Hause; der Name steht ohnehin im Seitentitel.
+ *
+ * Bewusst NICHT Teil dieser Testfassung: die drei nachgebauten
+ * Kopfleisten zu einer zusammenzuführen (Site, Nuestro Panal,
+ * Datenschutz). Das ist der eigentliche Umbau — siehe Abschnitt 11 des
+ * Anpassungsplans.
+ */
+const experienciaHrefs = ['#talleres', '#escuelas', '#on-tour'];
+const experienciaLinks = allLinks.filter((l) => experienciaHrefs.includes(l.href));
 
 // Nosotros und das Buch führen beide von der Seite weg statt zu einer
 // Sektion. Mitten in der Ankerliste wirkten sie wie ein Fremdkörper; sie
@@ -58,7 +89,34 @@ const libroLink = allLinks.find((l) => l.external && l.label === t.nav.libro);
   </a>
 
   <nav class="nav-links" aria-label="Secciones">
-    {desktopLinks.map((l) => <a href={l.href} data-nav-link={l.href.slice(1)}>{l.label}</a>)}
+    {desktopLinks.slice(0, 3).map((l) => <a href={l.href} data-nav-link={l.href.slice(1)}>{l.label}</a>)}
+
+    {/* Die drei Angebote unter einem Punkt. Das Aufklappen läuft über
+        `:hover` und `:focus-within` statt über ein Skript: es ist eine
+        reine Anzeigefrage, und mit Tastatur klappt es beim Hineintabben
+        von selbst auf. Der Punkt selbst ist ein Link, kein Knopf — wer
+        ihn anklickt, landet bei den Talleres, statt ins Leere zu greifen. */}
+    <div class="nav-grupo">
+      <a
+        class="nav-grupo-titulo"
+        href={experienciaLinks[0]?.href ?? '#talleres'}
+        data-nav-link="experiencias"
+      >
+        {t.nav.experiencias}
+        <svg viewBox="0 0 12 8" width="10" height="7" aria-hidden="true" class="nav-caret">
+          <path d="M1.4 1.8 Q6 6.4 10.6 1.8" fill="none" stroke="currentColor"
+            stroke-width="1.8" stroke-linecap="round" filter="url(#ink)" />
+        </svg>
+      </a>
+
+      <div class="nav-flyout">
+        {experienciaLinks.map((l) => (
+          <a href={l.href} data-nav-link={l.href.slice(1)}>{l.label}</a>
+        ))}
+      </div>
+    </div>
+
+    {desktopLinks.slice(3).map((l) => <a href={l.href} data-nav-link={l.href.slice(1)}>{l.label}</a>)}
   </nav>
 
   <div class="nav-right">
@@ -193,11 +251,110 @@ const libroLink = allLinks.find((l) => l.external && l.label === t.nav.libro);
     font-weight: 620;
     font-size: 1.05rem;
     white-space: nowrap;
+    /* Darf schrumpfen, aber nie unter das Zeichen selbst. */
+    flex: 0 1 auto;
+    min-width: 0;
+  }
+
+  /* Der Schriftzug geht, bevor es eng wird. Das Zeichen bleibt und führt
+     weiter nach Hause; der Name steht ohnehin im Seitentitel und im
+     ersten Bild der Seite. Vorher lief der Schriftzug bei knapp 1000 px
+     in den ersten Menuepunkt hinein. */
+  @media (max-width: 1150px) {
+    .logo span {
+      position: absolute;
+      width: 1px;
+      height: 1px;
+      overflow: hidden;
+      clip-path: inset(50%);
+      white-space: nowrap;
+    }
   }
 
   .nav-links {
     display: none;
     gap: clamp(0.8rem, 2vw, 1.6rem);
+    align-items: center;
+    /* Ohne das darf der Block nicht schrumpfen und schiebt sich statt
+       dessen unter den Schriftzug. Die Ursache der Überlappung. */
+    min-width: 0;
+  }
+
+  /* ---------- Angebote unter einem Punkt (Testfassung) ---------- */
+
+  .nav-grupo {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+  }
+
+  .nav-grupo-titulo {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.3rem;
+  }
+
+  .nav-caret {
+    flex: none;
+    transition: rotate var(--dur-2) var(--ease-out);
+  }
+
+  .nav-grupo:hover .nav-caret,
+  .nav-grupo:focus-within .nav-caret {
+    rotate: 180deg;
+  }
+
+  .nav-flyout {
+    position: absolute;
+    top: calc(100% + 0.55rem);
+    left: 50%;
+    translate: -50% 0;
+    display: grid;
+    gap: 0.15rem;
+    min-width: max-content;
+    padding: var(--sp-3);
+    background: #fffdf8;
+    border-radius: var(--r-md);
+    box-shadow: var(--shadow-lift);
+    opacity: 0;
+    visibility: hidden;
+    translate: -50% -6px;
+    transition:
+      opacity var(--dur-2) var(--ease-out),
+      translate var(--dur-2) var(--ease-out),
+      visibility 0s linear var(--dur-2);
+  }
+
+  /* Unsichtbare Brücke zwischen Punkt und Klappe: ohne sie reisst der
+     Zeiger auf dem Weg nach unten durch eine Lücke und die Klappe fällt
+     wieder zu. */
+  .nav-flyout::before {
+    content: '';
+    position: absolute;
+    inset: -0.6rem 0 100% 0;
+  }
+
+  .nav-grupo:hover .nav-flyout,
+  .nav-grupo:focus-within .nav-flyout {
+    opacity: 1;
+    visibility: visible;
+    translate: -50% 0;
+    transition-delay: 0s, 0s, 0s;
+  }
+
+  .nav-flyout a {
+    padding: 0.35rem 0.6rem;
+    border-radius: var(--r-sm);
+    white-space: nowrap;
+  }
+
+  .nav-flyout a::after {
+    content: none;
+  }
+
+  .nav-flyout a:hover {
+    background: var(--miel-100);
+    color: var(--tinta);
   }
 
   .nav-links a {
@@ -288,6 +445,7 @@ const libroLink = allLinks.find((l) => l.external && l.label === t.nav.libro);
     display: flex;
     align-items: center;
     gap: var(--sp-3);
+    flex: none;
   }
 
   .lang-switch {
@@ -631,7 +789,7 @@ const libroLink = allLinks.find((l) => l.external && l.label === t.nav.libro);
   // Aktive Sektion im Menü und in der Desktop-Nav markieren
   const sections = Array.from(
     document.querySelectorAll<HTMLElement>(
-      '[id="historia"], [id="pistacho"], [id="lavanda"], [id="abejas"], [id="chacra"], [id="herbario"], [id="productos"], [id="talleres"], [id="visita"], [id="contacto"]'
+      '[id="historia"], [id="pistacho"], [id="lavanda"], [id="abejas"], [id="chacra"], [id="herbario"], [id="productos"], [id="talleres"], [id="on-tour"], [id="visita"], [id="contacto"]'
     )
   );
 

@@ -13,8 +13,11 @@ export const es = {
     herbario: 'Herbario',
     productos: 'Productos',
     talleres: 'Talleres',
+    experiencias: 'Experiencias',
+    escuelas: 'Las abejas educan',
+    onTour: 'On Tour',
     visita: 'Visitanos',
-    nosotros: 'Nosotros',
+    nosotros: 'Nuestro Panal',
     contacto: 'Contacto',
     menu: 'Menú',
     closeMenu: 'Cerrar menú',
@@ -40,18 +43,18 @@ export const es = {
     chapters: [
       {
         year: '2015',
-        title: 'Una rama, un pájaro, una semilla',
-        text: 'Cuenta la leyenda familiar que todo empezó con la abuela Alba: clavó una rama seca en la tierra, sin más intención que ver qué pasaba. Un pájaro blanco se posó ahí y, sin saberlo, dejó caer la primera semilla. Así nació, casi de casualidad, el primer árbol de la chacra — y con él, la idea de alimentar la tierra con lo que ella misma nos da. Empezamos a cuidar el suelo con microorganismos, mucho antes de saber que ahí, algún día, crecerían pistachos.',
+        title: 'Un palo, un pájaro, una semilla',
+        text: 'Cuenta la leyenda que todo empezó con la abuela Alba: clavó un palo en la tierra, sin más intención que ver qué pasaba. Un pájaro blanco y lila (hoy sabemos que es la monjita o viudita blanca) se posó ahí y, sin saberlo, dejó caer la primera semilla. Así nació, casi de casualidad, el primer árbol de la chacra — y con él, la idea de alimentar la tierra con lo que ella misma nos da. Empezamos a cuidar el suelo con microorganismos eficientes, mucho antes de saber que ahí, algún día, crecerían pistachos.',
       },
       {
         year: 'Primeros años',
         title: 'Bayas de Goji, las primeras del país',
-        text: 'Plantamos la primera parcela de bayas de Goji de Uruguay, y con ella empezó todo lo demás: más de 350 árboles nativos y frutales se sumaron a la tierra. El primer techo de la chacra fue el vivero — hoy se está transformando, ladrillo de barro a ladrillo de barro, en una de nuestras casas.',
+        text: 'Plantamos la primera parcela de bayas de Goji de Uruguay, y con ella empezó todo lo demás: más de 350 árboles nativos y frutales se sumaron a la tierra. La primera sombra de la chacra fue el vivero – hoy se está transformando, centímetro a centímetro de barro, en una de las casas para alquilar.',
       },
       {
         year: '2025',
         title: 'El suelo dice que sí',
-        text: 'Después de años cuidando la tierra, llegó la noticia dulce: acá también pueden crecer pistachos. Se separó un sector para una primera plantación piloto — orgánica y biodinámica desde el primer día, sin químicos, todo a mano.',
+        text: 'Después de años cuidando la tierra y esperando una respuesta, llegó la dulce noticia: acá pueden crecer pistachos. Se separó un sector para una primera plantación piloto — orgánica y biodinámica desde el primer día, sin químicos, todo a mano.',
       },
       {
         year: 'Próximamente',
@@ -59,9 +62,9 @@ export const es = {
         text: 'Quedan por llegar los últimos árboles. El cuándo depende todavía de un par de permisos, así que lo dejamos abierto por el momento. Mientras tanto, entre las filas ya florece lavanda para aceites y jabones, la caléndula tiene su rincón para el té, llegan las colmenas (¡mi familia!) y crece la segunda casa de barro, que se podrá alquilar. La tercera ya está soñada.',
       },
       {
-        year: '~2030',
+        year: '~2031',
         title: 'La primera cosecha',
-        text: 'Un pistacho se toma unos cinco años para dar sus primeros frutos de verdad. La paciencia es como la miel: lenta, pero vale cada gota.',
+        text: 'Un pistacho se toma unos cinco años para mostrarnos algunos de sus frutos. La paciencia es como la miel: lenta, pero vale cada gota.',
       },
     ],
   },
@@ -75,7 +78,7 @@ export const es = {
     status: { listo: 'Listo', enObra: 'En construcción', planeado: 'Planeado' },
     stations: [
       {
-        name: 'El portón',
+        name: 'La tranquera',
         desc: 'La entrada, en el borde oeste. Acá empieza todo camino, y toda visita.',
       },
       {
@@ -95,12 +98,12 @@ export const es = {
         desc: 'Mi barrio: el rincón noroeste. Colmenas de adobe entre las caléndulas naranjas, el ajenjo azul y blanco para el té y miles de plantas aromáticas.',
       },
       {
-        name: 'Casa de barro 2: la hornera',
+        name: 'La hornera',
         desc: 'Se construye con el barro del propio terreno. Pronto podrás quedarte a dormir acá y disfrutar de los amaneceres.',
       },
       {
-        name: 'Casas de barro 3 (la monjita blanca) y 4 (tordo amarillo)',
-        desc: 'Todavía las estamos soñando, estarán sobre el anillo mirando el atardecer.',
+        name: 'La monjita blanca y el tordo amarillo',
+        desc: 'Todavía las estamos soñando: llevan el nombre de dos pájaros de la chacra y estarán sobre el anillo mirando el atardecer.',
       },
       {
         name: 'El mirador',
@@ -124,7 +127,7 @@ export const es = {
       },
     ],
     border:
-      'Todo el perímetro está abrazado por un cinturón de eucaliptos, con robles y arces en algunos tramos.',
+      'Todo el perímetro está abrazado por una cortina de árboles que corta el viento, con robles y arces en algunos tramos.',
   },
   products: {
     kicker: 'Cosechas en camino',
@@ -135,7 +138,7 @@ export const es = {
       {
         name: 'Pistachos',
         desc: 'Los primeros del Uruguay, certificados orgánicos según el estándar europeo.',
-        badge: 'Primera cosecha ~2030',
+        badge: 'Primera cosecha ~2031',
       },
       {
         name: 'Aceite y jabones de lavanda',
@@ -324,8 +327,8 @@ export const es = {
         d: 'Da aceite y jabones años antes de la primera cosecha de pistachos.',
       },
     ],
-    processTitle: 'De la flor al jabón',
-    processHint: 'Seguí el camino, paso a paso.',
+    processTitle: 'De la flor al jabón y a la vela',
+    processHint: 'Un solo camino que al final se abre en dos.',
     process: [
       {
         t: 'Cosecha',
@@ -336,12 +339,36 @@ export const es = {
         d: 'Vapor de agua atraviesa las flores y se lleva consigo el aceite esencial.',
       },
       {
-        t: 'Aceite',
-        d: 'Unas gotas doradas por cada brazada de flores. Puro, intenso, concentrado.',
+        t: 'Aceite e hidrolato',
+        d: 'Del alambique bajan dos cosas: el aceite esencial, que flota arriba y se recoge gota a gota, y el hidrolato, el agua perfumada de las flores. Las dos siguen viaje por los dos caminos.',
+      },
+    ],
+    processBranches: [
+      {
+        label: 'Jabón',
+        steps: [
+          {
+            t: 'Saponificación',
+            d: 'Grasa y soda se encuentran en la olla. Ahí entran el aceite y el hidrolato, y las flores secas se apoyan arriba de todo.',
+          },
+          {
+            t: 'Curado',
+            d: 'Los panes descansan seis semanas hasta quedar firmes, suaves y listos para usar.',
+          },
+        ],
       },
       {
-        t: 'Jabón',
-        d: 'El aceite se mezcla con aceites vegetales y descansa seis semanas hasta curarse.',
+        label: 'Vela',
+        steps: [
+          {
+            t: 'Cera',
+            d: 'La cera sale de nuestras propias colmenas, a pocos metros de la lavanda: las mismas abejas que visitan estas flores le dan cuerpo a la vela. Se derrite despacio, a fuego bajo.',
+          },
+          {
+            t: 'Mecha y flores',
+            d: 'Se le suma el aceite esencial, se centra la mecha y unas flores secas quedan asomando en la cera.',
+          },
+        ],
       },
     ],
     rubHint: 'Pasá el dedo por la lavanda y soltá su perfume',
@@ -395,12 +422,12 @@ export const es = {
         d: 'Limonero, naranjo, mandarino, manzanos, ciruelos, almendras de cajú, dátiles y tantos otros. Fruta fresca para los huéspedes, visitantes de los talleres y para los pájaros por igual.',
       },
       {
-        n: 'Fugus',
+        n: 'Fresnos dorados',
         d: 'La alameda de bienvenida, plantada en 2015 en honor a Stefan. Finos, altos y en fila, como una guardia amable.',
       },
       {
-        n: 'Eucaliptos, robles y arces',
-        d: 'Distintos tipos de eucaliptos forman el cinturón que abraza parte del perímetro junto a robles y arces: cortan el viento y perfuman el aire.',
+        n: 'Robles y arces',
+        d: 'Forman parte del cinturón de árboles que abraza el perímetro: cortan el viento, dan sombra al borde de la chacra y se ponen de mil colores en otoño.',
       },
       {
         n: 'Arrayanes',
