@@ -9,3 +9,6 @@ dist/
 
 # Supabase-Management-Token (nur lokal, gibt Vollzugriff auf das Projekt)
 .supabase-token
+
+# Supabase-CLI-Zwischenablage (npx supabase legt sie an)
+supabase/.temp/
