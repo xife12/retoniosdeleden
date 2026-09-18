@@ -450,3 +450,67 @@ also ohne Sonderweg laufen. Zurueck ginge es mit
   Wunschdokument und sind belastbar.
 - Die Migration ist gegen keine laufende Datenbank getestet.
 
+---
+
+## 13. Anpassungen 02 — Eingaenge vom 18. September 2026
+
+Noch nicht umgesetzt. Vor dem Bauen: Aufwand sortieren, das Siegel und
+den Panal-Adminbereich PLANEN statt direkt zu bauen.
+
+### Herbario
+
+- **„Sauco" ohne Akzent.** Aktuell steht `Saúco` in `src/i18n/es.ts`
+  (Herbario-Eintrag). Auf der ganzen Website pruefen — Quelltext,
+  `seed.sql` UND die veroeffentlichten Datensaetze in Supabase (dort
+  greift `seed.sql` nicht; ggf. eine kleine Migration nach dem Muster von
+  007).
+- **Ein weiteres Kaertchen „y muchas más"** am Ende des Herbario-
+  Rasters — als Hinweis, dass die Liste nicht vollstaendig ist.
+
+### Siegel „Las abejas educan"
+
+- **Muss vollstaendig ueberarbeitet werden.** Die Fassung `arbol` in
+  `SelloAbejas.astro` gefaellt nicht. Nicht die achte Variante
+  hinschreiben — erst klaeren, was am bisherigen Ansatz nicht traegt.
+  Vorschlag: Skizzen als Dokument vorlegen, bevor Code entsteht.
+
+### Las abejas educan
+
+- **Einleitungstext ersetzen** (`abejasEducanUI.intro` in
+  `src/data/modulos.ts`, spanisch; englisch sinngemaess nachziehen):
+  „Módulos para escuelas en el aula y aquí en la chacra, pensados para
+  que los chicos aprendan de las abejas, no sólo sobre ellas, sino
+  también a través de ellas: física, matemática, química y muchas cosas
+  más que pasan en la naturaleza."
+- **Buch-Signatur aendern** (`libroFirma`): statt „— Meli, que todavía
+  no terminó el capítulo tres" jetzt „— Meli lo está imprimiendo"
+  (englisch sinngemaess).
+
+### Nuestro Panal
+
+- **„Están todos los días" entfernen** — bei allen Stationen. Das ist
+  die Zeile `estacion-vinculo` ueber dem Namen
+  (`NosotrosPage.astro`, Texte `leyendaNucleo`/`leyendaVuelo` in
+  `nosotros.ts`). Pruefen, ob die Begleiter-Zeile „Acompañan de a ratos"
+  bleiben soll oder mitgeht.
+- **Eigener Adminbereich fuer die Personen und HelferInnen** —
+  bearbeiten, hinzufuegen, loeschen. ZUERST PLANEN. Die Kernfrage: die
+  Wabe waechst beim Scrollen und braucht dafuer, dass jede neue Zelle die
+  bestehende Form beruehrt (`comprobarPanal()` in `nosotros.ts`, Achsen-
+  koordinaten q/r). Wer im Admin eine Person anlegt, darf nicht selbst
+  Koordinaten setzen muessen — und darf die Wabe nicht aufreissen.
+  Zu klaeren:
+  1. Wer vergibt die Koordinaten? Vorschlag: automatisch, naechste freie
+     Nachbarzelle in Spiralreihenfolge um die Mitte; der Admin sortiert
+     nur die Erzaehlreihenfolge.
+  2. Was passiert beim Loeschen einer Zelle in der Mitte der Form?
+     Vorschlag: Loeschen heisst „leere Zelle", die Form bleibt; wirklich
+     entfernen nur am Rand.
+  3. Wie kommt die Pruefung in die Datenbank? `comprobarPanal()` laeuft
+     zur Bauzeit — bei Daten aus Supabase muss der Build weiterhin
+     abbrechen, wenn die Form kaputt ist, statt eine kaputte Seite zu
+     bauen.
+  4. Entwurf/Veroeffentlicht wie bei den anderen Bereichen, Vorbild
+     `modulos-view.ts`; Datenmodell nach `Persona` in `nosotros.ts`
+     (vinculo, pigmento, grupo, name/role/detail zweisprachig, q/r).
+
