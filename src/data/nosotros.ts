@@ -350,8 +350,14 @@ export interface NosotrosUI {
   finalTexto: string;
   /** Hinweis im Schlussbild, dass die Zellen antippbar sind. */
   finalHint: string;
-  /** Art der Beteiligung, über dem Namen. */
-  leyendaNucleo: string;
+  /**
+   * Art der Beteiligung, über dem Namen -- NUR beim Umflug (vinculo ===
+   * 'vuelo'). Der Kern hatte hier "Están todos los días" stehen; das war
+   * eine Übertreibung, die nicht für jede Person im Kern stimmte, und ist
+   * seit "Anpassungen 02" (18. September 2026) ersatzlos gestrichen. Die
+   * Begleiter-Zeile bleibt: sie behauptet nichts Falsches, sondern sagt
+   * gerade, dass diese Personen NICHT täglich da sind.
+   */
   leyendaVuelo: string;
   leyendaLibre: string;
 }
@@ -371,7 +377,6 @@ export const nosotrosUI: Record<Lang, NosotrosUI> = {
     finalTitulo: 'El panal sigue creciendo',
     finalTexto: 'Quedan celdas libres. Siempre quedan.',
     finalHint: 'Tocá una celda para volver a leerla.',
-    leyendaNucleo: 'Están todos los días',
     leyendaVuelo: 'Acompañan de a ratos',
     leyendaLibre: 'Celda libre',
   },
@@ -384,7 +389,6 @@ export const nosotrosUI: Record<Lang, NosotrosUI> = {
     finalTitulo: 'The hive keeps growing',
     finalTexto: 'There are still empty cells. There always are.',
     finalHint: 'Tap a cell to read it again.',
-    leyendaNucleo: 'Here every day',
     leyendaVuelo: 'Alongside us now and then',
     leyendaLibre: 'An empty cell',
   },

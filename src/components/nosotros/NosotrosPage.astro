@@ -223,9 +223,13 @@ const estaciones = [
               >
                 {e.persona ? (
                   <>
-                    <p class="estacion-vinculo">
-                      {e.persona.vinculo === 'vuelo' ? ui.leyendaVuelo : ui.leyendaNucleo}
-                    </p>
+                    {/* Nur beim Umflug: "Están todos los días" für den Kern
+                        war eine Übertreibung und ist seit Anpassungen 02
+                        (18. September 2026) ersatzlos gestrichen -- siehe
+                        Kommentar bei leyendaVuelo in data/nosotros.ts. */}
+                    {e.persona.vinculo === 'vuelo' && (
+                      <p class="estacion-vinculo">{ui.leyendaVuelo}</p>
+                    )}
                     <h3>{e.persona.name[lang]}</h3>
                     <p class="estacion-rol">{e.persona.role[lang]}</p>
                     {e.persona.detail && (

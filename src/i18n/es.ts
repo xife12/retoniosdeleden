@@ -414,7 +414,7 @@ export const es = {
     intro: 'No solo pistachos: más de 300 árboles y un jardín entero conviven acá. Tocá cada planta y conocela.',
     plants: [
       {
-        n: 'Saúco',
+        n: 'Sauco',
         d: 'Los guardianes de la casa. Flores para el té y jarabes.',
       },
       {
@@ -448,6 +448,10 @@ export const es = {
       {
         n: 'Hisopo y aciano',
         d: 'Hierbas y flores azules entre los canteros: medicina antigua, néctar nuevo.',
+      },
+      {
+        n: 'Y muchas más',
+        d: 'Este herbario nunca está terminado: en la chacra siguen apareciendo plantas por conocer.',
       },
     ],
   },

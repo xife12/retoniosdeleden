@@ -450,6 +450,10 @@ export const en: Dict = {
         n: 'Hyssop & cornflower',
         d: 'Herbs and blue blossoms between the beds: old medicine, new nectar.',
       },
+      {
+        n: 'And many more',
+        d: 'This herbarium is never finished: the farm keeps turning up new plants to meet.',
+      },
     ],
   },
   quiz: {

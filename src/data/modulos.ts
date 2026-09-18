@@ -332,7 +332,7 @@ export const abejasEducanUI: Record<Lang, AbejasEducanUI> = {
     kicker: 'Un proyecto educativo de Retoños del Edén',
     title: 'Las abejas educan',
     intro:
-      'Las abejas no solo polinizan: enseñan. Cuatro módulos para escuelas, tres en el aula y uno acá en la chacra, pensados para que los chicos aprendan DE las abejas, no solo SOBRE ellas. Elegí los que te sirvan y pedinos un presupuesto.',
+      'Módulos para escuelas en el aula y aquí en la chacra, pensados para que los chicos aprendan de las abejas, no sólo sobre ellas, sino también a través de ellas: física, matemática, química y muchas cosas más que pasan en la naturaleza.',
     marca: 'Las abejas educan',
     filtroLabel: 'Edad',
     filtroTodas: 'Todas',
@@ -393,14 +393,14 @@ export const abejasEducanUI: Record<Lang, AbejasEducanUI> = {
     libroTitulo: 'El libro que cuenta Meli',
     libroTexto:
       'Una abeja narra su propio mundo: cómo ve, cómo baila, cómo decide una colmena. El libro acompaña los módulos y después se queda en la biblioteca de la escuela, para el año que viene y el siguiente.',
-    libroFirma: '— Meli, que todavía no terminó el capítulo tres',
+    libroFirma: '— Meli lo está imprimiendo',
     mesesCortos: ['ene', 'feb', 'mar', 'abr', 'may', 'jun', 'jul', 'ago', 'set', 'oct', 'nov', 'dic'],
   },
   en: {
     kicker: 'An educational project by Retoños del Edén',
     title: 'Bees teach',
     intro:
-      'Bees do not only pollinate: they teach. Four modules for schools, three in your classroom and one here on the farm, built so that children learn FROM bees, not only ABOUT them. Pick the ones that suit you and ask us for a quote.',
+      'Modules for schools, in the classroom and here on the farm, built so that children learn from bees, not only about them, but also through them: physics, maths, chemistry and so many other things that happen in nature.',
     marca: 'Las abejas educan',
     filtroLabel: 'Age',
     filtroTodas: 'All',
@@ -461,7 +461,7 @@ export const abejasEducanUI: Record<Lang, AbejasEducanUI> = {
     libroTitulo: 'The book Meli tells',
     libroTexto:
       'A bee narrates her own world: how she sees, how she dances, how a hive makes up its mind. The book comes with the modules and then stays in the school library, for next year and the year after.',
-    libroFirma: '— Meli, who has not finished chapter three',
+    libroFirma: '— Meli is printing it',
     mesesCortos: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'],
   },
 };
