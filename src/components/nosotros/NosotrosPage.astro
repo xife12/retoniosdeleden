@@ -1,6 +1,6 @@
 ---
 /**
- * "Nosotros" / "About us" — eigenständige Unterseite über die Familie
+ * "Nosotros" / "Nuestro Panal" — eigenständige Unterseite über die Menschen
  * hinter der Chacra.
  *
  * Routing- und Aufbau-Vorbild: BookPage.astro. Wie dort hat diese Seite
@@ -9,15 +9,46 @@
  * `#historia`-artige Sektionen), die es hier nicht gibt. Der Kopf ist
  * bewusst 1:1 im Look von `.site-nav`/`.libro-nav` gehalten (Höhe,
  * Polsterung, Papierton, Unschärfe), damit der Wechsel von der Startseite
- * hierher keinen Sprung macht — nur ohne den großen Buch-Auftritt, den
- * diese Seite nicht braucht.
+ * hierher keinen Sprung macht.
+ *
+ * ---------------------------------------------------------------------
+ * Warum hier eine Erzählung steht und kein Stammbaum mehr
+ * ---------------------------------------------------------------------
+ * Ein Baum ist zwangsläufig eine Rangordnung: er hat eine Wurzel, einen
+ * Stamm und eine Spitze, und wer weiter oben hängt, sieht wichtiger aus.
+ * Gewollt ist das Gegenteil — ein Bienenstock, in dem jede Zelle gleich
+ * viel wiegt.
+ *
+ * Deshalb wird beim Scrollen von Person zu Person erzählt: vorne steht
+ * immer nur EINE, groß und allein, und auf der kleinen Wabe daneben
+ * fliegt Meli zu genau ihrer Zelle. Das löst drei Dinge auf einmal:
+ *
+ *  - Niemand steht über jemandem. Alle bekommen denselben Auftritt,
+ *    dieselbe Größe, denselben Platz.
+ *  - Der Stock bleibt trotzdem als Stock sichtbar — die Landkarte zeigt
+ *    immer alle Zellen, auch die freien.
+ *  - Es wird lesbar auf jedem Bildschirm: eine große Zelle plus Text
+ *    braucht keine Fläche, die ein Telefon nicht hat.
+ *
+ * Unterschieden wird nur über die FÜLLUNG der Zelle: ausgemalt = fest
+ * dabei, gestrichelte Kontur = begleitet zeitweise, blass = noch frei.
+ * Die leeren Waben sind kein Platzhalter für fehlende Daten. Sie sind die
+ * Aussage: der Stock ist nicht fertig.
  */
 import Base from '../../layouts/Base.astro';
 import Footer from '../Footer.astro';
 import Logo from '../Logo.astro';
 import PersonAvatar from './PersonAvatar.astro';
+import BeeMeli from '../BeeMeli.astro';
 import { getDict, type Lang } from '../../i18n';
-import { familyIntro, personas, values, nosotrosUI } from '../../data/nosotros';
+import {
+  celdasLibres,
+  comprobarPanal,
+  familyIntro,
+  nosotrosUI,
+  personas,
+  values,
+} from '../../data/nosotros';
 
 interface Props {
   lang: Lang;
@@ -28,21 +59,55 @@ const t = getDict(lang);
 const ui = nosotrosUI[lang];
 const pageTitle = t.nav.nosotros;
 
-/**
- * Positionen im Stammbaum, viewBox 0 0 400 560 (Wurzel unten, Knospen oben).
- * Rein präsentationell — deshalb hier und nicht in nosotros.ts.
+/*
+ * Das Sechseckraster in Bildpunkte umgerechnet — einmal hier, nicht im
+ * Browser. `BASE` ist ein Grundmaß in willkürlichen Einheiten; die
+ * sichtbare Größe entsteht erst durch den Maßstab, den das Skript beim
+ * Scrollen auf die ganze Gruppe legt.
+ *
+ * Spitze Zellen oben: waagrecht stehen sie um eine volle Breite
+ * auseinander, senkrecht nur um drei Viertel ihrer Höhe — dadurch
+ * greifen die Reihen ineinander. Der halbe Versatz je Reihe steckt im
+ * `r / 2`.
  */
-const posiciones: Record<string, { x: number; y: number; r: number }> = {
-  alba: { x: 200, y: 462, r: 30 },
-  catalina: { x: 124, y: 322, r: 26 },
-  stefan: { x: 276, y: 322, r: 26 },
-  florian: { x: 76, y: 214, r: 22 },
-  maxi: { x: 200, y: 182, r: 22 },
-  jasmin: { x: 324, y: 214, r: 22 },
-  nietos: { x: 200, y: 84, r: 19 },
-};
+const BASE = 100;
+const ALTO = BASE * 1.1547;
+const enPixeles = (q: number, r: number) => ({
+  x: BASE * (q + r / 2),
+  y: ALTO * 0.75 * r,
+});
 
-const personasArbol = personas.map((p, i) => ({ ...p, i, pos: posiciones[p.id] }));
+/* Fällt beim Bauen aus, wenn die Wabe eine Lücke hätte. Siehe nosotros.ts. */
+comprobarPanal();
+
+const celdas = [
+  ...personas.map((p, i) => ({
+    id: p.id,
+    persona: p,
+    i,
+    /** Auftrittsreihenfolge. Die freien Zellen bekommen negative Werte. */
+    orden: i,
+    ...enPixeles(p.q, p.r),
+  })),
+  ...celdasLibres.map((c, k) => ({
+    id: `libre-${k}`,
+    persona: undefined,
+    i: 0,
+    orden: -1 - k,
+    ...enPixeles(c.q, c.r),
+  })),
+];
+
+/**
+ * Die Stationen der Erzählung: ein Einstieg, dann je Person eine, dann
+ * das Schlussbild. Die Reihenfolge der Personen ist die Reihenfolge in
+ * `personas` — chronologisch, wer zuerst da war.
+ */
+const estaciones = [
+  { tipo: 'intro' as const, persona: undefined },
+  ...personas.map((p) => ({ tipo: 'persona' as const, persona: p })),
+  { tipo: 'final' as const, persona: undefined },
+];
 ---
 
 <Base lang={lang} title={`${pageTitle} · Retoños del Edén`} description={familyIntro[lang]}>
@@ -83,231 +148,374 @@ const personasArbol = personas.map((p, i) => ({ ...p, i, pos: posiciones[p.id] }
       </div>
     </section>
 
-    <section class="nosotros-familia" aria-labelledby="familia-title" data-arbol-wrap>
-      <div class="wrap">
-        <h2 id="familia-title" class="kicker arbol-kicker">{ui.familyTitle}</h2>
-        <p class="arbol-hint">{ui.arbolHint}</p>
+    {/* ---------------------------------------------------------------
+        Die Erzählung. Eine hohe Bahn, in der eine klebende Bühne stehen
+        bleibt; aus dem Scrollfortschritt folgt, welche Station gerade
+        läuft und wie weit sie fortgeschritten ist.
+        --------------------------------------------------------------- */}
+    <section
+      class="panal"
+      aria-labelledby="panal-titulo"
+      style={`--estaciones:${estaciones.length}`}
+      data-panal
+    >
+      <h2 id="panal-titulo" class="visually-hidden">{ui.intro}</h2>
 
-        <div class="arbol-stage">
-          <svg class="arbol-arte" viewBox="0 0 400 560" aria-hidden="true">
-            <g class="arbol-suelo">
-              <ellipse cx="200" cy="526" rx="134" ry="15" fill="#8a6f4d" opacity="0.2" filter="url(#wc-wash)" />
-              <ellipse cx="200" cy="521" rx="104" ry="10" fill="url(#pg-pistacho)" opacity="0.24" filter="url(#wc-wash)" />
-            </g>
+      <div class="panal-pista" data-panal-pista>
+        <div class="panal-fijo">
 
-            <circle class="arbol-semilla" cx="200" cy="508" r="5.5" fill="#8f4c31" filter="url(#wc-rough)" />
+          {/* --- Die Wabe ---
+              Die Zellen stehen fest an ihrem Platz im Raster; bewegt wird
+              nur die GRUPPE, über eine einzige Transformation. Dadurch
+              gibt es beim Scrollen kein Umbrechen und kein Neuberechnen
+              von Größen — das läuft auch auf einem alten Telefon rund. */}
+          <div class="panal-escena" data-panal-escena>
+            <div class="panal-grupo" data-panal-grupo>
+              {celdas.map((c) => (
+                <div
+                  class:list={[
+                    'celda',
+                    c.persona ? `pig-${c.persona.pigmento}` : 'celda-libre',
+                    c.persona ? `vin-${c.persona.vinculo}` : '',
+                  ]}
+                  style={`--cx:${c.x}; --cy:${c.y}`}
+                  data-celda={c.id}
+                  data-orden={c.orden}
+                  hidden
+                >
+                  {c.persona && (
+                    <span class="celda-figura">
+                      <PersonAvatar
+                        pigmento={c.persona.pigmento}
+                        seed={c.i}
+                        grupo={c.persona.grupo}
+                        tenue={c.persona.vinculo === 'vuelo'}
+                      />
+                    </span>
+                  )}
+                  {(!c.persona || c.persona.vinculo === 'vuelo') && (
+                    <svg class="celda-trazo" viewBox="0 0 100 115.47" aria-hidden="true">
+                      <polygon points="50,2 98,26.9 98,88.6 50,113.5 2,88.6 2,26.9" />
+                    </svg>
+                  )}
+                </div>
+              ))}
+            </div>
 
-            {/* Krone zuerst: die weiche Wasserfarben-Masse liegt hinter den Ästen */}
-            <g class="arbol-copa">
-              <g fill="url(#pg-pistacho-light)" opacity="0.5" filter="url(#wc-wash)">
-                <ellipse cx="200" cy="168" rx="158" ry="112" />
-                <ellipse cx="196" cy="86" rx="104" ry="58" />
-              </g>
-              <g fill="url(#pg-pistacho)" opacity="0.4" filter="url(#wc-wash)">
-                <ellipse cx="104" cy="188" rx="78" ry="62" />
-                <ellipse cx="298" cy="184" rx="76" ry="60" />
-                <ellipse cx="200" cy="122" rx="86" ry="60" />
-              </g>
-            </g>
+            {/* Meli trägt jede neue Zelle herein. Sie liegt über der
+                Gruppe, wird aber getrennt bewegt — sonst würde sie beim
+                Schrumpfen der Wabe mitschrumpfen. */}
+            <div class="panal-meli" data-panal-meli aria-hidden="true">
+              <BeeMeli width="100%" />
+            </div>
+          </div>
 
-            {/* Wurzeln */}
-            <g class="arbol-raices" fill="none" stroke="#6b4a2f" stroke-linecap="round" opacity="0.72" filter="url(#ink)">
-              <path class="rama rama-raiz" pathLength="1" d="M200 512 C 178 518, 152 522, 128 528" stroke-width="5" />
-              <path class="rama rama-raiz" pathLength="1" d="M200 512 C 222 518, 248 522, 272 528" stroke-width="5" />
-              <path class="rama rama-raiz" pathLength="1" d="M200 512 C 196 520, 194 526, 192 534" stroke-width="4" />
-            </g>
-
-            <g class="arbol-ramas" fill="none" stroke="#6b4a2f" stroke-linecap="round" filter="url(#ink)">
-              {/* Stamm: unten breit, oben schmaler — zwei Züge übereinander */}
-              <path class="rama rama-tronco" pathLength="1" d="M200 516 C 197 470, 203 424, 200 384" stroke-width="20" />
-              <path class="rama rama-tronco" pathLength="1" d="M200 440 C 199 412, 201 392, 200 372" stroke-width="14" />
-
-              {/* Erste Gabelung: die Eltern-Generation */}
-              <path class="rama rama-1" pathLength="1" d="M200 384 C 180 364, 150 340, 124 322" stroke-width="11" />
-              <path class="rama rama-1" pathLength="1" d="M200 384 C 220 364, 250 340, 276 322" stroke-width="11" />
-
-              {/* Zweite Ebene: die Kinder, nach außen und oben */}
-              <path class="rama rama-2" pathLength="1" d="M124 322 C 108 288, 90 250, 76 214" stroke-width="7" />
-              <path class="rama rama-2" pathLength="1" d="M276 322 C 292 288, 310 250, 324 214" stroke-width="7" />
-              <path class="rama rama-2" pathLength="1" d="M200 380 C 200 316, 201 246, 200 182" stroke-width="8" />
-
-              {/* Feine Zweige in die Krone: die Enkel oben, der Rest als Geäst */}
-              <path class="rama rama-3" pathLength="1" d="M200 182 C 200 148, 200 114, 200 84" stroke-width="4.5" />
-              <path class="rama rama-3" pathLength="1" d="M76 214 C 92 178, 108 148, 124 122" stroke-width="3" />
-              <path class="rama rama-3" pathLength="1" d="M324 214 C 308 178, 292 148, 276 122" stroke-width="3" />
-              <path class="rama rama-3" pathLength="1" d="M148 268 C 130 244, 116 226, 100 208" stroke-width="2.6" />
-              <path class="rama rama-3" pathLength="1" d="M252 268 C 270 244, 284 226, 300 208" stroke-width="2.6" />
-            </g>
-
-            {/* Blattbüschel an den Astenden */}
-            <g class="arbol-hojas hojas-1" fill="url(#pg-pistacho)" filter="url(#wc-rough)" opacity="0.92">
-              <ellipse cx="146" cy="286" rx="15" ry="10" transform="rotate(-34 146 286)" />
-              <ellipse cx="254" cy="286" rx="15" ry="10" transform="rotate(34 254 286)" />
-              <ellipse cx="172" cy="228" rx="13" ry="9" transform="rotate(-20 172 228)" />
-              <ellipse cx="228" cy="228" rx="13" ry="9" transform="rotate(20 228 228)" />
-            </g>
-            <g class="arbol-hojas hojas-2" fill="url(#pg-pistacho-light)" filter="url(#wc-rough)" opacity="0.92">
-              <ellipse cx="92" cy="176" rx="14" ry="9" transform="rotate(-24 92 176)" />
-              <ellipse cx="308" cy="176" rx="14" ry="9" transform="rotate(24 308 176)" />
-              <ellipse cx="140" cy="118" rx="12" ry="8" transform="rotate(-16 140 118)" />
-              <ellipse cx="260" cy="118" rx="12" ry="8" transform="rotate(16 260 118)" />
-              <ellipse cx="200" cy="46" rx="12" ry="8" />
-            </g>
-
-            {/* Ein paar Pistazien — es ist schließlich ein Pistazienbaum */}
-            <g class="arbol-frutos hojas-2" filter="url(#wc-rough)">
-              <g fill="#f0d4c4">
-                <ellipse cx="128" cy="212" rx="6" ry="8" transform="rotate(-14 128 212)" />
-                <ellipse cx="142" cy="220" rx="6" ry="8" transform="rotate(-14 142 220)" />
-                <ellipse cx="268" cy="206" rx="6" ry="8" transform="rotate(12 268 206)" />
-                <ellipse cx="282" cy="214" rx="6" ry="8" transform="rotate(12 282 214)" />
-                <ellipse cx="200" cy="146" rx="6" ry="8" />
-              </g>
-              <g fill="#7a8b5a" opacity="0.85">
-                <ellipse cx="128" cy="213" rx="2.6" ry="5" transform="rotate(-14 128 213)" />
-                <ellipse cx="142" cy="221" rx="2.6" ry="5" transform="rotate(-14 142 221)" />
-                <ellipse cx="268" cy="207" rx="2.6" ry="5" transform="rotate(12 268 207)" />
-                <ellipse cx="282" cy="215" rx="2.6" ry="5" transform="rotate(12 282 215)" />
-                <ellipse cx="200" cy="147" rx="2.6" ry="5" />
-              </g>
-            </g>
-          </svg>
-
-          <div class="arbol-nodos">
-            {personasArbol.map((p) => (
-              <button
-                class={`arbol-nodo gen-${p.generation}`}
-                style={`left:${(p.pos.x / 400) * 100}%; top:${(p.pos.y / 560) * 100}%; --nodo-r:${p.pos.r}px;`}
-                data-persona={p.id}
-                aria-expanded="false"
-                aria-controls="arbol-popup"
+          {/* --- Der Text ---
+              Alle Stationen stehen im Markup, sichtbar ist immer eine.
+              Ohne JavaScript stehen sie untereinander und die Seite liest
+              sich als Liste. */}
+          <div class="panal-relato">
+            {estaciones.map((e, i) => (
+              <article
+                class:list={['estacion', { 'es-actual': i === 0 }]}
+                data-estacion={i}
+                data-celda-de={e.persona?.id}
               >
-                <span class="arbol-nodo-glifo">
-                  <PersonAvatar generation={p.generation} seed={p.i} grupo={p.grupo} />
-                </span>
-                <span class="visually-hidden">{p.name[lang]}</span>
-              </button>
+                {e.persona ? (
+                  <>
+                    <p class="estacion-vinculo">
+                      {e.persona.vinculo === 'vuelo' ? ui.leyendaVuelo : ui.leyendaNucleo}
+                    </p>
+                    <h3>{e.persona.name[lang]}</h3>
+                    <p class="estacion-rol">{e.persona.role[lang]}</p>
+                    {e.persona.detail && (
+                      <p class="estacion-detalle">{e.persona.detail[lang]}</p>
+                    )}
+                  </>
+                ) : (
+                  <>
+                    <h3 class="estacion-titulo-solo">
+                      {e.tipo === 'intro' ? ui.introTitulo : ui.finalTitulo}
+                    </h3>
+                    <p class="estacion-rol">
+                      {e.tipo === 'intro' ? ui.introTexto : ui.finalTexto}
+                    </p>
+                    {e.tipo === 'final' && <p class="estacion-hint">{ui.finalHint}</p>}
+                  </>
+                )}
+              </article>
             ))}
           </div>
 
-          {/* Die Beschreibung erscheint direkt neben der Person, nicht unter
-              dem Baum — sonst müsste man nach jedem Tippen erst scrollen. */}
-          <div class="arbol-popup" id="arbol-popup" data-arbol-popup aria-live="polite" hidden>
-            <button class="arbol-popup-cerrar" data-arbol-cerrar aria-label={ui.arbolCerrar}>
-              <svg viewBox="0 0 20 20" width="12" height="12" aria-hidden="true">
-                <path d="M5 5 L 15 15 M15 5 L 5 15" stroke="currentColor" stroke-width="2.4"
-                  stroke-linecap="round" fill="none" filter="url(#ink)" />
-              </svg>
-            </button>
-            <strong data-arbol-nombre></strong>
-            <p data-arbol-rol></p>
-          </div>
+          <p class="panal-avance" aria-hidden="true">
+            <span data-panal-num>1</span><span class="barra">/</span>{estaciones.length}
+          </p>
         </div>
       </div>
     </section>
 
-    <script define:vars={{ personas: personasArbol.map((p) => ({ id: p.id, name: p.name[lang], role: p.role[lang] })) }}>
-      const wrap = document.querySelector('[data-arbol-wrap]');
-      if (wrap) {
-        try {
-          if (sessionStorage.getItem('re:arbol') === 'visto') {
-            wrap.classList.add('arbol-visto');
-          } else {
-            sessionStorage.setItem('re:arbol', 'visto');
-          }
-        } catch {
-          /* Privater Modus o.ä.: dann spielt die Animation halt jedes Mal. */
+    <script>
+      /**
+       * Nuestro Panal — die Wabe wächst beim Scrollen.
+       *
+       * Drei Ebenen Bewegung, absichtlich getrennt:
+       *
+       *  a) DURCHGEHEND, direkt am Scrollen: Maßstab und Mitte der ganzen
+       *     Gruppe. Zwischen zwei Stationen schrumpft die Wabe stufenlos
+       *     und rückt in die Mitte — sie macht Platz für die Zelle, die
+       *     gleich kommt. Deshalb bewegt sich etwas, solange gescrollt
+       *     wird, und nicht nur an den Halten.
+       *  b) JE STATION: Meli fliegt zur neuen Stelle, dort wächst die
+       *     Zelle hoch. Das ist eine Klasse und ein Übergang, kein
+       *     Rechnen je Bild.
+       *  c) STÄNDIG: Flügelschlag und Schweben, aus dem globalen CSS.
+       *
+       * Warum die Gruppe transformiert wird und nicht jede Zelle einzeln:
+       * eine einzige `transform` auf einem Element wird vom Browser
+       * zusammengesetzt, ohne das Seitenlayout neu zu rechnen. Würden
+       * stattdessen dreizehn Zellen ihre Breite ändern, müsste bei jedem
+       * Bild neu umgebrochen werden — sichtbares Ruckeln auf schwachen
+       * Geräten.
+       */
+      const panal = document.querySelector<HTMLElement>('[data-panal]');
+
+      if (panal) {
+        const pista = panal.querySelector<HTMLElement>('[data-panal-pista]');
+        const escena = panal.querySelector<HTMLElement>('[data-panal-escena]');
+        const grupo = panal.querySelector<HTMLElement>('[data-panal-grupo]');
+        const meli = panal.querySelector<HTMLElement>('[data-panal-meli]');
+        const numEl = panal.querySelector<HTMLElement>('[data-panal-num]');
+        const estaciones = Array.from(panal.querySelectorAll<HTMLElement>('[data-estacion]'));
+        const celdas = Array.from(panal.querySelectorAll<HTMLElement>('[data-celda]'));
+        const quieto = matchMedia('(prefers-reduced-motion: reduce)');
+
+        /* Grundmaß einer Zelle im Raster, in willkürlichen Einheiten. Die
+           echte Größe entsteht erst durch den Maßstab der Gruppe. */
+        const BASE = 100;
+        const ALTO = BASE * 1.1547;
+
+        panal.classList.add('esta-viva');
+
+        /** Zellen nach Auftrittsreihenfolge; -1 sind die freien Zellen. */
+        const porOrden = celdas
+          .map((el) => ({
+            el,
+            orden: Number(el.dataset.orden),
+            x: Number(el.style.getPropertyValue('--cx')),
+            y: Number(el.style.getPropertyValue('--cy')),
+          }))
+          .sort((a, b) => a.orden - b.orden);
+
+        /* Die letzte Personenzelle. Im Schlussbild gibt es keine neue mehr,
+           dort bleibt Meli auf dieser sitzen statt ins Leere zu zeigen. */
+        const ultimoOrden = Math.max(...porOrden.map((c) => c.orden));
+
+        const celdaDeEstacion = (n: number) =>
+          porOrden.find((c) => c.orden === Math.min(Math.max(n - 1, 0), ultimoOrden));
+
+        /**
+         * Welche Zellen sind in Station `n` zu sehen?
+         *
+         * Station 0 ist der Einstieg: dort steht die erste Zelle schon da,
+         * aber leer. Ab Station 1 füllt sie sich, und mit jeder weiteren
+         * kommt eine Zelle dazu. In der letzten Station kommen zusätzlich
+         * die freien Zellen hinzu.
+         */
+        const visiblesEn = (n: number) => {
+          const ultima = n >= estaciones.length - 1;
+          return porOrden.filter(
+            (c) => (c.orden >= 0 && c.orden <= Math.max(n - 1, 0)) || (ultima && c.orden < 0),
+          );
+        };
+
+        interface Encuadre {
+          escala: number;
+          x: number;
+          y: number;
         }
 
-        const stage = wrap.querySelector('.arbol-stage');
-        const popup = wrap.querySelector('[data-arbol-popup]');
-        const nombreEl = wrap.querySelector('[data-arbol-nombre]');
-        const rolEl = wrap.querySelector('[data-arbol-rol]');
-        const cerrarBtn = wrap.querySelector('[data-arbol-cerrar]');
-        const nodos = Array.from(wrap.querySelectorAll('[data-persona]'));
-        const porId = Object.fromEntries(personas.map((p) => [p.id, p]));
+        /**
+         * Maßstab und Mitte für eine Anzahl sichtbarer Zellen.
+         *
+         * Der Maßstab folgt der Ausdehnung: eine einzelne Zelle wird groß
+         * gezeigt, dreizehn Zellen entsprechend kleiner. Nach oben
+         * begrenzt, damit die erste Zelle nicht den halben Bildschirm
+         * einnimmt.
+         */
+        const encuadrar = (n: number): Encuadre => {
+          const vistas = visiblesEn(n);
+          if (!escena || !vistas.length) return { escala: 1, x: 0, y: 0 };
 
-        let abierto = null;
+          let minX = Infinity;
+          let maxX = -Infinity;
+          let minY = Infinity;
+          let maxY = -Infinity;
+          for (const c of vistas) {
+            minX = Math.min(minX, c.x - BASE / 2);
+            maxX = Math.max(maxX, c.x + BASE / 2);
+            minY = Math.min(minY, c.y - ALTO / 2);
+            maxY = Math.max(maxY, c.y + ALTO / 2);
+          }
 
-        const cerrar = () => {
-          if (!popup) return;
-          popup.hidden = true;
-          popup.classList.remove('se-abre');
-          nodos.forEach((b) => b.setAttribute('aria-expanded', 'false'));
-          abierto = null;
+          const anchoCaja = maxX - minX;
+          const altoCaja = maxY - minY;
+          const dispW = escena.clientWidth;
+          const dispH = escena.clientHeight;
+
+          const escala = Math.min(dispW / anchoCaja, dispH / altoCaja, 2.6);
+
+          return {
+            escala,
+            x: -((minX + maxX) / 2) * escala,
+            y: -((minY + maxY) / 2) * escala,
+          };
+        };
+
+        /* Einmal vorgerechnet: die Bilder ändern sich nur, wenn sich die
+           Bühne ändert. Bei jedem Scrollbild neu zu rechnen wäre Arbeit
+           für nichts. */
+        let encuadres: Encuadre[] = [];
+        const recalcular = () => {
+          encuadres = estaciones.map((_, i) => encuadrar(i));
+        };
+
+        /* Sanfter Verlauf statt gleichmäßigem: der Übergang beginnt und
+           endet ruhig, sonst wirkt das Schrumpfen mechanisch. */
+        const suave = (t: number) => t * t * (3 - 2 * t);
+
+        let estacion = -1;
+
+        const situarMeli = (celda: (typeof porOrden)[number] | undefined, cuadro: Encuadre) => {
+          if (!meli || !celda) return;
+          const x = cuadro.x + celda.x * cuadro.escala;
+          const y = cuadro.y + celda.y * cuadro.escala;
+          const antes = Number(meli.dataset.x ?? x);
+          meli.dataset.x = String(x);
+          meli.style.translate = `${x}px ${y}px`;
+          meli.style.rotate = x < antes - 1 ? '-8deg' : '8deg';
+          meli.style.transform = x < antes - 1 ? 'scaleX(-1)' : '';
+          meli.classList.add('se-ve');
+        };
+
+        const irA = (n: number, cuadro: Encuadre) => {
+          if (n === estacion) return;
+          const antes = estacion;
+          estacion = n;
+
+          estaciones.forEach((e, i) => e.classList.toggle('es-actual', i === n));
+          if (numEl) numEl.textContent = String(n + 1);
+
+          const ultima = n >= estaciones.length - 1;
+          porOrden.forEach((c) => {
+            const visible =
+              (c.orden >= 0 && c.orden <= Math.max(n - 1, 0)) || (ultima && c.orden < 0);
+            const llega = visible && c.el.hidden;
+            c.el.hidden = !visible;
+            /* Nur die gerade angekommene Zelle wächst hoch — beim Sprung
+               über mehrere Stationen (Ankerlink, schnelles Wischen) sollen
+               nicht alle gleichzeitig aufpoppen. */
+            if (llega && n === antes + 1 && !quieto.matches) {
+              c.el.classList.remove('es-nueva');
+              void c.el.offsetWidth;
+              c.el.classList.add('es-nueva');
+            }
+          });
+
+          /* Ab Station 1 ist die erste Zelle keine leere Zelle mehr. */
+          panal.classList.toggle('primera-llena', n >= 1);
+          /* Im Schlussbild gibt der kurze Text seinen reservierten Platz
+             frei — die vollständige Wabe soll dort so groß wie möglich
+             stehen, sie ist der Schlusspunkt der ganzen Seite. */
+          panal.classList.toggle('es-final', ultima);
+
+          /* Meli sitzt auf der zuletzt dazugekommenen Zelle; im Einstieg
+             und im Schlussbild auf der ersten. */
+          situarMeli(celdaDeEstacion(n), cuadro);
+        };
+
+        let pendiente = false;
+
+        const medir = () => {
+          pendiente = false;
+          if (!pista || !grupo) return;
+
+          const caja = pista.getBoundingClientRect();
+          const recorrido = caja.height - innerHeight;
+          if (recorrido <= 0) return;
+
+          const avance = Math.min(Math.max(-caja.top / recorrido, 0), 0.999999);
+          const bruto = avance * estaciones.length;
+          const n = Math.min(Math.floor(bruto), estaciones.length - 1);
+          const resto = bruto - n;
+
+          /* Das Bild wandert schon während der Station auf das nächste zu:
+             die Wabe macht Platz, bevor die Zelle kommt. Genau das ist die
+             durchgehende Bewegung zwischen zwei Stationen. */
+          const a = encuadres[n] ?? encuadrar(n);
+          const b = encuadres[Math.min(n + 1, estaciones.length - 1)] ?? a;
+          const t = quieto.matches ? 0 : suave(resto);
+
+          const cuadro = {
+            escala: a.escala + (b.escala - a.escala) * t,
+            x: a.x + (b.x - a.x) * t,
+            y: a.y + (b.y - a.y) * t,
+          };
+
+          grupo.style.transform = `translate(${cuadro.x}px, ${cuadro.y}px) scale(${cuadro.escala})`;
+
+          irA(n, cuadro);
+
+          /* Meli wandert mit dem Bild mit, ohne dass sie dabei "fliegt" —
+             sie sitzt ja auf einer Zelle, und die Zelle bewegt sich. */
+          const destino = celdaDeEstacion(n);
+          if (destino && meli) {
+            const x = cuadro.x + destino.x * cuadro.escala;
+            const y = cuadro.y + destino.y * cuadro.escala;
+            meli.dataset.x = String(x);
+            meli.style.translate = `${x}px ${y}px`;
+          }
         };
 
         /**
-         * Setzt die Karte neben die angetippte Person: waagrecht zentriert,
-         * aber innerhalb der Bühne festgehalten, und senkrecht auf der Seite,
-         * wo mehr Platz ist. So bleibt sie immer im Bild, auch am Handy.
+         * Getaktet über den Bildaufbau: öfter als einmal je Bild zu rechnen
+         * bringt nichts. Der Rückfall auf `setTimeout` greift, wenn der
+         * Browser den Bildaufbau angehalten hat (verborgene Reiter,
+         * eingebettete Ansichten) — sonst bliebe die Erzählung dort auf der
+         * ersten Station stehen, obwohl gescrollt wird.
          */
-        const ubicar = (btn) => {
-          if (!popup || !stage) return;
-
-          const sr = stage.getBoundingClientRect();
-          const br = btn.getBoundingClientRect();
-          const cx = br.left - sr.left + br.width / 2;
-          const cy = br.top - sr.top + br.height / 2;
-
-          const pw = popup.offsetWidth;
-          const ph = popup.offsetHeight;
-          const margen = 8;
-
-          let x = cx - pw / 2;
-          x = Math.max(margen, Math.min(x, sr.width - pw - margen));
-
-          const abajo = cy < sr.height / 2;
-          let y = abajo ? cy + br.height / 2 + 12 : cy - br.height / 2 - 12 - ph;
-          y = Math.max(margen, Math.min(y, sr.height - ph - margen));
-
-          popup.style.left = `${x}px`;
-          popup.style.top = `${y}px`;
+        const alScroll = () => {
+          if (pendiente) return;
+          pendiente = true;
+          if (document.hidden) setTimeout(medir, 0);
+          else requestAnimationFrame(medir);
         };
 
-        nodos.forEach((btn) => {
-          btn.addEventListener('click', () => {
-            const persona = porId[btn.dataset.persona];
-            if (!persona || !popup || !nombreEl || !rolEl) return;
+        addEventListener('scroll', alScroll, { passive: true });
+        addEventListener('resize', () => {
+          recalcular();
+          estacion = -1;
+          alScroll();
+        });
 
-            if (abierto === btn) {
-              cerrar();
-              return;
-            }
-
-            nodos.forEach((b) => b.setAttribute('aria-expanded', String(b === btn)));
-            nombreEl.textContent = persona.name;
-            rolEl.textContent = persona.role;
-
-            /* Erst einblenden (dann steht die Höhe fest), dann setzen. */
-            popup.hidden = false;
-            popup.classList.remove('se-abre');
-            ubicar(btn);
-            requestAnimationFrame(() => popup.classList.add('se-abre'));
-            abierto = btn;
+        /* Im Schlussbild sind die Zellen antippbar: die Reise ist vorbei,
+           jetzt darf die Wabe ein Nachschlagewerk sein. Der Text wechselt,
+           ohne dass sich am Scrollstand etwas ändert. */
+        celdas.forEach((el) => {
+          el.addEventListener('click', () => {
+            if (estacion < estaciones.length - 1) return;
+            const id = el.dataset.celda;
+            const i = estaciones.findIndex((e) => e.dataset.celdaDe === id);
+            if (i < 0) return;
+            estaciones.forEach((e, n) => e.classList.toggle('es-actual', n === i));
+            celdas.forEach((c) => c.classList.toggle('es-elegida', c === el));
+            const cuadro = encuadres[estaciones.length - 1];
+            const celda = porOrden.find((c) => c.el === el);
+            if (cuadro && celda) situarMeli(celda, cuadro);
           });
         });
 
-        cerrarBtn?.addEventListener('click', cerrar);
-
-        document.addEventListener('click', (ev) => {
-          if (!abierto || !popup) return;
-          if (popup.contains(ev.target)) return;
-          if (nodos.some((b) => b.contains(ev.target))) return;
-          cerrar();
-        });
-
-        document.addEventListener('keydown', (ev) => {
-          if (ev.key !== 'Escape' || !abierto) return;
-          const volverA = abierto;
-          cerrar();
-          volverA.focus();
-        });
-
-        /* Bei Größenänderung wandert die Person mit — die Karte hinterher. */
-        addEventListener('resize', () => {
-          if (abierto) ubicar(abierto);
-        });
+        recalcular();
+        medir();
       }
     </script>
 
@@ -482,251 +690,326 @@ const personasArbol = personas.map((p, i) => ({ ...p, i, pos: posiciones[p.id] }
     font-size: var(--fs-500);
   }
 
-  /* ---------- Familia: el árbol ---------- */
+  /* ---------- Nuestro Panal: die wachsende Wabe ----------
 
-  .nosotros-familia {
-    padding-block: clamp(1.5rem, 5vw, 3rem);
+     Am Telefon gilt eine Regel, aus der alles andere folgt: es steht nie
+     etwas nebeneinander. Deshalb liegt die Wabe oben und der Text
+     darunter, in jeder Breite — und deshalb wird die Wabe erst im
+     Schlussbild groß, wenn kein Text mehr danebensteht.
+
+     Ohne JavaScript greift keine der `.esta-viva`-Regeln: dann stehen die
+     Stationen als Liste untereinander und die Wabe ist ein Bild. */
+
+  .panal {
+    padding-block: clamp(1rem, 4vw, 2rem) 0;
   }
 
-  .arbol-kicker {
-    text-align: center;
-    display: block;
-  }
-
-  .arbol-hint {
-    text-align: center;
-    color: var(--tinta-tenue);
-    font-size: var(--fs-300);
-    font-style: italic;
-    margin-top: var(--sp-1);
-    margin-bottom: var(--sp-4);
-  }
-
-  .arbol-stage {
+  /* Ein Bildschirm für die Bühne, dazu eine Wegstrecke je Station.
+     80vh ist der Stellknopf fürs Tempo: kürzer wirkt gehetzt, länger zäh. */
+  .panal.esta-viva .panal-pista {
     position: relative;
-    width: min(92vw, 420px);
-    aspect-ratio: 400 / 560;
-    margin-inline: auto;
+    height: calc(100vh + var(--estaciones) * 80vh);
   }
 
-  .arbol-arte {
-    position: absolute;
-    inset: 0;
-    width: 100%;
-    height: 100%;
-  }
-
-  .arbol-semilla {
-    animation: semilla-caida 900ms var(--ease-out) both;
-  }
-
-  /* Die Äste zeichnen sich von der Wurzel nach oben. Über die Strichlinie
-     statt über `transform`: eine senkrechte Linie hat eine Bounding-Box
-     ohne Breite, `transform-box: fill-box` macht daraus einen Haarstrich. */
-  .rama {
-    stroke-dasharray: 1;
-    stroke-dashoffset: 1;
-    animation: rama-crece 600ms var(--ease-out) both;
-  }
-
-  .rama-raiz { animation-delay: 500ms; }
-  .rama-tronco { animation-delay: 620ms; animation-duration: 760ms; }
-  .rama-1 { animation-delay: 1220ms; }
-  .rama-2 { animation-delay: 1620ms; }
-  .rama-3 { animation-delay: 2000ms; animation-duration: 520ms; }
-
-  .arbol-copa,
-  .arbol-hojas,
-  .arbol-frutos {
-    transform-box: fill-box;
-    transform-origin: 50% 60%;
-    opacity: 0;
-    animation: follaje-entra 700ms var(--ease-out) both;
-  }
-
-  .arbol-copa {
-    animation-delay: 1500ms;
-    animation-duration: 900ms;
-  }
-
-  .hojas-1 {
-    animation-delay: 1900ms;
-  }
-
-  .hojas-2 {
-    animation-delay: 2200ms;
-  }
-
-  @keyframes semilla-caida {
-    0% { opacity: 1; transform: translateY(-52px); }
-    62% { opacity: 1; transform: translateY(0); }
-    100% { opacity: 0; transform: translateY(3px); }
-  }
-
-  @keyframes rama-crece {
-    from { stroke-dashoffset: 1; }
-    to { stroke-dashoffset: 0; }
-  }
-
-  @keyframes follaje-entra {
-    from { opacity: 0; transform: scale(0.72); }
-    to { opacity: 1; transform: scale(1); }
-  }
-
-  .arbol-nodos {
-    position: absolute;
-    inset: 0;
-  }
-
-  .arbol-nodo {
-    position: absolute;
-    transform: translate(-50%, -50%);
-    width: calc(var(--nodo-r, 24px) * 2);
-    aspect-ratio: 1;
-    background: none;
-    border: none;
-    padding: 0;
-    cursor: pointer;
-    border-radius: var(--r-blob);
-    opacity: 0;
-    animation: nodo-entra 480ms var(--ease-bounce) both;
-  }
-
-  /* Die kleinen Knospen sind unter 44 px — die Trefferfläche wächst
-     unsichtbar mit, damit sie am Finger nicht durchrutschen. */
-  .arbol-nodo::before {
-    content: '';
-    position: absolute;
-    inset: 50%;
-    translate: -50% -50%;
-    width: max(100%, 44px);
-    height: max(100%, 44px);
-  }
-
-  .arbol-nodo.gen-abuela { animation-delay: 1150ms; }
-  .arbol-nodo.gen-padres { animation-delay: 1700ms; }
-  .arbol-nodo.gen-hijos { animation-delay: 2100ms; }
-  .arbol-nodo.gen-nietos { animation-delay: 2480ms; }
-
-  @keyframes nodo-entra {
-    from { opacity: 0; transform: translate(-50%, -50%) scale(0); }
-    to { opacity: 1; transform: translate(-50%, -50%) scale(1); }
-  }
-
-  .arbol-nodo-glifo {
-    display: block;
-    width: 100%;
-    height: 100%;
-    border-radius: var(--r-blob);
-    background: #fffdf8;
-    box-shadow: var(--shadow-soft);
-    padding: 12%;
-    transition:
-      transform var(--dur-2) var(--ease-bounce),
-      box-shadow var(--dur-2) ease;
-  }
-
-  .arbol-nodo[aria-expanded='true'] .arbol-nodo-glifo {
-    box-shadow: 0 0 0 3px var(--miel-500), var(--shadow-lift);
-    transform: scale(1.12) rotate(-4deg);
-  }
-
-  @media (hover: hover) and (pointer: fine) {
-    .arbol-nodo:hover .arbol-nodo-glifo {
-      transform: scale(1.08);
-      box-shadow: var(--shadow-lift);
-    }
-  }
-
-  .arbol-nodo:active .arbol-nodo-glifo {
-    transform: scale(0.94);
-  }
-
-  /* ---------- Karte neben der Person ---------- */
-
-  .arbol-popup {
-    position: absolute;
-    z-index: 3;
-    width: min(15rem, calc(100% - 1rem));
-    background: #fffdf8;
-    border-radius: var(--r-lg);
-    box-shadow: var(--shadow-lift);
-    padding: var(--sp-3) var(--sp-4) var(--sp-3) var(--sp-3);
+  .panal.esta-viva .panal-fijo {
+    position: sticky;
+    top: 0;
+    height: 100vh;
     display: grid;
-    gap: 2px;
-    opacity: 0;
-    transform: scale(0.94);
-    transition:
-      opacity 200ms var(--ease-out),
-      transform 200ms var(--ease-out);
+    grid-template-rows: 1fr auto auto;
+    align-items: center;
+    gap: clamp(0.75rem, 2vh, 1.5rem);
+    padding: clamp(4.5rem, 11vh, 6rem) clamp(1rem, 5vw, 2rem) clamp(1.5rem, 4vh, 2.5rem);
+    overflow: hidden;
   }
 
-  .arbol-popup.se-abre {
-    opacity: 1;
-    transform: scale(1);
+  /* ---------- Die Bühne der Wabe ---------- */
+
+  .panal-escena {
+    position: relative;
+    min-height: 0;
+    height: 100%;
   }
 
-  .arbol-popup strong {
-    font-family: var(--font-display);
-    font-size: var(--fs-500);
-    padding-right: 1rem;
+  .panal:not(.esta-viva) .panal-escena {
+    height: clamp(16rem, 60vw, 26rem);
   }
 
-  .arbol-popup p {
-    font-size: var(--fs-300);
-    color: var(--c-text-soft);
-    line-height: 1.4;
-  }
-
-  .arbol-popup-cerrar {
+  /*
+   * Bewegt wird ausschließlich diese Gruppe, über eine einzige
+   * `transform`. Die Zellen darin stehen fest — dadurch rechnet der
+   * Browser beim Scrollen kein Layout neu, sondern schiebt eine fertige
+   * Ebene. Das ist der Unterschied zwischen flüssig und ruckelig auf
+   * einem alten Telefon.
+   */
+  .panal-grupo {
     position: absolute;
-    top: 6px;
-    right: 6px;
+    left: 50%;
+    top: 50%;
+    width: 0;
+    height: 0;
+    transform-origin: 0 0;
+    will-change: transform;
+  }
+
+  /* Grundmaß im Raster. Die sichtbare Größe entsteht erst durch den
+     Maßstab der Gruppe — deshalb stehen hier feste Zahlen und keine
+     Bildschirmmaße. */
+  .panal-grupo .celda {
+    --base: 100px;
+    position: absolute;
+    left: calc(var(--cx) * 1px - var(--base) / 2);
+    top: calc(var(--cy) * 1px - var(--base) * 1.1547 / 2);
+    width: var(--base);
+    height: calc(var(--base) * 1.1547);
     display: grid;
     place-items: center;
-    width: 26px;
-    height: 26px;
+    clip-path: polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%);
+    background: var(--ring, transparent);
     border: none;
-    border-radius: var(--r-full);
-    background: none;
-    color: var(--tinta-tenue);
-    cursor: pointer;
-    transition: background var(--dur-1) var(--ease-out), color var(--dur-1) var(--ease-out);
+    padding: 0;
   }
 
-  .arbol-popup-cerrar:hover {
-    background: var(--miel-100);
-    color: var(--tinta);
+  .panal-grupo .celda[hidden] {
+    display: none;
   }
 
-  /* Schon in dieser Sitzung gesehen: Baum steht sofort fertig da. */
-  .arbol-visto .arbol-semilla,
-  .arbol-visto .rama,
-  .arbol-visto .arbol-copa,
-  .arbol-visto .arbol-hojas,
-  .arbol-visto .arbol-frutos,
-  .arbol-visto .arbol-nodo {
-    animation: none !important;
+  .celda-figura {
+    display: block;
+    width: 58%;
+    transition: opacity var(--dur-2) var(--ease-out);
   }
 
-  .arbol-visto .arbol-semilla {
+  /* Szene 0: die erste Zelle steht schon da, aber leer. Sie füllt sich
+     mit der ersten Person — das ist der Auftakt der ganzen Erzählung. */
+  .panal.esta-viva:not(.primera-llena) .celda[data-orden='0'] {
+    --fill: none;
+  }
+
+  .panal.esta-viva:not(.primera-llena) .celda[data-orden='0'] .celda-figura {
     opacity: 0;
   }
 
-  .arbol-visto .rama {
-    stroke-dashoffset: 0;
+  /* Die neue Zelle wächst dort hoch, wo Meli gelandet ist. */
+  @keyframes celda-brota {
+    from { scale: 0.2; opacity: 0; }
+    60% { scale: 1.08; opacity: 1; }
+    to { scale: 1; opacity: 1; }
   }
 
-  .arbol-visto .arbol-copa,
-  .arbol-visto .arbol-hojas,
-  .arbol-visto .arbol-frutos {
-    opacity: 1;
-    transform: none;
+  /* Bewusst OHNE `both`: mit Fülleigenschaft bliebe eine Zelle auf dem
+     Anfangsbild der Animation stehen — also winzig und unsichtbar —,
+     falls die Animation nie anläuft. Ohne sie gilt in dem Fall der
+     normale Zustand, und die Zelle ist einfach da. */
+  .panal-grupo .celda.es-nueva {
+    animation: celda-brota 620ms var(--ease-bounce);
   }
 
-  .arbol-visto .arbol-nodo {
+  .panal-grupo .celda.es-elegida {
+    --ring: var(--miel-500);
+    --ring-w: 5px;
+  }
+
+  /* ---------- Meli ---------- */
+
+  .panal-meli {
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    z-index: 3;
+    width: clamp(3rem, 11vw, 4.6rem);
+    margin: calc(clamp(3rem, 11vw, 4.6rem) * -0.9) 0 0 calc(clamp(3rem, 11vw, 4.6rem) * -0.1);
+    pointer-events: none;
+    opacity: 0;
+    transition:
+      translate 780ms cubic-bezier(0.4, 0.02, 0.28, 1),
+      rotate 420ms var(--ease-out),
+      opacity 500ms var(--ease-out);
+  }
+
+  .panal-meli.se-ve {
     opacity: 1;
-    transform: translate(-50%, -50%);
+  }
+
+  /* ---------- Der Text einer Station ---------- */
+
+  .panal-relato {
+    display: grid;
+    text-align: center;
+    justify-items: center;
+  }
+
+  .estacion {
+    max-width: 34rem;
+  }
+
+  .panal.esta-viva .panal-relato {
+    grid-template-areas: 'estacion';
+    /* Platz für den längsten Stationstext freihalten, damit die Wabe
+       nicht bei jedem Wechsel hüpft. */
+    min-height: clamp(11rem, 26vh, 15rem);
+    align-content: start;
+    transition: min-height 500ms var(--ease-out);
+  }
+
+  .panal.esta-viva.es-final .panal-relato {
+    min-height: 0;
+  }
+
+  /* Alle Stationen liegen übereinander; sichtbar ist eine.
+     `visibility` statt `display`, damit die Höhe der Bühne bei jedem
+     Wechsel gleich bleibt und nichts springt. */
+  .panal.esta-viva .estacion {
+    grid-area: estacion;
+    opacity: 0;
+    visibility: hidden;
+    translate: 0 12px;
+    transition:
+      opacity 380ms var(--ease-out),
+      translate 480ms var(--ease-out),
+      visibility 0s linear 380ms;
+  }
+
+  .panal.esta-viva .estacion.es-actual {
+    opacity: 1;
+    visibility: visible;
+    translate: 0 0;
+    transition-delay: 120ms, 120ms, 0s;
+  }
+
+  .estacion-vinculo {
+    font-size: var(--fs-200);
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--miel-800);
+    margin: 0 0 var(--sp-1);
+  }
+
+  .estacion h3 {
+    font-family: var(--font-display);
+    font-variation-settings: 'SOFT' 80, 'WONK' 1;
+    font-size: var(--fs-800);
+    line-height: var(--lh-tight);
+    margin: 0 0 var(--sp-2);
+    text-wrap: balance;
+  }
+
+  .estacion-titulo-solo {
+    color: var(--miel-800);
+  }
+
+  .estacion-rol {
+    font-size: var(--fs-500);
+    margin: 0 0 var(--sp-3);
+  }
+
+  .estacion-detalle {
+    color: var(--tinta-suave);
+    margin: 0;
+  }
+
+  .estacion-hint {
+    margin: var(--sp-3) 0 0;
+    font-size: var(--fs-300);
+    font-style: italic;
+    color: var(--tinta-tenue);
+  }
+
+  .panal-avance {
+    margin: 0;
+    font-family: var(--font-display);
+    font-size: var(--fs-300);
+    color: var(--tinta-tenue);
+    font-variant-numeric: tabular-nums;
+    text-align: center;
+  }
+
+  .panal-avance .barra {
+    margin: 0 0.35em;
+    opacity: 0.6;
+  }
+
+  .panal:not(.esta-viva) .panal-avance {
+    display: none;
+  }
+
+  /* Ohne JavaScript: Stationen als Liste, mit Luft dazwischen. */
+  .panal:not(.esta-viva) .estacion + .estacion {
+    margin-top: clamp(2rem, 6vw, 3.5rem);
+  }
+
+  .panal:not(.esta-viva) .panal-relato {
+    margin-top: clamp(2rem, 6vw, 3.5rem);
+    padding-inline: clamp(1rem, 5vw, 2rem);
+  }
+
+  /* ---------- Die Zelle: Bauweise und Pigmente ----------
+
+     Eine Zelle hat ZWEI Ebenen. Ein Rahmen ist hier nicht möglich:
+     `border` und `box-shadow: inset` folgen dem RECHTECK des Elements,
+     und `clip-path` schneidet danach die Ecken weg — von einem Rahmen
+     blieben nur die beiden senkrechten Stücke übrig, die schrägen Kanten
+     wären nackt. Deshalb ist das Element selbst die Kontur (`--ring`) und
+     das ::before darin die Fläche (`--fill`), um die Strichstärke
+     eingerückt. Bei `--ring-w: 0` deckt die Fläche alles ab.
+
+     Die gestrichelte Kontur der offenen Zellen kann das nicht leisten —
+     eine Strichelung muss der schrägen Kante folgen, und das kann nur ein
+     Pfad. Dafür liegt in jenen Zellen ein echtes SVG-Sechseck. */
+
+  .celda::before {
+    content: '';
+    position: absolute;
+    inset: var(--ring-w, 0px);
+    clip-path: polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%);
+    background: var(--fill, transparent);
+  }
+
+  .celda > * {
+    position: relative;
+  }
+
+  .celda-trazo {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    fill: none;
+    stroke: var(--tinta-tenue);
+    stroke-width: 2.4;
+    stroke-dasharray: 3.4 7;
+    stroke-linecap: round;
+    pointer-events: none;
+  }
+
+  /* Die freien Zellen sollen als ZELLEN lesbar bleiben, nicht als Lücke —
+     sonst geht die Aussage "der Stock ist nicht fertig" verloren. */
+  .celda-libre .celda-trazo {
+    stroke-width: 2;
+    stroke-dasharray: 2.6 7;
+    opacity: 0.62;
+  }
+
+  /* Das Pigment steht für die TÄTIGKEIT, nicht für die Generation —
+     damit trägt die Farbe eine Aussage und keine Rangfolge. */
+  .pig-miel { --fill: var(--miel-200); }
+  .pig-barro { --fill: var(--barro-200); }
+  .pig-pistacho { --fill: var(--pistacho-200); }
+  .pig-lavanda { --fill: var(--lavanda-200); }
+
+  .vin-nucleo { --ring-w: 0px; }
+
+  /* Offen: begleitet zeitweise. Gleiche Größe, gleiche Form — nur eine
+     gestrichelte Kontur um eine helle Mitte. Der Unterschied ist
+     Anwesenheit, nicht Rang. */
+  .vin-vuelo {
+    --ring-w: 0px;
+    --fill: var(--papel);
+  }
+
+  .celda-libre {
+    --ring-w: 0px;
+    --fill: none;
   }
 
   /* ---------- Valores ---------- */
@@ -761,45 +1044,29 @@ const personasArbol = personas.map((p, i) => ({ ...p, i, pos: posiciones[p.id] }
       translate: none;
     }
 
-    .arbol-semilla,
-    .rama,
-    .arbol-copa,
-    .arbol-hojas,
-    .arbol-frutos,
-    .arbol-nodo {
-      animation: none !important;
+    /* Der Wechsel bleibt, die Bewegung geht. Der Maßstab der Wabe wird im
+       Skript in Stufen statt stufenlos gesetzt (siehe `quieto`); hier
+       fallen die Übergänge weg, die davon unabhängig sind. */
+    .panal.esta-viva .estacion {
+      translate: none;
+      transition: opacity 200ms linear, visibility 0s linear 200ms;
     }
 
-    .arbol-semilla {
-      opacity: 0;
+    .panal.esta-viva .estacion.es-actual {
+      translate: none;
     }
 
-    .rama {
-      stroke-dashoffset: 0;
+    .panal-grupo .celda.es-nueva {
+      animation: none;
     }
 
-    .arbol-copa,
-    .arbol-hojas,
-    .arbol-frutos {
-      opacity: 1;
-      transform: none;
+    .panal-meli {
+      transition: opacity 300ms linear;
     }
 
-    .arbol-nodo {
-      opacity: 1;
-      transform: translate(-50%, -50%);
-    }
-
-    .arbol-nodo-glifo {
-      transition: box-shadow var(--dur-2) var(--ease-out);
-    }
-
-    .arbol-nodo:hover .arbol-nodo-glifo {
-      transform: none;
-    }
-
-    .arbol-popup {
+    .celda-figura {
       transition: none;
     }
   }
+
 </style>

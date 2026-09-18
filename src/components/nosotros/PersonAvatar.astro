@@ -1,6 +1,6 @@
 ---
 /**
- * Abstrakter Aquarell-Platzhalter-Avatar für die "Nosotros"-Seite.
+ * Abstrakter Aquarell-Platzhalter-Avatar für die Wabe auf "Nosotros".
  *
  * Es gibt noch keine echten Fotos der Familie. Statt eines Flat-Icons oder
  * eines fotorealistischen Platzhalters zeichnet diese Komponente eine
@@ -9,44 +9,39 @@
  * (pg-*-Gradient aus WatercolorDefs.astro) + `wc-soft`/`wc-rough` für die
  * Waschung und `ink` für die zittrige Umrisslinie.
  *
- * Die Generationszugehörigkeit macht die Familie auf den ersten Blick als
- * Mehrgenerationenprojekt erkennbar, über zwei dezente Mittel statt Text:
- *   - Farbton: abuela = Barro (erdig), padres = Miel (Hauptakzent der
- *     Seite), hijos = helles Pistacho-Grün (frisch, jung).
- *   - Größe: die Silhouette wird über die Generationen hinweg etwas
- *     kleiner (Großmutter am größten, Kinder am kleinsten).
- *   - "Los nietos" ist keine Einzelperson, sondern eine Gruppe: drei kleine
- *     Mini-Silhouetten in Lavanda-Ton statt einer einzelnen großen Figur.
+ * WICHTIG — was diese Komponente NICHT mehr tut: Sie staffelt keine Größen
+ * mehr nach Generation. Vorher war die Großmutter am größten und die Kinder
+ * am kleinsten; im Baum war das eine Generationenfolge, in einer Wabe wäre
+ * es eine Rangordnung. Alle Figuren sind jetzt gleich groß.
+ *
+ * Unterschieden wird nur noch über das Pigment, und das steht für die
+ * TÄTIGKEIT: miel = Bienen, barro = Bau, pistacho = Pflanzen und Boden,
+ * lavanda = alles, was aus der Ferne oder am Bildschirm passiert.
  */
-import type { Generation } from '../../data/nosotros';
+import type { Pigmento } from '../../data/nosotros';
 
 interface Props {
-  generation: Generation;
+  pigmento: Pigmento;
   /** Index der Person in der Liste — variiert die Neigung leicht, damit
-      die sieben Avatare nicht wie Kopien voneinander wirken. Deterministisch,
+      die Avatare nicht wie Kopien voneinander wirken. Deterministisch,
       damit Server und Client dasselbe Markup erzeugen. */
   seed?: number;
-  /** "Los nietos": mehrere kleine Figuren statt einer. */
+  /** Gruppen ("los nietos", "los voluntarios"): mehrere kleine Figuren. */
   grupo?: boolean;
+  /** `vuelo`-Waben sind blasser — die Wabe selbst trägt dort die Aussage. */
+  tenue?: boolean;
 }
 
-const { generation, seed = 0, grupo = false } = Astro.props;
+const { pigmento, seed = 0, grupo = false, tenue = false } = Astro.props;
 
-const tone: Record<Generation, string> = {
-  abuela: 'pg-barro',
-  padres: 'pg-miel',
-  hijos: 'pg-pistacho-light',
-  nietos: 'pg-lavanda',
+const tone: Record<Pigmento, string> = {
+  miel: 'pg-miel',
+  barro: 'pg-barro',
+  pistacho: 'pg-pistacho-light',
+  lavanda: 'pg-lavanda',
 };
 
-const genScale: Record<Generation, number> = {
-  abuela: 1.06,
-  padres: 1,
-  hijos: 0.9,
-  nietos: 1,
-};
-
-const fill = `url(#${tone[generation]})`;
+const fill = `url(#${tone[pigmento]})`;
 
 /** Leichte, deterministische Neigung je Person statt echtem Zufall,
     damit ein Rebuild immer dasselbe Markup erzeugt. */
@@ -61,20 +56,23 @@ interface Figure {
   rotate: number;
 }
 
-const baseScale = genScale[generation];
-
 const figures: Figure[] = grupo
   ? [
       { cx: 32, cy: 80, scale: 0.56, rotate: tilt(seed + 1) },
       { cx: 61, cy: 64, scale: 0.72, rotate: tilt(seed + 2) },
       { cx: 89, cy: 82, scale: 0.52, rotate: tilt(seed + 3) },
     ]
-  : [{ cx: 60, cy: 62, scale: baseScale, rotate: tilt(seed) }];
+  : [{ cx: 60, cy: 62, scale: 1, rotate: tilt(seed) }];
 ---
 
-<svg class="persona-avatar" viewBox="0 0 120 130" aria-hidden="true" focusable="false">
+<svg
+  class:list={['persona-avatar', { tenue }]}
+  viewBox="0 0 120 130"
+  aria-hidden="true"
+  focusable="false"
+>
   {grupo && (
-    <ellipse cx="61" cy="78" rx="52" ry="34" fill="url(#pg-lavanda)" opacity="0.14" filter="url(#wc-wash)" />
+    <ellipse cx="61" cy="78" rx="52" ry="34" fill={fill} opacity="0.14" filter="url(#wc-wash)" />
   )}
   {figures.map((f) => (
     <g transform={`translate(${f.cx} ${f.cy}) rotate(${f.rotate}) scale(${f.scale})`}>
@@ -111,5 +109,11 @@ const figures: Figure[] = grupo
     display: block;
     width: 100%;
     height: auto;
+  }
+
+  /* Begleiterinnen und Begleiter: dieselbe Figur, nur zurückgenommen.
+     Die offene Wabenkontur trägt dort die eigentliche Unterscheidung. */
+  .persona-avatar.tenue {
+    opacity: 0.6;
   }
 </style>
