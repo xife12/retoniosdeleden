@@ -1,6 +1,7 @@
 ---
 import Base from '../layouts/Base.astro';
 import BeeMeli from '../components/BeeMeli.astro';
+import SelloAbejas from '../components/SelloAbejas.astro';
 
 const pigments = [
   { name: 'Miel', vars: ['--miel-100', '--miel-200', '--miel-300', '--miel-500', '--miel-700'] },
@@ -115,6 +116,22 @@ const motion = [
     <!-- Componentes -->
     <section class="ds-sec">
       <h2>Componentes</h2>
+
+      <h3>Sello «Las abejas educan»</h3>
+      <p style="font-size: var(--fs-300); color: var(--c-text-soft); max-width: 34rem">
+        Marca propia dentro de Retoños del Edén. La fassung elegida es
+        <strong>árbol</strong>; las demás quedan acá para poder compararlas.
+      </p>
+      <div class="comp-row comp-row--top">
+        {(['arbol', 'panal', 'vuelo', 'modulos', 'lacre', 'rama', 'letra'] as const).map((v) => (
+          <figure style="margin: 0; text-align: center; display: grid; gap: var(--sp-2); justify-items: center">
+            <SelloAbejas variante={v} size="96px" decorative />
+            <figcaption style="font-size: var(--fs-200); letter-spacing: 0.1em; text-transform: uppercase; color: var(--c-text-soft)">
+              {v}
+            </figcaption>
+          </figure>
+        ))}
+      </div>
 
       <h3>Botones</h3>
       <div class="comp-row">

@@ -1,0 +1,1554 @@
+---
+/**
+ * "Las abejas educan" — Schulmodule.
+ *
+ * Aufbau nach Lámina 4 · V2 ("Ruta") aus dem Entwurfsdokument: die Module
+ * stehen nicht als gleichwertiges Kartenraster nebeneinander, sondern auf
+ * einem WEG, der in der Schule beginnt und auf der Chacra endet. Die
+ * Nummerierung ist deshalb keine Zierde — sie ist wahr: die Module bauen
+ * aufeinander auf. Das ist auch das Verkaufsargument gegenüber einer
+ * Schule: nicht vier Angebote, sondern ein Weg, aus dem man Stücke
+ * buchen kann.
+ *
+ * Drei Dinge, die der Aufbau bewusst löst:
+ *
+ *  1. Der Besuch auf der Chacra (Modul 4) ist NOCH NICHT buchbar. Er
+ *     bleibt trotzdem sichtbar, weil er das Ziel des Weges erklärt —
+ *     aber als `proximamente`, ohne Auswahlknopf. Siehe modulos.ts.
+ *  2. Die Modulauswahl ist an ZWEI Stellen möglich und immer dieselbe:
+ *     am Weg und noch einmal im ersten Schritt des Formulars. Wer erst im
+ *     Formular merkt, dass ein Modul fehlt, muss nicht zurück.
+ *  3. Es werden ausschließlich Daten der SCHULE und der LEHRKRAFT erhoben,
+ *     nie Daten der Kinder — nur ihre Anzahl. Das ist der datensparsamste
+ *     Weg und hält Daten Minderjähriger komplett aus dem System heraus.
+ *
+ * Das Absenden ist seit D1 echt: das Formular schreibt über
+ * src/lib/solicitudes.ts in die Supabase-Tabelle `solicitudes`
+ * (supabase/migrations/005_solicitudes.sql). Damit ist dies das erste und
+ * bisher einzige Formular im Projekt, das etwas tut — Contact.astro und
+ * Workshops.astro sind weiterhin Attrappen.
+ *
+ * Daraus folgen zwei Dinge, die hier anders sind als sonst:
+ *
+ *  a) Beim Absenden wird der WORTLAUT der Einwilligung mitgeschrieben, so
+ *     wie er neben dem Häkchen steht — nicht ein Schlüssel darauf. Das
+ *     verlangt Art. 9 der Ley 18.331: die Einwilligung muss nachweisbar
+ *     sein, auch nachdem wir den Satz einmal umformuliert haben. Deshalb
+ *     liest das Skript unten den Text aus dem DOM und nicht aus modulos.ts.
+ *  b) Schlägt das Senden fehl, bleibt das Formular stehen — ausgefüllt,
+ *     mit einer sichtbaren Meldung und einem zweiten Versuch. Ein
+ *     Dankesbildschirm ohne gespeicherte Anfrage wäre eine Lüge.
+ *
+ * Noch offen: Die Inhalte kommen weiterhin aus src/data/modulos.ts statt
+ * aus /admin (D3); der Weg dorthin steht im Kopf jener Datei.
+ */
+import SelloAbejas from './SelloAbejas.astro';
+import BeeMeli from './BeeMeli.astro';
+import { filtrosEdad, abejasEducanUI } from '../data/modulos';
+import { fetchModulos } from '../lib/fetch-modulos';
+import { privacidadRuta } from '../data/privacidad';
+import type { Dict } from '../i18n';
+import type { Lang } from '../i18n';
+
+interface Props {
+  t: Dict;
+  lang: Lang;
+}
+
+const { lang } = Astro.props;
+const ui = abejasEducanUI[lang];
+
+/*
+ * Die Module kommen zur Bauzeit aus der Datenbank, damit Catalina sie in
+ * /admin selbst pflegen kann. Ist kein Backend erreichbar, greifen die
+ * Entwurfsdaten aus `src/data/modulos.ts` — der Build bleibt dadurch nie
+ * stehen. Siehe den Kopf von fetch-modulos.ts.
+ */
+const modulos = await fetchModulos();
+
+const enAula = modulos.filter((m) => m.lugar === 'aula');
+const enChacra = modulos.filter((m) => m.lugar === 'chacra');
+const seleccionables = modulos.filter((m) => m.estado === 'disponible');
+
+/** "60 minutos" bzw. "3 horas" — volle Stunden lesen sich besser. */
+function duracionTexto(min: number): string {
+  return min % 60 === 0 && min >= 120
+    ? `${min / 60} ${ui.horas}`
+    : `${min} ${ui.minutos}`;
+}
+
+/**
+ * Monatsliste als Spanne, wenn sie zusammenhängt ("mar – nov"), sonst
+ * aufgezählt. Die Chacra-Monate laufen über den Jahreswechsel, deshalb
+ * wird auch der Umbruch von 12 auf 1 als zusammenhängend gewertet.
+ */
+function mesesTexto(meses: number[]): string {
+  const corto = (m: number) => ui.mesesCortos[m - 1];
+  if (meses.length < 2) return meses.map(corto).join(', ');
+  let seguido = true;
+  for (let i = 1; i < meses.length; i++) {
+    if ((meses[i - 1] % 12) + 1 !== meses[i]) seguido = false;
+  }
+  return seguido ? `${corto(meses[0])} – ${corto(meses[meses.length - 1])}` : meses.map(corto).join(', ');
+}
+
+function edadTexto(m: (typeof modulos)[number]): string {
+  return m.edadMax ? `${m.edadMin}–${m.edadMax}` : `${m.edadMin}+`;
+}
+---
+
+<section id="escuelas" class="educan" data-chapter data-meli-zone>
+  <div class="wrap">
+    <header class="section-head educan-head" data-reveal>
+      <SelloAbejas variante="arbol" size="clamp(72px, 13vw, 104px)" decorative class="educan-sello" />
+      <p class="kicker">{ui.kicker}</p>
+      <h2>
+        <span class="swash">{ui.title}</span>
+        <span class="meli-perch" data-meli-perch aria-hidden="true"></span>
+      </h2>
+      <p class="lead">{ui.intro}</p>
+    </header>
+
+    {/* ---------- Filtro por edad ---------- */}
+    <div class="educan-filtro" role="group" aria-label={ui.filtroLabel} data-reveal>
+      <span class="educan-filtro-label">{ui.filtroLabel}</span>
+      <button type="button" class="fchip is-on" data-edad="todas" aria-pressed="true">
+        {ui.filtroTodas}
+      </button>
+      {filtrosEdad.map((f) => (
+        <button
+          type="button"
+          class="fchip"
+          data-edad={f.id}
+          data-desde={f.desde}
+          data-hasta={f.hasta}
+          aria-pressed="false"
+        >
+          {f.label[lang]}
+        </button>
+      ))}
+    </div>
+
+    <p class="educan-vacio" data-educan-vacio hidden>{ui.sinResultados}</p>
+
+    {/* ---------- La ruta ---------- */}
+    {[
+      { titulo: ui.enAula, nota: ui.enAulaNota, lista: enAula },
+      { titulo: ui.enChacra, nota: ui.enChacraNota, lista: enChacra },
+    ].map((tramo) => (
+      <div class="ruta-tramo" data-ruta-tramo>
+        <p class="ruta-rotulo" data-reveal>
+          <span>{tramo.titulo}</span>
+          <em>{tramo.nota}</em>
+        </p>
+
+        <ol class="ruta">
+          {tramo.lista.map((m) => {
+            const mt = m.text[lang];
+            const libre = m.estado === 'disponible';
+            return (
+              <li
+                class:list={['ruta-paso', { 'es-proximo': !libre }]}
+                data-modulo={m.id}
+                data-desde={m.edadMin}
+                data-hasta={m.edadMax ?? 99}
+                data-reveal
+              >
+                <div class="ruta-riel" aria-hidden="true">
+                  <span class="ruta-celda">{m.numero}</span>
+                  <span class="ruta-hilo"></span>
+                </div>
+
+                <article class="mod">
+                  <div class="mod-cabeza">
+                    <h3 id={`mod-${m.id}`}>{mt.title}</h3>
+                    {!libre && <span class="mod-pronto">{ui.proximamente}</span>}
+                  </div>
+
+                  <p class="mod-resumen">{mt.summary}</p>
+
+                  <ul class="mod-chips">
+                    <li class="chip chip--edad">{edadTexto(m)} {lang === 'es' ? 'años' : 'yrs'}</li>
+                    <li class="chip">{mt.clase}</li>
+                    <li class="chip">{duracionTexto(m.duracion)}</li>
+                    <li class="chip">
+                      {lang === 'es' ? 'hasta' : 'up to'} {m.maxAlumnos} {ui.alumnos}
+                    </li>
+                    <li class="chip chip--meses">{mesesTexto(m.meses)}</li>
+                  </ul>
+
+                  {/* Der lange Text steht im Markup, nicht im Skript: so ist
+                      er auch ohne JavaScript und für Suchmaschinen da. */}
+                  <details class="mod-mas">
+                    <summary>{ui.leerMas}</summary>
+                    <div class="mod-mas-cuerpo">
+                      <p>{mt.longDesc}</p>
+                      <p class="mod-objetivos-tit">{ui.objetivos}</p>
+                      <ul class="mod-objetivos">
+                        {mt.objetivos.map((o) => <li>{o}</li>)}
+                      </ul>
+                    </div>
+                  </details>
+
+                  {libre ? (
+                    <button
+                      type="button"
+                      class="btn btn--elegir"
+                      data-mod-toggle={m.id}
+                      aria-pressed="false"
+                      aria-describedby={`mod-${m.id}`}
+                    >
+                      <span class="elegir-mas" aria-hidden="true">+</span>
+                      <span data-elegir-texto>{ui.elegir}</span>
+                    </button>
+                  ) : (
+                    <p class="mod-pronto-nota">{ui.proximamenteNota}</p>
+                  )}
+                </article>
+              </li>
+            );
+          })}
+        </ol>
+      </div>
+    ))}
+
+    {/* ---------- Buch-Ankündigung ----------
+        Kein Hinweisstreifen, sondern ein Auftritt: das Buch liegt schräg
+        auf dem Papier, Meli fliegt heraus und hinterlässt eine Flugspur.
+        Die Ankündigung soll Lust machen, nicht informieren — deshalb ist
+        das Objekt groß und der Text kurz. */}
+    <aside class="libro-anuncio" data-reveal>
+      <div class="libro-obj" aria-hidden="true">
+        <span class="libro-halo"></span>
+
+        <svg class="libro-tapa" viewBox="0 0 200 260">
+          {/* Buchrücken und Seitenschnitt */}
+          <path d="M28 22 L40 14 L188 30 L176 38 Z" fill="var(--miel-200)"
+            stroke="var(--tinta)" stroke-opacity="0.5" stroke-width="1.6" stroke-linejoin="round" />
+          <path d="M176 38 L188 30 L196 232 L184 240 Z" fill="var(--papel-warm)"
+            stroke="var(--tinta)" stroke-opacity="0.4" stroke-width="1.4" stroke-linejoin="round" />
+          <g stroke="var(--tinta)" stroke-opacity="0.18" stroke-width="1">
+            <path d="M178 48 L190 40" /><path d="M179 62 L191 54" /><path d="M180 76 L192 68" />
+          </g>
+
+          {/* Deckel */}
+          <path d="M28 22 L176 38 L184 240 L36 224 Z" fill="url(#pg-miel)" filter="url(#wc-soft)" />
+          <path d="M28 22 L176 38 L184 240 L36 224 Z" fill="none"
+            stroke="var(--tinta)" stroke-opacity="0.55" stroke-width="2.4"
+            stroke-linejoin="round" filter="url(#ink)" />
+
+          {/* Geprägte Wabe auf dem Deckel */}
+          <path d="M104 84 L134 100 L136 136 L108 152 L78 136 L76 100 Z"
+            fill="none" stroke="var(--tinta)" stroke-opacity="0.42" stroke-width="2.6"
+            stroke-linejoin="round" filter="url(#ink)" />
+
+          {/* Titelzeilen als Tuschestriche — der echte Titel steht daneben */}
+          <g stroke="var(--tinta)" stroke-opacity="0.34" stroke-width="4.5" stroke-linecap="round">
+            <path d="M64 184 L146 192" />
+            <path d="M64 202 L120 208" />
+          </g>
+        </svg>
+
+        {/* Melis Flugspur vom Buch weg — dieselbe Strichelung wie überall */}
+        <svg class="libro-senda" viewBox="0 0 200 120">
+          <path d="M12 96 C 52 96, 66 40, 104 44 C 138 48, 146 84, 186 70"
+            fill="none" stroke="var(--miel-700)" stroke-width="2.2"
+            stroke-linecap="round" stroke-dasharray="1.6 7" />
+        </svg>
+
+        <span class="libro-meli"><BeeMeli width="100%" /></span>
+      </div>
+
+      <div class="libro-txt">
+        <p class="libro-kicker">
+          <SelloAbejas variante="letra" size="30px" decorative />
+          <span>{ui.libroKicker}</span>
+        </p>
+        <h3>{ui.libroTitulo}</h3>
+        <p class="libro-cuerpo">{ui.libroTexto}</p>
+        <p class="libro-firma">{ui.libroFirma}</p>
+      </div>
+    </aside>
+  </div>
+
+  {/* ---------- Barra de selección ----------
+      Bleibt am unteren Rand stehen, sobald etwas gewählt ist. Ohne
+      Auswahl ist sie nicht da: eine leere Leiste, die den halben
+      Bildschirmrand belegt, hilft niemandem. */}
+  <div class="educan-barra" data-educan-barra hidden>
+    <p class="educan-barra-txt">
+      <strong data-educan-cuenta>0</strong> <span>{ui.seleccionados}</span>
+    </p>
+    <button type="button" class="btn" data-educan-abrir>{ui.pedir}</button>
+  </div>
+
+  {/* ---------- Formulario de solicitud ---------- */}
+  <div class="modal-backdrop" data-educan-backdrop hidden></div>
+  <div
+    class="modal modal--educan"
+    data-educan-modal
+    role="dialog"
+    aria-modal="true"
+    aria-labelledby="educan-form-tit"
+    hidden
+  >
+    <button class="modal-close" data-educan-cerrar aria-label={ui.cerrar}>×</button>
+
+    <h3 id="educan-form-tit">{ui.formTitle}</h3>
+    <p class="educan-form-intro">{ui.formIntro}</p>
+
+    <ol class="pasos" data-educan-pasos>
+      <li class="is-on"><span>1</span>{ui.pasoModulos}</li>
+      <li><span>2</span>{ui.pasoFecha}</li>
+      <li><span>3</span>{ui.pasoContacto}</li>
+    </ol>
+
+    {/* Die Texte für Fehlerfall und Wartezustand reisen als data-Attribute
+        ins Skript. Astros `define:vars` wäre der bequemere Weg, macht das
+        Skript aber `is:inline` — dann liefe der TypeScript-Teil unten
+        ungeprüft und ungebaut in den Browser. `data-origen` ist auf
+        'escuelas' festgenagelt; On Tour bekommt später sein eigenes
+        Formular mit 'on_tour'. */}
+    <form
+      class="educan-form"
+      data-educan-form
+      data-origen="escuelas"
+      data-txt-enviar={ui.enviar}
+      data-txt-enviando={ui.enviando}
+      data-txt-error-conexion={ui.errorConexion}
+      data-txt-error-envio={ui.errorEnvio}
+      novalidate
+    >
+      {/* Schritt 1 — Module. Dieselbe Auswahl wie am Weg, hier noch
+          einmal änderbar. Wer erst hier merkt, dass ein Modul fehlt,
+          muss nicht zurückscrollen. */}
+      <fieldset class="paso-panel" data-paso="1">
+        <legend class="visually-hidden">{ui.pasoModulos}</legend>
+        <ul class="mod-picker">
+          {seleccionables.map((m) => (
+            <li>
+              <label class="picker-item">
+                <input type="checkbox" data-mod-check value={m.id} />
+                <span class="picker-celda" aria-hidden="true">{m.numero}</span>
+                <span class="picker-txt">
+                  <strong>{m.text[lang].title}</strong>
+                  <em>{edadTexto(m)} · {duracionTexto(m.duracion)}</em>
+                </span>
+              </label>
+            </li>
+          ))}
+        </ul>
+        <p class="educan-aviso" data-educan-aviso hidden>{ui.ninguno}</p>
+      </fieldset>
+
+      {/* Schritt 2 — Termin. Zwei Wunschtermine statt einem: das
+          erspart erfahrungsgemäß die halbe Mailrunde. */}
+      <fieldset class="paso-panel" data-paso="2" hidden>
+        <legend class="visually-hidden">{ui.pasoFecha}</legend>
+        <label class="campo">
+          <span>{ui.campoFecha1}</span>
+          <input type="date" name="fecha1" required />
+        </label>
+        <label class="campo">
+          <span>{ui.campoFecha2}</span>
+          <input type="date" name="fecha2" />
+        </label>
+        <div class="campo-fila">
+          <label class="campo">
+            <span>{ui.campoAlumnos}</span>
+            <input type="number" name="alumnos" min="1" max="60" inputmode="numeric" required />
+          </label>
+          <label class="campo">
+            <span>{ui.campoClase}</span>
+            <input type="text" name="clase" autocomplete="off" required />
+          </label>
+        </div>
+      </fieldset>
+
+      {/* Schritt 3 — Kontakt. Ausschließlich Schule und Lehrkraft. */}
+      <fieldset class="paso-panel" data-paso="3" hidden>
+        <legend class="visually-hidden">{ui.pasoContacto}</legend>
+        <label class="campo">
+          <span>{ui.campoEscuela}</span>
+          <input type="text" name="escuela" autocomplete="organization" required />
+        </label>
+        <label class="campo">
+          <span>{ui.campoDocente}</span>
+          <input type="text" name="docente" autocomplete="name" required />
+        </label>
+        <div class="campo-fila">
+          <label class="campo">
+            <span>{ui.campoMail}</span>
+            <input type="email" name="mail" autocomplete="email" required />
+          </label>
+          <label class="campo">
+            <span>{ui.campoTel}</span>
+            <input type="tel" name="tel" autocomplete="tel" />
+          </label>
+        </div>
+        <label class="campo">
+          <span>{ui.campoNota}</span>
+          <textarea name="nota" rows="3"></textarea>
+        </label>
+
+        {/* Nicht vorausgewählt, und das bleibt so: Art. 9 der Ley 18.331
+            verlangt eine ausdrückliche Einwilligung, ein vorgesetztes
+            Häkchen ist keine.
+
+            Der Satz steht ALLEIN in diesem span — der Link zur
+            Datenschutzseite bewusst darunter und nicht darin. Das Skript
+            liest beim Absenden genau diesen textContent als Nachweis; ein
+            eingebetteter Link würde seine Beschriftung mit in den
+            gespeicherten Wortlaut ziehen. */}
+        <label class="consent">
+          <input type="checkbox" name="consentimiento" required />
+          <span data-educan-consent-texto>{ui.consentimiento}</span>
+        </label>
+
+        <p class="consent-priv">
+          <a href={privacidadRuta[lang]} target="_blank" rel="noopener noreferrer">
+            {ui.privacidad}
+          </a>
+        </p>
+
+        <p class="educan-nota">{ui.noVinculante}</p>
+
+        {/* Leer, bis etwas schiefgeht. role="alert" sorgt dafür, dass ein
+            Screenreader die Meldung vorliest, ohne dass wir den Fokus
+            verschieben müssen — der bleibt auf dem Absendeknopf, wo der
+            zweite Versuch stattfindet. */}
+        <p class="educan-error" data-educan-error role="alert" hidden></p>
+      </fieldset>
+
+      <div class="paso-acciones">
+        <button type="button" class="btn btn--fantasma" data-educan-volver hidden>{ui.volver}</button>
+        <button type="button" class="btn" data-educan-siguiente>{ui.siguiente}</button>
+        <button type="submit" class="btn" data-educan-enviar hidden>{ui.enviar}</button>
+      </div>
+    </form>
+
+    <div class="educan-gracias" data-educan-gracias hidden>
+      <SelloAbejas variante="lacre" size="72px" decorative />
+      <h4>{ui.gracias}</h4>
+      <p>{ui.graciasTexto}</p>
+    </div>
+  </div>
+</section>
+
+<script>
+  /**
+   * Auswahl, Filter und der dreistufige Ablauf des Anfrageformulars.
+   *
+   * Eine einzige Wahrheit über die Auswahl (`elegidos`), an die sich beide
+   * Bedienstellen halten: die Knöpfe am Weg und die Häkchen im Formular.
+   * Deshalb schreibt keine der beiden Stellen direkt in die andere — beide
+   * ändern nur die Menge und lassen danach `pintar()` alles nachziehen.
+   */
+  const sec = document.querySelector('.educan');
+  if (sec) {
+    const elegidos = new Set<string>();
+
+    const botones = Array.from(sec.querySelectorAll<HTMLButtonElement>('[data-mod-toggle]'));
+    const checks = Array.from(sec.querySelectorAll<HTMLInputElement>('[data-mod-check]'));
+    const barra = sec.querySelector<HTMLElement>('[data-educan-barra]');
+    const cuenta = sec.querySelector<HTMLElement>('[data-educan-cuenta]');
+    const aviso = sec.querySelector<HTMLElement>('[data-educan-aviso]');
+
+    function pintar() {
+      botones.forEach((b) => {
+        const on = elegidos.has(b.dataset.modToggle!);
+        b.setAttribute('aria-pressed', String(on));
+        b.classList.toggle('is-on', on);
+      });
+      checks.forEach((c) => {
+        c.checked = elegidos.has(c.value);
+      });
+      if (cuenta) cuenta.textContent = String(elegidos.size);
+      if (barra) barra.hidden = elegidos.size === 0;
+      if (aviso) aviso.hidden = elegidos.size > 0;
+    }
+
+    botones.forEach((b) => {
+      b.addEventListener('click', () => {
+        const id = b.dataset.modToggle!;
+        if (elegidos.has(id)) elegidos.delete(id);
+        else elegidos.add(id);
+        pintar();
+      });
+    });
+
+    checks.forEach((c) => {
+      c.addEventListener('change', () => {
+        if (c.checked) elegidos.add(c.value);
+        else elegidos.delete(c.value);
+        pintar();
+      });
+    });
+
+    /* ---------- Filtro por edad ----------
+       Ein Modul bleibt stehen, wenn sich seine Altersspanne mit der
+       gewählten ÜBERSCHNEIDET — nicht nur, wenn sie ganz hineinpasst.
+       Sonst verschwände das Modul 8–12 bei der Wahl "10 bis 15", obwohl
+       es für eine sechste Klasse genau richtig ist. */
+    const chips = Array.from(sec.querySelectorAll<HTMLButtonElement>('[data-edad]'));
+    const pasos = Array.from(sec.querySelectorAll<HTMLElement>('[data-modulo]'));
+    const tramos = Array.from(sec.querySelectorAll<HTMLElement>('[data-ruta-tramo]'));
+    const vacio = sec.querySelector<HTMLElement>('[data-educan-vacio]');
+
+    chips.forEach((chip) => {
+      chip.addEventListener('click', () => {
+        chips.forEach((c) => {
+          const on = c === chip;
+          c.setAttribute('aria-pressed', String(on));
+          c.classList.toggle('is-on', on);
+        });
+
+        const todas = chip.dataset.edad === 'todas';
+        const desde = Number(chip.dataset.desde);
+        const hasta = Number(chip.dataset.hasta);
+
+        let visibles = 0;
+        pasos.forEach((p) => {
+          const mDesde = Number(p.dataset.desde);
+          const mHasta = Number(p.dataset.hasta);
+          const encaja = todas || (mDesde <= hasta && mHasta >= desde);
+          p.hidden = !encaja;
+          if (encaja) visibles++;
+        });
+
+        /* Ein Abschnitt ohne sichtbares Modul verschwindet mit — sonst
+           bliebe die Überschrift "En la chacra" ohne alles darunter. */
+        tramos.forEach((tr) => {
+          const quedan = Array.from(tr.querySelectorAll<HTMLElement>('[data-modulo]')).some(
+            (p) => !p.hidden,
+          );
+          tr.hidden = !quedan;
+        });
+
+        if (vacio) vacio.hidden = visibles > 0;
+      });
+    });
+
+    /* ---------- Formulario ---------- */
+    const modal = sec.querySelector<HTMLElement>('[data-educan-modal]');
+    const fondo = sec.querySelector<HTMLElement>('[data-educan-backdrop]');
+    const form = sec.querySelector<HTMLFormElement>('[data-educan-form]');
+    const gracias = sec.querySelector<HTMLElement>('[data-educan-gracias]');
+    const paneles = Array.from(sec.querySelectorAll<HTMLElement>('[data-paso]'));
+    const marcas = Array.from(sec.querySelectorAll<HTMLElement>('[data-educan-pasos] li'));
+    const bVolver = sec.querySelector<HTMLButtonElement>('[data-educan-volver]');
+    const bSiguiente = sec.querySelector<HTMLButtonElement>('[data-educan-siguiente]');
+    const bEnviar = sec.querySelector<HTMLButtonElement>('[data-educan-enviar]');
+
+    let paso = 1;
+    let devolverFoco: HTMLElement | null = null;
+
+    function mostrarPaso(n: number) {
+      paso = n;
+      paneles.forEach((p) => {
+        p.hidden = Number(p.dataset.paso) !== n;
+      });
+      marcas.forEach((m, i) => m.classList.toggle('is-on', i === n - 1));
+      if (bVolver) bVolver.hidden = n === 1;
+      if (bSiguiente) bSiguiente.hidden = n === 3;
+      if (bEnviar) bEnviar.hidden = n !== 3;
+    }
+
+    /*
+     * Tastaturfalle. `aria-modal="true"` verspricht einem Screenreader,
+     * dass ausserhalb des Dialogs nichts erreichbar ist -- ohne diese
+     * Schleife waere das gelogen: mit der Tabulatortaste liefe man aus
+     * dem Dialog heraus in die Seite dahinter, die man nicht sieht.
+     * Gleiches Verhalten wie beim Buchungsdialog der Talleres.
+     */
+    function atraparFoco(ev: KeyboardEvent) {
+      if (ev.key !== 'Tab' || !modal || modal.hidden) return;
+
+      const alcanzables = Array.from(
+        modal.querySelectorAll<HTMLElement>(
+          'a[href], button:not([disabled]), input:not([disabled]), select, textarea, [tabindex]:not([tabindex="-1"])',
+        ),
+        /* Felder eines ausgeblendeten Schrittes zaehlen nicht mit. */
+      ).filter((el) => el.offsetParent !== null);
+
+      if (!alcanzables.length) return;
+
+      const primero = alcanzables[0];
+      const ultimo = alcanzables[alcanzables.length - 1];
+
+      if (ev.shiftKey && document.activeElement === primero) {
+        ev.preventDefault();
+        ultimo.focus();
+      } else if (!ev.shiftKey && document.activeElement === ultimo) {
+        ev.preventDefault();
+        primero.focus();
+      }
+    }
+
+    function abrir() {
+      if (!modal || !fondo) return;
+      devolverFoco = document.activeElement as HTMLElement;
+      modal.hidden = false;
+      fondo.hidden = false;
+      document.body.style.overflow = 'hidden';
+      mostrarPaso(1);
+      /* Nach oben, falls der Dialog beim letzten Mal gescrollt war. */
+      modal.scrollTop = 0;
+      modal.querySelector<HTMLElement>('input, button')?.focus();
+      document.addEventListener('keydown', atraparFoco);
+    }
+
+    function cerrar() {
+      if (!modal || !fondo) return;
+      modal.hidden = true;
+      fondo.hidden = true;
+      document.body.style.overflow = '';
+      document.removeEventListener('keydown', atraparFoco);
+      devolverFoco?.focus();
+    }
+
+    sec.querySelector('[data-educan-abrir]')?.addEventListener('click', abrir);
+    sec.querySelector('[data-educan-cerrar]')?.addEventListener('click', cerrar);
+    fondo?.addEventListener('click', cerrar);
+    document.addEventListener('keydown', (ev) => {
+      if (ev.key === 'Escape' && modal && !modal.hidden) cerrar();
+    });
+
+    bSiguiente?.addEventListener('click', () => {
+      /* Ohne Modul ist der zweite Schritt sinnlos — dort steht dann
+         nur ein Datum ohne Anlass. */
+      if (paso === 1 && elegidos.size === 0) {
+        if (aviso) aviso.hidden = false;
+        return;
+      }
+      /* Pflichtfelder des aktuellen Schritts prüfen, bevor es weitergeht —
+         sonst merkt man Lücken erst am Ende und muss zurückblättern. */
+      const actual = paneles.find((p) => Number(p.dataset.paso) === paso);
+      const malo = actual?.querySelector<HTMLInputElement>(':invalid');
+      if (malo) {
+        malo.reportValidity();
+        return;
+      }
+      mostrarPaso(Math.min(3, paso + 1));
+    });
+
+    bVolver?.addEventListener('click', () => mostrarPaso(Math.max(1, paso - 1)));
+
+    /* ---------- Absenden ----------
+       Ab hier ist es kein Schaufenster mehr: die Anfrage landet in der
+       Tabelle `solicitudes`. Drei Dinge sind daran wichtig.
+
+       1. Der WORTLAUT der Einwilligung wird aus dem DOM gelesen, nicht aus
+          modulos.ts importiert. Gespeichert werden soll, was diese Person
+          gesehen hat -- und das steht genau hier auf dem Bildschirm. Ein
+          Import würde beim nächsten Umformulieren rückwirkend auch die
+          alten Anfragen "umschreiben"; als Nachweis nach Art. 9 der Ley
+          18.331 wäre er wertlos.
+
+       2. Der Dank erscheint erst NACH einer bestätigten Speicherung.
+          Vorher wäre er eine Lüge, und eine besonders ärgerliche: die
+          Lehrkraft würde wochenlang auf eine Antwort warten, die nie
+          kommt, weil es die Anfrage nie gab.
+
+       3. Geht es schief, bleibt das Formular vollständig ausgefüllt
+          stehen. Niemand tippt drei Schritte noch einmal. */
+    const error = sec.querySelector<HTMLElement>('[data-educan-error]');
+
+    function mostrarError(texto: string) {
+      if (!error) return;
+      error.textContent = texto;
+      error.hidden = false;
+    }
+
+    let enviando = false;
+
+    form?.addEventListener('submit', async (ev) => {
+      ev.preventDefault();
+      if (enviando) return;
+
+      const malo = form.querySelector<HTMLInputElement>(':invalid');
+      if (malo) {
+        malo.reportValidity();
+        return;
+      }
+      /* Kann nur passieren, wenn jemand die Modulauswahl nach Schritt 1
+         wieder leert. Ohne Modul hat die Anfrage keinen Gegenstand. */
+      if (elegidos.size === 0) {
+        mostrarPaso(1);
+        if (aviso) aviso.hidden = false;
+        return;
+      }
+
+      const datos = new FormData(form);
+      const leer = (n: string) => String(datos.get(n) ?? '').trim();
+
+      const consentEl = sec.querySelector<HTMLElement>('[data-educan-consent-texto]');
+      const consentTexto = (consentEl?.textContent ?? '').trim();
+
+      if (error) error.hidden = true;
+      enviando = true;
+      if (bEnviar) {
+        bEnviar.disabled = true;
+        bEnviar.textContent = form.dataset.txtEnviando ?? '…';
+      }
+
+      /* Erst hier geladen, nicht oben: der Supabase-Client wirft, wenn die
+         Zugangsdaten fehlen. Läge der Import am Anfang, wäre bei fehlender
+         Konfiguration der ganze Bereich tot -- Filter, Auswahl, Schritte.
+         So ist nur das Absenden betroffen, und das sagt es dann auch.
+         Siehe den Kopf von src/lib/solicitudes.ts. */
+      const { enviarSolicitud } = await import('../lib/solicitudes');
+
+      const res = await enviarSolicitud({
+        origen: (form.dataset.origen as 'escuelas' | 'on_tour') ?? 'escuelas',
+        modulos: Array.from(elegidos),
+        fecha1: leer('fecha1'),
+        fecha2: leer('fecha2'),
+        alumnos: Number(leer('alumnos')),
+        clase: leer('clase'),
+        escuela: leer('escuela'),
+        docente: leer('docente'),
+        mail: leer('mail'),
+        telefono: leer('tel'),
+        nota: leer('nota'),
+        consentimiento: datos.get('consentimiento') !== null,
+        consentimientoTexto: consentTexto,
+      });
+
+      enviando = false;
+      if (bEnviar) {
+        bEnviar.disabled = false;
+        bEnviar.textContent = form.dataset.txtEnviar ?? '';
+      }
+
+      if (!res.ok) {
+        /* Zwei Meldungen statt einer, weil sie zwei verschiedene
+           Handlungen nahelegen: bei fehlender Verbindung hilft Warten,
+           bei einer Ablehnung durch die Datenbank hilft es nicht.
+           `sin-consentimiento` kann nur unser eigener Ablauffehler sein
+           (das Häkchen ist required) und wird deshalb wie eine Ablehnung
+           behandelt. */
+        mostrarError(
+          res.motivo === 'sin-conexion'
+            ? (form.dataset.txtErrorConexion ?? '')
+            : (form.dataset.txtErrorEnvio ?? ''),
+        );
+        if (import.meta.env.DEV) console.error('solicitud', res);
+        return;
+      }
+
+      form.hidden = true;
+      sec.querySelector<HTMLElement>('[data-educan-pasos]')!.hidden = true;
+      if (gracias) gracias.hidden = false;
+    });
+
+    pintar();
+  }
+</script>
+
+<style>
+  .educan {
+    padding-block: clamp(3rem, 9vw, 6rem);
+    background:
+      radial-gradient(90% 60% at 12% 0%, var(--miel-100), transparent 62%),
+      var(--papel-warm);
+  }
+
+  .educan-head {
+    display: grid;
+    justify-items: center;
+    text-align: center;
+  }
+
+  .educan-sello {
+    margin-bottom: var(--sp-3);
+  }
+
+  /* ---------- Filtro ---------- */
+
+  .educan-filtro {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: center;
+    gap: var(--sp-2);
+    max-width: 46rem;
+    margin: var(--sp-6) auto var(--sp-5);
+    padding: var(--sp-3) var(--sp-4);
+    background: color-mix(in srgb, var(--papel) 70%, transparent);
+    border: 1px solid color-mix(in srgb, var(--tinta) 14%, transparent);
+    border-radius: var(--r-full);
+  }
+
+  .educan-filtro-label {
+    font-size: var(--fs-200);
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--tinta-tenue);
+    margin-right: var(--sp-1);
+  }
+
+  .fchip {
+    border: 1px solid color-mix(in srgb, var(--tinta) 20%, transparent);
+    background: none;
+    color: var(--tinta-suave);
+    font: inherit;
+    font-size: var(--fs-300);
+    padding: 0.28em 0.85em;
+    border-radius: var(--r-full);
+    cursor: pointer;
+    transition:
+      background var(--dur-1) var(--ease-out),
+      color var(--dur-1) var(--ease-out),
+      border-color var(--dur-1) var(--ease-out);
+  }
+
+  .fchip:hover {
+    border-color: var(--miel-700);
+    color: var(--tinta);
+  }
+
+  .fchip.is-on {
+    background: var(--miel-700);
+    border-color: var(--miel-700);
+    color: var(--papel);
+  }
+
+  .educan-vacio {
+    text-align: center;
+    color: var(--tinta-suave);
+    font-style: italic;
+    margin-block: var(--sp-5);
+  }
+
+  /* ---------- La ruta ---------- */
+
+  .ruta-tramo {
+    max-width: 44rem;
+    margin-inline: auto;
+  }
+
+  .ruta-rotulo {
+    display: flex;
+    align-items: baseline;
+    gap: var(--sp-3);
+    flex-wrap: wrap;
+    margin: var(--sp-6) 0 var(--sp-4);
+    padding-left: calc(var(--riel-w, 2.6rem) + var(--sp-4));
+  }
+
+  .ruta-rotulo span {
+    font-size: var(--fs-200);
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: var(--miel-800);
+    white-space: nowrap;
+  }
+
+  .ruta-rotulo em {
+    color: var(--tinta-tenue);
+    font-size: var(--fs-300);
+  }
+
+  .ruta {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+  }
+
+  .ruta-paso {
+    --riel-w: 2.6rem;
+    display: flex;
+    gap: var(--sp-4);
+    align-items: stretch;
+  }
+
+  /* Die Schiene links: Wabe mit Nummer, darunter die gepunktete
+     Fluglinie zum nächsten Modul — dieselbe Strichelung wie die
+     Flugbahnen auf der Startseite (Abejas.astro). */
+  .ruta-riel {
+    width: var(--riel-w);
+    flex: none;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+
+  .ruta-celda {
+    width: var(--riel-w);
+    aspect-ratio: 1 / 1.1547;
+    flex: none;
+    clip-path: polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%);
+    background: var(--miel-200);
+    display: grid;
+    place-items: center;
+    font-family: var(--font-display);
+    font-weight: 700;
+    font-size: var(--fs-500);
+    color: var(--miel-800);
+  }
+
+  .ruta-hilo {
+    flex: 1;
+    width: 0;
+    border-left: 2.2px dotted var(--miel-500);
+    margin-block: 0.4rem;
+  }
+
+  /* Am letzten Modul eines Abschnitts endet der Weg — sonst zeigte die
+     Linie ins Leere. */
+  .ruta-paso:last-child .ruta-hilo {
+    border-left-style: none;
+  }
+
+  .mod {
+    flex: 1;
+    min-width: 0;
+    background: var(--papel);
+    border-radius: var(--r-lg);
+    padding: var(--sp-5);
+    margin-bottom: var(--sp-5);
+    box-shadow: var(--shadow-soft);
+    display: grid;
+    gap: var(--sp-3);
+    justify-items: start;
+  }
+
+  .mod-cabeza {
+    display: flex;
+    align-items: baseline;
+    gap: var(--sp-3);
+    flex-wrap: wrap;
+  }
+
+  .mod h3 {
+    font-size: var(--fs-700);
+    line-height: var(--lh-snug);
+    margin: 0;
+  }
+
+  .mod-pronto {
+    font-size: var(--fs-200);
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--barro-700);
+    background: var(--barro-200);
+    padding: 0.2em 0.7em;
+    border-radius: var(--r-full);
+    white-space: nowrap;
+  }
+
+  .mod-resumen {
+    color: var(--tinta-suave);
+    margin: 0;
+  }
+
+  .mod-chips {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--sp-2);
+  }
+
+  .chip {
+    font-size: var(--fs-300);
+    padding: 0.18em 0.7em;
+    border-radius: var(--r-full);
+    background: var(--pistacho-200);
+    color: var(--pistacho-700);
+    white-space: nowrap;
+  }
+
+  .chip--edad {
+    background: var(--miel-200);
+    color: var(--miel-800);
+    font-weight: 600;
+  }
+
+  .chip--meses {
+    background: var(--lavanda-200);
+    color: var(--lavanda-700);
+  }
+
+  .mod-mas {
+    width: 100%;
+  }
+
+  .mod-mas summary {
+    cursor: pointer;
+    color: var(--miel-800);
+    font-size: var(--fs-300);
+    font-weight: 600;
+    width: fit-content;
+  }
+
+  .mod-mas summary::marker {
+    color: var(--miel-500);
+  }
+
+  .mod-mas-cuerpo {
+    padding-top: var(--sp-3);
+    color: var(--tinta-suave);
+    font-size: var(--fs-300);
+    line-height: var(--lh-body);
+  }
+
+  .mod-mas-cuerpo p {
+    margin: 0 0 var(--sp-3);
+  }
+
+  .mod-objetivos-tit {
+    font-size: var(--fs-200);
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--miel-800);
+    margin-bottom: var(--sp-1) !important;
+  }
+
+  .mod-objetivos {
+    margin: 0;
+    padding-left: 1.1rem;
+  }
+
+  .mod-objetivos li {
+    margin-bottom: 0.25rem;
+  }
+
+  .btn--elegir {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+  }
+
+  .elegir-mas {
+    font-size: 1.15em;
+    line-height: 1;
+  }
+
+  .btn--elegir.is-on {
+    background: var(--pistacho-700);
+    color: var(--papel);
+  }
+
+  .btn--elegir.is-on .elegir-mas {
+    /* Aus dem Plus wird ein Haken, sobald gewählt. */
+    font-size: 1em;
+  }
+
+  .mod-pronto-nota {
+    color: var(--tinta-tenue);
+    font-size: var(--fs-300);
+    font-style: italic;
+    margin: 0;
+  }
+
+  .es-proximo .mod {
+    background: color-mix(in srgb, var(--papel) 60%, transparent);
+    box-shadow: none;
+    border: 1.5px dashed color-mix(in srgb, var(--barro-700) 34%, transparent);
+  }
+
+  .es-proximo .ruta-celda {
+    background: none;
+    box-shadow: inset 0 0 0 2px var(--barro-300);
+    color: var(--barro-700);
+  }
+
+  /* ---------- Buch-Ankündigung ----------
+     Der einzige Ort in diesem Abschnitt, an dem etwas schräg steht. Das
+     ist Absicht: alles andere ist ein Angebot mit Preisen und Terminen,
+     das hier ist ein Versprechen. */
+
+  .libro-anuncio {
+    max-width: 46rem;
+    margin: clamp(3rem, 8vw, 5rem) auto 0;
+    display: grid;
+    grid-template-columns: minmax(9rem, 15rem) 1fr;
+    align-items: center;
+    gap: clamp(1.25rem, 4vw, 2.75rem);
+    padding: clamp(1.5rem, 4vw, 2.5rem);
+    border-radius: var(--r-lg);
+    background:
+      radial-gradient(80% 90% at 18% 30%, var(--miel-100), transparent 70%),
+      var(--lavanda-100);
+    overflow: hidden;
+  }
+
+  @media (max-width: 34rem) {
+    .libro-anuncio {
+      grid-template-columns: 1fr;
+      justify-items: center;
+      text-align: center;
+    }
+  }
+
+  .libro-obj {
+    position: relative;
+    width: 100%;
+    max-width: 15rem;
+    aspect-ratio: 1 / 1;
+    display: grid;
+    place-items: center;
+  }
+
+  /* Die weiche Waschung hinter dem Buch — ohne sie schwebt es im Nichts. */
+  .libro-halo {
+    position: absolute;
+    inset: 8%;
+    border-radius: var(--r-blob);
+    background: var(--miel-200);
+    opacity: 0.55;
+    filter: blur(14px);
+  }
+
+  .libro-tapa {
+    position: relative;
+    width: 62%;
+    height: auto;
+    rotate: -8deg;
+    transform-origin: 60% 70%;
+    filter: drop-shadow(0 16px 26px rgba(122, 90, 30, 0.28));
+    animation: libro-respira 7s ease-in-out infinite;
+  }
+
+  /* Kaum sichtbar, aber es macht den Unterschied zwischen einem Bild und
+     einem Gegenstand, der gleich aufgeschlagen wird. */
+  @keyframes libro-respira {
+    0%, 100% { rotate: -8deg; translate: 0 0; }
+    50% { rotate: -6.2deg; translate: 0 -5px; }
+  }
+
+  .libro-senda {
+    position: absolute;
+    inset: auto 0 14% 0;
+    width: 100%;
+    height: auto;
+    opacity: 0.85;
+  }
+
+  .libro-meli {
+    position: absolute;
+    right: -2%;
+    top: 22%;
+    width: 34%;
+    animation: libro-vuela 5.5s ease-in-out infinite;
+  }
+
+  @keyframes libro-vuela {
+    0%, 100% { translate: 0 0; rotate: 6deg; }
+    50% { translate: -6px -12px; rotate: -2deg; }
+  }
+
+  .libro-kicker {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.55rem;
+    margin: 0 0 var(--sp-2);
+    font-size: var(--fs-200);
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: var(--miel-800);
+  }
+
+  .libro-txt h3 {
+    font-size: var(--fs-700);
+    line-height: var(--lh-snug);
+    margin: 0 0 var(--sp-3);
+    text-wrap: balance;
+  }
+
+  .libro-cuerpo {
+    color: var(--tinta-suave);
+    margin: 0 0 var(--sp-3);
+  }
+
+  .libro-firma {
+    margin: 0;
+    font-family: var(--font-display);
+    font-style: italic;
+    font-size: var(--fs-300);
+    color: var(--tinta-tenue);
+  }
+
+  /* ---------- Barra ---------- */
+
+  .educan-barra {
+    position: sticky;
+    bottom: var(--sp-4);
+    z-index: 40;
+    width: min(44rem, calc(100% - 2rem));
+    margin: var(--sp-6) auto 0;
+    display: flex;
+    align-items: center;
+    gap: var(--sp-4);
+    padding: var(--sp-3) var(--sp-3) var(--sp-3) var(--sp-5);
+    background: color-mix(in srgb, var(--tinta) 92%, transparent);
+    color: var(--papel);
+    border-radius: var(--r-full);
+    box-shadow: var(--shadow-lift);
+  }
+
+  .educan-barra-txt {
+    flex: 1;
+    margin: 0;
+    font-size: var(--fs-300);
+  }
+
+  .educan-barra strong {
+    font-family: var(--font-display);
+    font-size: var(--fs-600);
+    margin-right: 0.35rem;
+  }
+
+  /* ---------- Formulario ----------
+
+     Der Dialog liegt ueber der Seite, nicht in ihr.
+
+     Wichtig zum Verstaendnis: die Regeln fuer `.modal` und
+     `.modal-backdrop` bei den Talleres sind in `Workshops.astro`
+     eingeschlossen (Astro kapselt Komponenten-CSS). Sie gelten dort und
+     nirgends sonst — dieser Bereich braucht sie deshalb eigenstaendig,
+     sonst steht der Dialog ohne Positionierung mitten im Seitenfluss.
+
+     Bewusst gleich gehalten mit den Talleres (Masse, Abdunklung,
+     Schattenwert, Auftritt): zwei Dialoge auf derselben Seite, die sich
+     unterschiedlich verhalten, wirken wie ein Fehler. */
+
+  .modal-backdrop {
+    position: fixed;
+    inset: 0;
+    z-index: 280;
+    background: rgba(51, 41, 31, 0.45);
+    backdrop-filter: blur(3px);
+    -webkit-backdrop-filter: blur(3px);
+  }
+
+  .modal {
+    position: fixed;
+    z-index: 290;
+    left: 50%;
+    top: 50%;
+    transform: translate(-50%, -50%);
+    width: min(100% - 1.5rem, 32rem);
+    /* `svh` statt `vh`: auf dem Telefon waechst und schrumpft die
+       Adressleiste, und mit `vh` ragte der Dialog dann unter den
+       Bildschirmrand. */
+    max-height: min(88svh, 46rem);
+    overflow-y: auto;
+    background: #fffdf8;
+    border-radius: var(--r-lg);
+    box-shadow: var(--shadow-modal);
+    padding: var(--sp-6);
+    display: grid;
+    gap: var(--sp-4);
+    align-content: start;
+    animation: modal-in var(--dur-3) var(--ease-bounce);
+  }
+
+  @keyframes modal-in {
+    from { opacity: 0; transform: translate(-50%, -46%) scale(0.95); }
+    to { opacity: 1; transform: translate(-50%, -50%) scale(1); }
+  }
+
+  .modal-close {
+    position: absolute;
+    top: 0.7rem;
+    right: 0.9rem;
+    background: none;
+    border: none;
+    font-size: 1.7rem;
+    line-height: 1;
+    cursor: pointer;
+    color: var(--tinta-tenue);
+    border-radius: var(--r-full);
+    padding: 0.15em 0.4em;
+    transition:
+      color var(--dur-1) var(--ease-out),
+      background var(--dur-1) var(--ease-out);
+  }
+
+  .modal-close:active {
+    transform: scale(0.97);
+  }
+
+  @media (hover: hover) and (pointer: fine) {
+    .modal-close:hover {
+      color: var(--tinta);
+      background: var(--miel-100);
+    }
+  }
+
+  /* Platz fuer den Schliessen-Knopf, damit er nicht auf der Ueberschrift
+     sitzt. */
+  #educan-form-tit {
+    padding-right: 2rem;
+    margin: 0;
+  }
+
+  .educan-form-intro {
+    color: var(--tinta-suave);
+    font-size: var(--fs-300);
+    margin: 0;
+  }
+
+  .pasos {
+    list-style: none;
+    display: flex;
+    gap: var(--sp-2);
+    padding: 0;
+    margin: 0;
+    font-size: var(--fs-200);
+    color: var(--tinta-tenue);
+  }
+
+  .pasos li {
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+    flex: 1;
+    min-width: 0;
+  }
+
+  .pasos li span {
+    width: 1.5rem;
+    aspect-ratio: 1 / 1.1547;
+    flex: none;
+    clip-path: polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%);
+    background: var(--miel-100);
+    color: var(--miel-800);
+    display: grid;
+    place-items: center;
+    font-weight: 700;
+  }
+
+  .pasos li.is-on {
+    color: var(--tinta);
+  }
+
+  .pasos li.is-on span {
+    background: var(--miel-500);
+    color: var(--tinta);
+  }
+
+  .paso-panel {
+    border: none;
+    padding: 0;
+    margin: 0;
+    display: grid;
+    gap: var(--sp-3);
+  }
+
+  .mod-picker {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    display: grid;
+    gap: var(--sp-2);
+  }
+
+  .picker-item {
+    display: flex;
+    align-items: center;
+    gap: var(--sp-3);
+    padding: var(--sp-3);
+    border-radius: var(--r-md);
+    background: var(--papel-warm);
+    cursor: pointer;
+    transition: background var(--dur-1) var(--ease-out);
+  }
+
+  .picker-item:hover {
+    background: var(--miel-100);
+  }
+
+  .picker-item:has(input:checked) {
+    background: var(--miel-200);
+  }
+
+  .picker-celda {
+    width: 1.8rem;
+    aspect-ratio: 1 / 1.1547;
+    flex: none;
+    clip-path: polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%);
+    background: var(--papel);
+    display: grid;
+    place-items: center;
+    font-family: var(--font-display);
+    font-weight: 700;
+    color: var(--miel-800);
+  }
+
+  .picker-txt {
+    display: grid;
+    min-width: 0;
+  }
+
+  .picker-txt em {
+    color: var(--tinta-tenue);
+    font-size: var(--fs-300);
+    font-style: normal;
+  }
+
+  .campo {
+    display: grid;
+    gap: 0.3rem;
+  }
+
+  .campo > span {
+    font-size: var(--fs-300);
+    color: var(--tinta-suave);
+  }
+
+  .campo input,
+  .campo textarea {
+    font: inherit;
+    font-size: var(--fs-400);
+    padding: 0.6em 0.8em;
+    border: 1px solid color-mix(in srgb, var(--tinta) 22%, transparent);
+    border-radius: var(--r-sm);
+    background: var(--papel);
+    color: var(--tinta);
+    width: 100%;
+  }
+
+  .campo input:focus-visible,
+  .campo textarea:focus-visible {
+    outline: 2px solid var(--miel-500);
+    outline-offset: 1px;
+  }
+
+  .campo-fila {
+    display: grid;
+    gap: var(--sp-3);
+    grid-template-columns: 1fr 1fr;
+  }
+
+  @media (max-width: 30rem) {
+    .campo-fila {
+      grid-template-columns: 1fr;
+    }
+  }
+
+  .consent {
+    display: flex;
+    gap: var(--sp-3);
+    align-items: flex-start;
+    font-size: var(--fs-300);
+    color: var(--tinta-suave);
+    line-height: var(--lh-snug);
+  }
+
+  .consent input {
+    margin-top: 0.2em;
+    flex: none;
+    width: 1.1rem;
+    height: 1.1rem;
+    accent-color: var(--miel-700);
+  }
+
+  /* Der Weg zur Datenschutzseite steht direkt unter dem Häkchen und ist
+     um die Breite der Kontrollkästchen eingerückt, damit er sichtbar zu
+     ihm gehört, ohne im Nachweistext zu stehen. */
+  .consent-priv {
+    margin: calc(var(--sp-2) * -1) 0 0;
+    padding-left: calc(1.1rem + var(--sp-3));
+    font-size: var(--fs-200);
+  }
+
+  .consent-priv a {
+    color: var(--tinta-suave);
+    text-underline-offset: 0.2em;
+  }
+
+  .educan-aviso,
+  .educan-nota {
+    font-size: var(--fs-300);
+    color: var(--tinta-tenue);
+    font-style: italic;
+    margin: 0;
+  }
+
+  /* Die Fehlermeldung soll auffallen, ohne zu erschrecken: dieselbe Karte
+     wie der Rest des Formulars, nur mit einer Kante in Terrakotta. Rot
+     wäre in dieser Palette ein Fremdkörper -- und der Fall ist meist
+     harmlos (kurz keine Verbindung), nur folgenreich, wenn man ihn
+     übersieht. */
+  .educan-error {
+    margin: 0;
+    padding: var(--sp-3) var(--sp-4);
+    border-left: 3px solid var(--barro-500);
+    border-radius: 0 var(--r-sm) var(--r-sm) 0;
+    background: var(--barro-100);
+    color: var(--tinta);
+    font-size: var(--fs-300);
+    line-height: var(--lh-snug);
+  }
+
+  .paso-acciones {
+    display: flex;
+    gap: var(--sp-3);
+    justify-content: flex-end;
+    align-items: center;
+  }
+
+  .btn--fantasma {
+    background: none;
+    color: var(--tinta-suave);
+    box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--tinta) 22%, transparent);
+  }
+
+  .educan-gracias {
+    display: grid;
+    justify-items: center;
+    text-align: center;
+    gap: var(--sp-3);
+    padding-block: var(--sp-4);
+  }
+
+  .educan-gracias h4 {
+    font-family: var(--font-display);
+    font-size: var(--fs-700);
+    margin: 0;
+  }
+
+  .educan-gracias p {
+    color: var(--tinta-suave);
+    margin: 0;
+  }
+
+  @media (max-width: 34rem) {
+    .ruta-paso {
+      --riel-w: 2rem;
+    }
+
+    .mod {
+      padding: var(--sp-4);
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .fchip,
+    .picker-item {
+      transition: none;
+    }
+
+    .libro-tapa,
+    .libro-meli {
+      animation: none;
+    }
+
+    .modal {
+      animation: none;
+    }
+
+    .modal-close {
+      transition: none;
+    }
+
+    .modal-close:active {
+      transform: none;
+    }
+  }
+</style>
