@@ -17,6 +17,7 @@ import * as modulos from './modulos-view';
 import * as onTour from './on-tour-view';
 import * as talleres from './workshops-view';
 import * as documentos from './documents-view';
+import * as solicitudes from './solicitudes-view';
 import '../../styles/admin/shell.css';
 
 /**
@@ -46,13 +47,22 @@ function isRouted(view: AdminView): view is RoutedView {
   return 'mount' in view;
 }
 
-type Section = 'talleres' | 'casas' | 'modulos' | 'onTour' | 'documentos';
+type Section = 'talleres' | 'casas' | 'modulos' | 'onTour' | 'documentos' | 'solicitudes';
 
 // On Tour montiert ueber mount(container, route) statt ueber
 // mountList/mountEditor: der Bereich hat drei Ansichten statt zwei
 // (Seminarliste, Seminareditor, Zoneneditor). Die Zonen bekommen bewusst
 // keinen eigenen Knopf in der Kopfzeile -- Begruendung in on-tour-view.ts.
-const views: Record<Section, AdminView> = { talleres, casas, modulos, onTour, documentos };
+// Solicitudes montiert ebenso ueber mount(container, route): Liste und
+// Detailansicht sind zwei gleichrangige Ansichten, kein Editor dazwischen.
+const views: Record<Section, AdminView> = {
+  talleres,
+  casas,
+  modulos,
+  onTour,
+  documentos,
+  solicitudes,
+};
 
 /**
  * Rolle der angemeldeten Person, einmal beim Anmelden geladen.
@@ -107,6 +117,7 @@ function section(route: Route): Section {
   if (route.view === 'onTour' || route.view === 'seminario' || route.view === 'zona') {
     return 'onTour';
   }
+  if (route.view === 'solicitudes' || route.view === 'solicitud') return 'solicitudes';
   return 'talleres';
 }
 
@@ -260,6 +271,7 @@ const NAV_TARGETS: Record<Section, Route> = {
   modulos: { view: 'modulos' },
   onTour: { view: 'onTour' },
   documentos: { view: 'documentos' },
+  solicitudes: { view: 'solicitudes' },
 };
 
 for (const btn of navButtons) {
