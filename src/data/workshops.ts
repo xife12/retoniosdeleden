@@ -166,7 +166,7 @@ export const workshops: Workshop[] = [
         desc: 'Abrimos una colmena juntos: cómo vivimos las abejas, por qué polinizamos medio planeta y cómo nace la miel. Con degustación directa del panal.',
         audience: 'Familias, escuelas y curiosos',
         longDesc:
-          'Las colmenas viven en el noroeste de la chacra, al reparo de la cortina de eucaliptos y a pocos metros de la lavanda. Ahí te ponés el traje, abrimos un cuadro y ves de cerca lo que casi nadie llega a ver: la reina, las obreras, la miel todavía tibia adentro del panal. Catalina cuenta por qué sin estas abejas no habría pistachos, ni lavanda, ni casi nada.',
+          'Las colmenas viven en el noroeste de la chacra, al reparo de la cortina de árboles del borde y a pocos metros de la lavanda. Ahí te ponés el traje, abrimos un cuadro y ves de cerca lo que casi nadie llega a ver: la reina, las obreras, la miel todavía tibia adentro del panal. Catalina cuenta por qué sin estas abejas no habría pistachos, ni lavanda, ni casi nada.',
         programme: [
           {
             title: 'Bienvenida y mate',
@@ -207,14 +207,14 @@ export const workshops: Workshop[] = [
         languages:
           'Español e inglés. Si preferís inglés, marcalo al reservar y guía Stefan.',
         meetingPoint:
-          'Casa de Barro 1, junto al portón de entrada. Hay sombra y lugar de sobra para dejar el auto.',
+          'Casa de Barro 1, junto a la tranquera de entrada. Hay sombra y lugar de sobra para dejar el auto.',
       },
       en: {
         title: 'The world of bees',
         desc: 'We open a hive together: how bees live, why we pollinate half the planet, and how honey is born. Includes a tasting straight from the comb.',
         audience: 'Families, schools & the curious',
         longDesc:
-          'The hives live in the northwest corner of the farm, sheltered by the eucalyptus belt and a few steps from the lavender. That is where you put on the suit, we lift out a frame, and you see up close what almost nobody gets to see: the queen, the workers, honey still warm inside the comb. Catalina explains why without these bees there would be no pistachios, no lavender, almost nothing.',
+          'The hives live in the northwest corner of the farm, sheltered by the tree belt along the edge and a few steps from the lavender. That is where you put on the suit, we lift out a frame, and you see up close what almost nobody gets to see: the queen, the workers, honey still warm inside the comb. Catalina explains why without these bees there would be no pistachios, no lavender, almost nothing.',
         programme: [
           {
             title: 'Welcome and mate',
@@ -255,7 +255,7 @@ export const workshops: Workshop[] = [
         languages:
           'Spanish and English. Ask for English when you book and Stefan guides the group.',
         meetingPoint:
-          'Casa de Barro 1, right by the entrance gate. Shade and plenty of room to leave the car.',
+          'Casa de Barro 1, right by la tranquera, the entrance gate. Shade and plenty of room to leave the car.',
       },
     },
   },
@@ -396,7 +396,7 @@ export const workshops: Workshop[] = [
           },
           {
             title: 'Macho, hembra y viento',
-            text: 'Diez minutos de teoría al pie del árbol: por qué el pistacho necesita pareja y por qué acá la cortina de eucaliptos es tan importante.',
+            text: 'Diez minutos de teoría al pie del árbol: por qué el pistacho necesita pareja y por qué acá la cortina de árboles del borde es tan importante.',
           },
           {
             title: 'Preparar el hoyo',
@@ -429,7 +429,7 @@ export const workshops: Workshop[] = [
           'Para todas las edades. Los más chicos plantan con ayuda y tienen sus propias herramientas chicas. No hace falta saber nada de jardinería.',
         languages: 'Español e inglés, según cómo venga el grupo.',
         meetingPoint:
-          'Portón de entrada, junto al cartel de madera. Desde ahí vamos caminando hasta el vivero.',
+          'La tranquera de entrada, junto al cartel de madera. Desde ahí vamos caminando hasta el vivero.',
       },
       en: {
         title: 'Plant your pistachio',
@@ -444,7 +444,7 @@ export const workshops: Workshop[] = [
           },
           {
             title: 'Male, female and wind',
-            text: 'Ten minutes of theory at the foot of a tree: why pistachios need a partner, and why the eucalyptus belt matters so much here.',
+            text: 'Ten minutes of theory at the foot of a tree: why pistachios need a partner, and why the tree belt along the edge matters so much here.',
           },
           {
             title: 'Preparing the hole',
@@ -477,7 +477,7 @@ export const workshops: Workshop[] = [
           'All ages. Younger children plant with help and get their own small tools. No gardening knowledge needed at all.',
         languages: 'Spanish and English, depending on the group.',
         meetingPoint:
-          'The entrance gate, next to the wooden sign. From there we walk together to the nursery.',
+          'La tranquera, our entrance gate, next to the wooden sign. From there we walk together to the nursery.',
       },
     },
   },
@@ -524,7 +524,7 @@ export const workshops: Workshop[] = [
         ],
         included: [
           'Cuaderno de campo con las recetas, las tablas y los formularios que usamos',
-          'Almuerzo liviano de huerta bajo los eucaliptos',
+          'Almuerzo liviano de huerta a la sombra de los árboles',
           'Muestra de compost y de purín para arrancar en tu casa',
           'Palas, barreno y todo lo necesario para la calicata',
           'Consulta por mail con Catalina durante los tres meses siguientes',
@@ -540,7 +540,7 @@ export const workshops: Workshop[] = [
         languages:
           'Español e inglés. El cuaderno de campo viene en los dos idiomas.',
         meetingPoint:
-          'Casa de Barro 1. Dejá el auto a la sombra junto al portón y seguí el olor a mate.',
+          'Casa de Barro 1. Dejá el auto a la sombra junto a la tranquera y seguí el olor a mate.',
       },
       en: {
         title: 'Growing organic',
@@ -572,7 +572,7 @@ export const workshops: Workshop[] = [
         ],
         included: [
           'Field notebook with the recipes, tables and forms we use',
-          'Light garden lunch under the eucalyptus',
+          'Light garden lunch in the shade of the trees',
           'A sample of compost and plant tea to get started at home',
           'Spades, auger and everything needed for the soil pit',
           'Email follow up with Catalina for three months afterwards',
@@ -587,7 +587,7 @@ export const workshops: Workshop[] = [
           'Made for people who already have a garden, smallholding or farm, or are about to start seriously. From age 16. No technical training required, just a willingness to get your hands in the dirt.',
         languages: 'Spanish and English. The field notebook comes in both.',
         meetingPoint:
-          'Casa de Barro 1. Park in the shade by the gate and follow the smell of mate.',
+          'Casa de Barro 1. Park in the shade by la tranquera and follow the smell of mate.',
       },
     },
   },
@@ -633,7 +633,7 @@ export const workshops: Workshop[] = [
           },
         ],
         included: [
-          'Almuerzo casero y largo bajo los eucaliptos, más café y bizcochos a la mañana',
+          'Almuerzo casero y largo a la sombra de los árboles, más café y bizcochos a la mañana',
           'Todos los materiales: tierra del terreno, arena, paja y cal',
           'Herramientas, baldes, lonas y guantes',
           'Una ficha con las tres pruebas de suelo y las proporciones de mezcla',
@@ -650,7 +650,7 @@ export const workshops: Workshop[] = [
         languages:
           'Español e inglés, y alemán si hace falta: Stefan explica la técnica en los tres.',
         meetingPoint:
-          'Casa de Barro 3, la que está en obra. Se llega por el sendero circular desde el portón, cinco minutos a pie.',
+          'Casa de Barro 3, la que está en obra. Se llega por el sendero circular desde la tranquera, cinco minutos a pie.',
       },
       en: {
         title: 'Building with clay',
@@ -681,7 +681,7 @@ export const workshops: Workshop[] = [
           },
         ],
         included: [
-          'A long homemade lunch under the eucalyptus, plus coffee and biscuits in the morning',
+          'A long homemade lunch in the shade of the trees, plus coffee and biscuits in the morning',
           'All materials: earth from the land, sand, straw and lime',
           'Tools, buckets, tarps and gloves',
           'A handout with the three soil tests and the mixing ratios',
@@ -698,7 +698,7 @@ export const workshops: Workshop[] = [
         languages:
           'Spanish and English, and German if needed: Stefan explains the technique in all three.',
         meetingPoint:
-          'Casa de Barro 3, the one under construction. Take the circular path from the gate, five minutes on foot.',
+          'Casa de Barro 3, the one under construction. Take the circular path from la tranquera, five minutes on foot.',
       },
     },
   },

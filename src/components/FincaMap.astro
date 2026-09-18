@@ -15,16 +15,18 @@ const { t } = Astro.props;
  * (nördlich und südlich), in abwechselnden Reihen.
  */
 const spots: { x: number; y: number; status?: 'listo' | 'enObra' | 'planeado' }[] = [
-  { x: 120, y: 46 },                       // Portón (Einfahrt Nordwest-Ecke)
-  { x: 172, y: 142 },                      // Alameda de fugus
-  { x: 200, y: 268, status: 'planeado' },  // Camino circular + frutales
-  { x: 100, y: 560 },                      // Pistachos y lavanda (campo sur)
-  { x: 322, y: 116 },                      // Abejas y caléndula (noroeste)
-  { x: 312, y: 372, status: 'enObra' },    // Casa 2 (norte del anillo)
-  { x: 92, y: 352, status: 'planeado' },   // Casa 3 (sur del anillo)
-  { x: 218, y: 596 },                      // Mirador
-  { x: 200, y: 715, status: 'listo' },     // Casa 1
-  { x: 150, y: 852, status: 'enObra' },    // Tajamar (sureste)
+  { x: 120, y: 46 },                       // 1 La tranquera (Einfahrt Nordwest-Ecke)
+  { x: 172, y: 142 },                      // 2 Alameda de fresnos dorados
+  { x: 200, y: 268, status: 'planeado' },  // 3 Camino circular + frutales
+  { x: 100, y: 560 },                      // 4 Pistachos y lavanda (campo sur)
+  { x: 322, y: 116 },                      // 5 Abejas y caléndula (noroeste)
+  { x: 312, y: 372, status: 'enObra' },    // 6 La hornera (norte del anillo)
+  { x: 92, y: 352, status: 'planeado' },   // 7 La monjita blanca y el tordo amarillo (sur del anillo)
+  { x: 218, y: 596 },                      // 8 Mirador
+  { x: 246, y: 656 },                      // 9 Camino de los colibríes (Salbeiweg Richtung Quincho)
+  { x: 200, y: 715, status: 'listo' },     // 10 Quincho de fardos (bei der Casa 1)
+  { x: 268, y: 780 },                      // 11 Bosque aromático (Windschutz östlich der Casa 1)
+  { x: 150, y: 852, status: 'enObra' },    // 12 Tajamar (sureste)
 ];
 
 const stations = t.map.stations.map((s, i) => ({ ...s, ...spots[i], index: i }));
@@ -72,7 +74,7 @@ const rowsNorth = [
           <path d="M40 24 L 120 46" stroke="#c9a86a" stroke-width="9" stroke-linecap="round"
             opacity="0.5" filter="url(#wc-rough)" />
 
-          <!-- Eukalyptus-Gürtel (Rand), links mit Buchen-Abschnitt -->
+          <!-- Baumgürtel am Rand als Windschutz, links mit Buchen-Abschnitt -->
           <g fill="url(#pg-pistacho)" opacity="0.5" filter="url(#wc-rough)">
             {Array.from({ length: 6 }, (_, k) => (
               <ellipse cx={40} cy={90 + k * 62} rx="11" ry="16" />
@@ -110,7 +112,7 @@ const rowsNorth = [
             <circle cx="306" cy="188" r="3.4" fill="#e8892d" />
           </g>
 
-          <!-- Fugus-Allee beidseits des Wegs -->
+          <!-- Fresnos-dorados-Allee beidseits des Wegs -->
           <g fill="url(#pg-pistacho-light)" filter="url(#wc-rough)" opacity="0.9">
             {Array.from({ length: 5 }, (_, k) => (
               <ellipse cx={138 + k * 8} cy={92 + k * 36} rx="7" ry="13" />
