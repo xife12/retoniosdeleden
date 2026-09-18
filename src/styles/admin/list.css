@@ -275,3 +275,19 @@
 .adm-card__delete {
   color: var(--barro-700);
 }
+
+/* ---------- On Tour: die Zonen unter der Seminarliste ----------
+   Kein eigener Bereich, sondern ein zweiter Block auf derselben Seite --
+   es sind drei Zeilen, die einmal im Jahr angefasst werden (Begruendung
+   in src/scripts/admin/on-tour-view.ts). Deshalb erbt der Block die
+   Breite und den Rhythmus von .adm-list und braucht nur zwei Korrekturen:
+   oben kein zweiter Abstand, und die Ueberschrift eine Stufe kleiner als
+   die der Seite darueber -- sie ist ihr untergeordnet, nicht gleichrangig. */
+
+.adm-zonas {
+  padding-top: 0;
+}
+
+.adm-zonas .adm-list__title {
+  font-size: var(--fs-600);
+}

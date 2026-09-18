@@ -531,6 +531,62 @@
   font-size: var(--fs-300);
 }
 
+/* ---------- Mehrfachauswahl als Kästchen-Reihe (Monate eines Moduls) ----------
+
+   Kein Rahmen und kein Innenabstand am `fieldset`: der Browser gibt beiden
+   eigene Vorgaben, die hier nur mit dem Abschnittsraster streiten würden.
+   Die Kästchen selbst sind unsichtbar und liegen als Geschwister vor ihrem
+   Label -- genau wie bei den Radiokarten weiter unten, aus demselben Grund
+   (die Verknüpfung läuft über `for`, nicht über Verschachtelung). */
+
+.adm-chips {
+  display: grid;
+  gap: var(--sp-2);
+  justify-items: start;
+  margin: 0;
+  padding: 0;
+  border: 0;
+}
+
+.adm-chips__grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--sp-1);
+}
+
+.adm-chips__input {
+  position: absolute;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.adm-chips__chip {
+  display: grid;
+  place-items: center;
+  /* Mindestens die Zielgröße eines Daumens, auch wenn "ene" schmal ist. */
+  min-width: var(--adm-touch);
+  min-height: var(--adm-touch);
+  padding: 0 var(--sp-2);
+  border: 1.5px solid var(--barro-200);
+  border-radius: var(--r-md);
+  background: var(--papel-warm);
+  cursor: pointer;
+  font-size: var(--fs-200);
+  line-height: 1;
+  user-select: none;
+}
+
+.adm-chips__input:checked + .adm-chips__chip {
+  border-color: var(--miel-500);
+  background: var(--miel-100);
+  font-weight: 600;
+}
+
+.adm-chips__input:focus-visible + .adm-chips__chip {
+  outline: 2px solid var(--pistacho-500);
+  outline-offset: 2px;
+}
+
 /* ---------- Radiokarten: Themenwahl mit Aquarell-Icon ---------- */
 
 .adm-radios {

@@ -44,7 +44,29 @@ export interface Entity {
   deleted_at: string | null;
 }
 
-export type StoreTable = 'workshops' | 'casas';
+/**
+ * Welche Inhaltsarten dieser Store bedienen kann.
+ *
+ * `modulos` ist seit 006_modulos.sql dabei ("Las abejas educan"). Die
+ * Tabelle trägt dieselben Verwaltungsspalten wie workshops und casas --
+ * status, sort_order, published_payload, has_unpublished_changes,
+ * deleted_at -- und braucht deshalb hier keine einzige Sonderbehandlung,
+ * nur ihren Eintrag in `rpcNames` weiter unten.
+ *
+ * `on_tour_seminarios` und `on_tour_zonas` sind seit 008_on_tour.sql dabei.
+ * Dass On Tour ZWEI Einträge braucht und nicht einen, ist kein Schönheits-
+ * fehler, sondern die Sache selbst: ein Seminar und eine Anfahrtszone haben
+ * nichts gemeinsam außer, dass beide in den Preis eingehen, und die Zonen
+ * ändern sich unabhängig von den Seminaren (Spritpreis, neue Orte). Zwei
+ * Tabellen, zwei Stores -- und im Panel trotzdem ein Bereich (siehe
+ * on-tour-view.ts).
+ */
+export type StoreTable =
+  | 'workshops'
+  | 'casas'
+  | 'modulos'
+  | 'on_tour_seminarios'
+  | 'on_tour_zonas';
 
 export interface Store<T extends Entity> {
   list(): Promise<T[]>;
@@ -92,6 +114,15 @@ function fail(error: unknown): never {
 const rpcNames = {
   workshops: { publish: 'publish_workshop', discard: 'discard_workshop_changes' },
   casas: { publish: 'publish_casa', discard: 'discard_casa_changes' },
+  modulos: { publish: 'publish_modulo', discard: 'discard_modulo_changes' },
+  on_tour_seminarios: {
+    publish: 'publish_on_tour_seminario',
+    discard: 'discard_on_tour_seminario_changes',
+  },
+  on_tour_zonas: {
+    publish: 'publish_on_tour_zona',
+    discard: 'discard_on_tour_zona_changes',
+  },
 } as const;
 
 export function createStore<T extends Entity>(table: StoreTable): Store<T> {

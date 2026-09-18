@@ -1,7 +1,9 @@
 import { workshopThemes } from '../../data/workshop-themes';
 import { casaGlyphs } from '../../data/casa-glyphs';
 import { formatDate, formatPrice } from '../../data/workshops';
-import type { CasaDraft, WorkshopDraft } from './drafts';
+import { abejasEducanUI } from '../../data/modulos';
+import { onTourUI } from '../../data/on-tour';
+import type { CasaDraft, ModuloDraft, SeminarioDraft, WorkshopDraft, ZonaDraft } from './drafts';
 import '../../styles/admin/preview.css';
 
 /**
@@ -419,6 +421,386 @@ export function casaPreview(get: () => CasaDraft): PreviewHandle {
     const d = get();
     const lang = f.lang();
     f.stage.replaceChildren(f.mode() === 'card' ? drawCard(d, lang) : drawDetail(d, lang));
+  });
+
+  f.onChange(draw.run);
+  draw.run();
+
+  return {
+    el: f.el,
+    update: draw.run,
+    destroy() {
+      draw.cancel();
+      f.el.remove();
+    },
+  };
+}
+
+/* ===========================================================================
+   Módulo ("Las abejas educan")
+   =========================================================================== */
+
+/**
+ * Die Monatsnamen kommen aus demselben Datensatz wie die übrige Oberfläche
+ * des Bereichs (`abejasEducanUI[lang].mesesCortos`) -- nicht aus
+ * `toLocaleString`. Sonst stünde in der Vorschau "sept" und auf der Website
+ * "set", und die Nutzerin müsste raten, welches von beidem stimmt.
+ */
+function mesesLinea(meses: number[], lang: PreviewLang): string {
+  const nombres = abejasEducanUI[lang].mesesCortos;
+  return meses
+    .filter((m) => m >= 1 && m <= 12)
+    .sort((a, b) => a - b)
+    .map((m) => nombres[m - 1])
+    .join(' · ');
+}
+
+/** "90 minutos" bzw. "3 horas" -- ganze Stunden werden als Stunden gelesen. */
+function duracionTexto(minutos: number, lang: PreviewLang): string {
+  const ui = abejasEducanUI[lang];
+  if (minutos >= 60 && minutos % 60 === 0) return `${minutos / 60} ${ui.horas}`;
+  return `${minutos} ${ui.minutos}`;
+}
+
+export function moduloPreview(get: () => ModuloDraft): PreviewHandle {
+  const f = frame('Tarjeta', 'Ficha');
+
+  function drawCard(d: ModuloDraft, lang: PreviewLang): HTMLElement {
+    const ui = abejasEducanUI[lang];
+    // Die Karten der Ruta tragen den Honigton; die Chacra hebt sich als Ziel
+    // des Weges mit dem Pistazienton ab -- wie in AbejasEducan.astro.
+    const card = el(
+      'article',
+      `adm-pv__card adm-pv__card--${d.lugar === 'chacra' ? 'pistacho' : 'miel'}`,
+    );
+
+    const head = el('div', 'adm-pv__cardhead');
+    const h = el('h3', 'adm-pv__title');
+    // Die Nummer steht sichtbar in der Wabe -- deshalb auch hier davor.
+    h.append(el('span', undefined, `${d.numero}. `));
+    h.append(orGap(d.title[lang], 'Falta el título'));
+    head.append(h);
+    card.append(head);
+
+    const chip = el('p', 'adm-pv__chiplabel');
+    chip.append(orGap(d.clase[lang], 'Falta la clase'));
+    card.append(chip);
+
+    const p = el('p', 'adm-pv__text');
+    p.append(orGap(d.summary[lang], 'Falta el resumen corto'));
+    card.append(p);
+
+    const meta = el('dl', 'adm-pv__meta');
+    const pair = (key: string, value: string): void => {
+      const wrap = el('div');
+      wrap.append(el('dt', undefined, key), el('dd', undefined, value));
+      meta.append(wrap);
+    };
+    pair(ui.duracion, duracionTexto(d.duracion, lang));
+    pair(ui.maxAlumnos, `${d.maxAlumnos} ${ui.alumnos}`);
+    pair(
+      lang === 'es' ? 'Edad' : 'Age',
+      // Ohne Obergrenze schreibt die Website "ab 8", nicht "8 – 0".
+      d.edadMax > 0 && d.edadMax >= d.edadMin
+        ? `${d.edadMin}–${d.edadMax}`
+        : `${lang === 'es' ? 'desde' : 'from'} ${d.edadMin}`,
+    );
+    card.append(meta);
+
+    const meses = el('p', 'adm-pv__dates');
+    if (d.meses.length) {
+      meses.textContent = `${ui.meses}: ${mesesLinea(d.meses, lang)}`;
+    } else {
+      meses.className += ' adm-pv__gap';
+      meses.textContent = lang === 'es' ? 'Sin meses elegidos' : 'No months chosen';
+    }
+    card.append(meses);
+
+    // Genau hier zahlt sich die Vorschau aus: „Próximamente" heißt, dass die
+    // Karte steht, aber nicht auswählbar ist -- das sieht man sonst nirgends.
+    const accion = el(
+      'p',
+      d.estado === 'proximamente' ? 'adm-pv__chiplabel' : 'adm-pv__text',
+      d.estado === 'proximamente' ? ui.proximamente : ui.elegir,
+    );
+    card.append(accion);
+
+    return card;
+  }
+
+  function drawDetail(d: ModuloDraft, lang: PreviewLang): HTMLElement {
+    const ui = abejasEducanUI[lang];
+    const wrap = el('article', 'adm-pv__detail');
+
+    const h = el('h3', 'adm-pv__title');
+    h.append(orGap(d.title[lang], 'Falta el título'));
+    wrap.append(h);
+
+    const chip = el('p', 'adm-pv__chiplabel');
+    chip.append(orGap(d.clase[lang], 'Falta la clase'));
+    wrap.append(chip);
+
+    const lead = el('p', 'adm-pv__text');
+    lead.append(orGap(d.longDesc[lang], 'Falta la descripción completa'));
+    wrap.append(lead);
+
+    wrap.append(el('h4', 'adm-pv__h4', ui.objetivos));
+    wrap.append(list(d.objetivos.map((x) => x[lang]), 'Sin objetivos'));
+
+    const facts = el('dl', 'adm-pv__facts');
+    const fact = (key: string, value: string): void => {
+      const row = el('div');
+      row.append(el('dt', undefined, key), el('dd', undefined, value));
+      facts.append(row);
+    };
+    fact(lang === 'es' ? 'Dónde' : 'Where', d.lugar === 'chacra' ? ui.enChacra : ui.enAula);
+    fact(ui.duracion, duracionTexto(d.duracion, lang));
+    fact(ui.maxAlumnos, `${d.maxAlumnos} ${ui.alumnos}`);
+    fact(ui.meses, d.meses.length ? mesesLinea(d.meses, lang) : '—');
+    if (d.estado === 'proximamente') fact(ui.proximamente, ui.proximamenteNota);
+    wrap.append(facts);
+
+    return wrap;
+  }
+
+  const draw = throttled(() => {
+    const d = get();
+    const lang = f.lang();
+    f.stage.replaceChildren(f.mode() === 'card' ? drawCard(d, lang) : drawDetail(d, lang));
+  });
+
+  f.onChange(draw.run);
+  draw.run();
+
+  return {
+    el: f.el,
+    update: draw.run,
+    destroy() {
+      draw.cancel();
+      f.el.remove();
+    },
+  };
+}
+
+/* ===========================================================================
+   On Tour — Seminar
+   =========================================================================== */
+
+/**
+ * Der Grund, warum es diese Vorschau gibt, steht in einer einzigen Zeile der
+ * Karte: dem Preis. Im Formular stehen Betrag und Preisart getrennt
+ * nebeneinander; erst hier liest man, was daraus auf der Website wird --
+ * "US$ 45 por persona" oder "$U 1600 por el grupo entero". Wer die beiden
+ * verwechselt, verwechselt sie um den Faktor der Gruppengröße, und genau das
+ * soll man sehen, bevor es veröffentlicht ist.
+ */
+function precioLinea(d: SeminarioDraft, lang: PreviewLang): string {
+  const ui = onTourUI[lang];
+  const sufijo = d.precioTipo === 'total' ? ui.precioTotal : ui.porPersona;
+  return `${formatPrice(d.precio, d.currency)} ${sufijo}`;
+}
+
+/** "150 minutos" bzw. "2 horas" -- ganze Stunden werden als Stunden gelesen. */
+function duracionOnTour(minutos: number, lang: PreviewLang): string {
+  const ui = onTourUI[lang];
+  if (minutos >= 60 && minutos % 60 === 0) return `${minutos / 60} ${ui.horas}`;
+  return `${minutos} ${ui.minutos}`;
+}
+
+export function seminarioPreview(get: () => SeminarioDraft): PreviewHandle {
+  const f = frame('Tarjeta', 'Ficha');
+
+  function drawCard(d: SeminarioDraft, lang: PreviewLang): HTMLElement {
+    const ui = onTourUI[lang];
+    // Das Pigment ist das, was das Seminar sichtbar an sein Thema bindet --
+    // Honig, Lehm, Lavendel. 'miel' ist der Grundton der Karte und braucht
+    // deshalb keine eigene Klasse.
+    const card = el('article', `adm-pv__card adm-pv__card--${d.pigmento}`);
+
+    const head = el('div', 'adm-pv__cardhead');
+    const h = el('h3', 'adm-pv__title');
+    h.append(el('span', undefined, `${d.numero}. `));
+    h.append(orGap(d.title[lang], 'Falta el título'));
+    head.append(h);
+    card.append(head);
+
+    const precio = el('p', 'adm-pv__chiplabel', precioLinea(d, lang));
+    card.append(precio);
+
+    const p = el('p', 'adm-pv__text');
+    p.append(orGap(d.summary[lang], 'Falta el resumen corto'));
+    card.append(p);
+
+    const meta = el('dl', 'adm-pv__meta');
+    const pairRow = (key: string, value: string): void => {
+      const wrap = el('div');
+      wrap.append(el('dt', undefined, key), el('dd', undefined, value));
+      meta.append(wrap);
+    };
+    pairRow(ui.duracion, duracionOnTour(d.duracion, lang));
+    pairRow(
+      ui.personas,
+      `${ui.desde} ${d.minPersonas} ${ui.hasta} ${d.maxPersonas}`,
+    );
+    card.append(meta);
+
+    // "Activo" ist nicht der Veröffentlichungszustand: ein abgeschaltetes
+    // Seminar steht weiterhin auf der Seite, nur ohne Auswahlknopf. Das sieht
+    // man sonst nirgends -- deshalb hier.
+    const accion = el(
+      'p',
+      d.activo ? 'adm-pv__text' : 'adm-pv__gap',
+      d.activo
+        ? ui.elegir
+        : lang === 'es'
+          ? 'Sin botón para elegirlo (desactivado)'
+          : 'No button to choose it (switched off)',
+    );
+    card.append(accion);
+
+    return card;
+  }
+
+  function drawDetail(d: SeminarioDraft, lang: PreviewLang): HTMLElement {
+    const ui = onTourUI[lang];
+    const wrap = el('article', 'adm-pv__detail');
+
+    const h = el('h3', 'adm-pv__title');
+    h.append(orGap(d.title[lang], 'Falta el título'));
+    wrap.append(h);
+
+    wrap.append(el('p', 'adm-pv__chiplabel', precioLinea(d, lang)));
+
+    const lead = el('p', 'adm-pv__text');
+    lead.append(orGap(d.longDesc[lang], 'Falta la descripción completa'));
+    wrap.append(lead);
+
+    wrap.append(el('h4', 'adm-pv__h4', ui.incluye));
+    wrap.append(list(d.incluye.map((x) => x[lang]), 'Sin lista de lo que llevamos'));
+
+    wrap.append(el('h4', 'adm-pv__h4', ui.necesitamos));
+    const nec = el('p', 'adm-pv__text');
+    nec.append(orGap(d.necesitamos[lang], 'Falta lo que necesitamos del lugar'));
+    wrap.append(nec);
+
+    const facts = el('dl', 'adm-pv__facts');
+    const fact = (key: string, value: string): void => {
+      const row = el('div');
+      row.append(el('dt', undefined, key), el('dd', undefined, value));
+      facts.append(row);
+    };
+    fact(ui.duracion, duracionOnTour(d.duracion, lang));
+    fact(ui.personas, `${ui.desde} ${d.minPersonas} ${ui.hasta} ${d.maxPersonas}`);
+    // Die Rechnung ausgeschrieben: bei einer Pauschale ändert die
+    // Teilnehmerzahl nichts, bei einem Preis je Person alles.
+    fact(
+      ui.estimacion,
+      d.precioTipo === 'total'
+        ? formatPrice(d.precio, d.currency)
+        : `${formatPrice(d.precio, d.currency)} × ${d.minPersonas} = ` +
+          formatPrice(d.precio * d.minPersonas, d.currency),
+    );
+    wrap.append(facts);
+
+    return wrap;
+  }
+
+  const draw = throttled(() => {
+    const d = get();
+    const lang = f.lang();
+    f.stage.replaceChildren(f.mode() === 'card' ? drawCard(d, lang) : drawDetail(d, lang));
+  });
+
+  f.onChange(draw.run);
+  draw.run();
+
+  return {
+    el: f.el,
+    update: draw.run,
+    destroy() {
+      draw.cancel();
+      f.el.remove();
+    },
+  };
+}
+
+/* ===========================================================================
+   On Tour — Anfahrtszone
+   =========================================================================== */
+
+/**
+ * Was in der Zonenliste der Website rechts steht.
+ *
+ * Drei Zustände, die im Formular auseinanderzuhalten die eigentliche Arbeit
+ * ist:
+ *   aPedido        → "A calcular"  (der Preis steht noch nicht fest)
+ *   recargo = 0    → "Incluido"    (die Fahrt kostet nichts)
+ *   recargo > 0    → "$U 1200"
+ * Der Unterschied zwischen den ersten beiden ist der Grund für die ganze
+ * Mechanik: "A calcular" als 0 zu speichern hieße, dem Kunden eine kostenlose
+ * Anfahrt quer durchs Land zu versprechen.
+ */
+function recargoLinea(d: ZonaDraft, lang: PreviewLang): string {
+  const ui = onTourUI[lang];
+  if (d.aPedido) return ui.zonaAPedido;
+  if (d.recargo <= 0) return ui.zonaSinRecargo;
+  return formatPrice(d.recargo, d.currency);
+}
+
+export function zonaPreview(get: () => ZonaDraft): PreviewHandle {
+  // Zwei Ansichten, weil eine Zone an zwei Stellen auftaucht: in der Liste
+  // "Cuánto cuesta que vayamos" und noch einmal in der Kostenschätzung des
+  // Anfrageformulars. Gerade dort fällt auf, was "A calcular" bedeutet --
+  // die Schätzung kann dann nämlich gar keine Summe nennen.
+  const f = frame('Lista', 'Presupuesto');
+
+  function drawRow(d: ZonaDraft, lang: PreviewLang): HTMLElement {
+    const card = el('article', 'adm-pv__card');
+
+    const h = el('h3', 'adm-pv__title');
+    h.append(orGap(d.nombre[lang], 'Falta el nombre de la zona'));
+    card.append(h);
+
+    card.append(el('p', 'adm-pv__chiplabel', recargoLinea(d, lang)));
+
+    const p = el('p', 'adm-pv__text');
+    p.append(orGap(d.detalle[lang], 'Falta la lista de localidades'));
+    card.append(p);
+
+    return card;
+  }
+
+  function drawEstimate(d: ZonaDraft, lang: PreviewLang): HTMLElement {
+    const ui = onTourUI[lang];
+    const wrap = el('article', 'adm-pv__detail');
+
+    wrap.append(el('h3', 'adm-pv__title', ui.estimacion));
+
+    const facts = el('dl', 'adm-pv__facts');
+    const fact = (key: string, value: string): void => {
+      const row = el('div');
+      row.append(el('dt', undefined, key), el('dd', undefined, value));
+      facts.append(row);
+    };
+    fact(ui.campoZona, d.nombre[lang] || '—');
+    fact(lang === 'es' ? 'Traslado' : 'Travel', recargoLinea(d, lang));
+    wrap.append(facts);
+
+    const nota = el('p', d.aPedido ? 'adm-pv__gap' : 'adm-pv__note');
+    nota.textContent = d.aPedido
+      ? lang === 'es'
+        ? 'Con “a calcular” el presupuesto automático no puede dar un total. Se nombra a mano en la propuesta.'
+        : 'With “to be worked out” the automatic estimate cannot give a total. It is quoted by hand in the proposal.'
+      : ui.estimacionNota;
+    wrap.append(nota);
+
+    return wrap;
+  }
+
+  const draw = throttled(() => {
+    const d = get();
+    const lang = f.lang();
+    f.stage.replaceChildren(f.mode() === 'card' ? drawRow(d, lang) : drawEstimate(d, lang));
   });
 
   f.onChange(draw.run);

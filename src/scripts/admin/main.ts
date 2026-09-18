@@ -13,6 +13,8 @@ import { clearToasts } from './toast';
 import { currentRole, type ProfileRole } from './documents-store';
 import { listChatThreads } from './chat-store';
 import * as casas from './casas-view';
+import * as modulos from './modulos-view';
+import * as onTour from './on-tour-view';
 import * as talleres from './workshops-view';
 import * as documentos from './documents-view';
 import '../../styles/admin/shell.css';
@@ -44,9 +46,13 @@ function isRouted(view: AdminView): view is RoutedView {
   return 'mount' in view;
 }
 
-type Section = 'talleres' | 'casas' | 'documentos';
+type Section = 'talleres' | 'casas' | 'modulos' | 'onTour' | 'documentos';
 
-const views: Record<Section, AdminView> = { talleres, casas, documentos };
+// On Tour montiert ueber mount(container, route) statt ueber
+// mountList/mountEditor: der Bereich hat drei Ansichten statt zwei
+// (Seminarliste, Seminareditor, Zoneneditor). Die Zonen bekommen bewusst
+// keinen eigenen Knopf in der Kopfzeile -- Begruendung in on-tour-view.ts.
+const views: Record<Section, AdminView> = { talleres, casas, modulos, onTour, documentos };
 
 /**
  * Rolle der angemeldeten Person, einmal beim Anmelden geladen.
@@ -58,7 +64,13 @@ const views: Record<Section, AdminView> = { talleres, casas, documentos };
  */
 let role: ProfileRole | null = null;
 
-/** Nur owner und editor dürfen die öffentliche Website bearbeiten. */
+/**
+ * Nur owner und editor dürfen die öffentliche Website bearbeiten -- und
+ * Módulos ("Las abejas educan") gehören dazu: die Policy modulos_site_editors
+ * aus 006_modulos.sql hängt an derselben may_edit_site()-Prüfung wie
+ * workshops und casas. Dasselbe gilt seit 008_on_tour.sql für On Tour
+ * (on_tour_seminarios_site_editors, on_tour_zonas_site_editors).
+ */
 function mayEditSite(): boolean {
   return role === null || role === 'owner' || role === 'editor';
 }
@@ -90,7 +102,12 @@ const DOCUMENT_VIEWS: ReadonlySet<Route['view']> = new Set([
 
 function section(route: Route): Section {
   if (DOCUMENT_VIEWS.has(route.view)) return 'documentos';
-  return route.view === 'casas' || route.view === 'casa' ? 'casas' : 'talleres';
+  if (route.view === 'casas' || route.view === 'casa') return 'casas';
+  if (route.view === 'modulos' || route.view === 'modulo') return 'modulos';
+  if (route.view === 'onTour' || route.view === 'seminario' || route.view === 'zona') {
+    return 'onTour';
+  }
+  return 'talleres';
 }
 
 function markNav(route: Route): void {
@@ -177,7 +194,7 @@ async function show(route: Route): Promise<void> {
 
   if (isRouted(view)) {
     await view.mount(viewEl, route);
-  } else if (route.view === 'taller' || route.view === 'casa') {
+  } else if (route.view === 'taller' || route.view === 'casa' || route.view === 'modulo') {
     await view.mountEditor(viewEl, route.id);
   } else {
     await view.mountList(viewEl);
@@ -240,6 +257,8 @@ chatFabEl?.addEventListener('click', () => navigate({ view: 'chat' }));
 const NAV_TARGETS: Record<Section, Route> = {
   talleres: { view: 'talleres' },
   casas: { view: 'casas' },
+  modulos: { view: 'modulos' },
+  onTour: { view: 'onTour' },
   documentos: { view: 'documentos' },
 };
 

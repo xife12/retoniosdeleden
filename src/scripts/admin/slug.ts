@@ -32,7 +32,7 @@ export function slugify(text: string): string {
  * erklärt der Nutzerin, was zu tun ist.
  */
 export async function ensureUniqueSlug(
-  table: 'workshops' | 'casas',
+  table: 'workshops' | 'casas' | 'modulos' | 'on_tour_seminarios' | 'on_tour_zonas',
   base: string,
   ownId: string,
 ): Promise<string> {
@@ -57,7 +57,7 @@ export async function ensureUniqueSlug(
 }
 
 /** Platzhalter für eine frisch angelegte Zeile, bis es einen Titel gibt. */
-export function draftSlug(prefix: 'taller' | 'casa'): string {
+export function draftSlug(prefix: 'taller' | 'casa' | 'modulo' | 'seminario' | 'zona'): string {
   return `${prefix}-borrador-${crypto.randomUUID().slice(0, 8)}`;
 }
 

@@ -12,6 +12,14 @@
  *   #/casas               Liste Lehmhäuser
  *   #/casas/nuevo         Editor, neues Haus
  *   #/casas/<id>          Editor, bestehendes Haus
+ *   #/modulos             Liste Schulmodule ("Las abejas educan")
+ *   #/modulos/nuevo       Editor, neues Modul
+ *   #/modulos/<id>        Editor, bestehendes Modul
+ *   #/on-tour             Liste Seminare + Zonen ("On Tour")
+ *   #/on-tour/nuevo       Editor, neues Seminar
+ *   #/on-tour/<id>        Editor, bestehendes Seminar
+ *   #/on-tour/zona/nueva  Editor, neue Anfahrtszone
+ *   #/on-tour/zona/<id>   Editor, bestehende Anfahrtszone
  *
  * Verwerf-Schutz (P3): ein Editor meldet über `setLeaveGuard()` an, dass es
  * ungespeicherte Änderungen gibt. Der Router fragt vor jedem Wechsel. Beim
@@ -24,6 +32,20 @@ export type Route =
   | { view: 'taller'; id: string | 'nuevo' }
   | { view: 'casas' }
   | { view: 'casa'; id: string | 'nuevo' }
+  // Módulos folgen demselben Zweiebenen-Muster wie Talleres und Casas:
+  // Liste und Editor, nichts dazwischen (siehe main.ts).
+  | { view: 'modulos' }
+  | { view: 'modulo'; id: string | 'nuevo' }
+  // On Tour hat eine Ebene mehr als Talleres/Casas/Módulos, aber keinen
+  // zweiten Bereich: Seminare und Zonen stehen gemeinsam unter #/on-tour und
+  // teilen sich einen Knopf in der Kopfzeile. Die Zonen bekommen trotzdem
+  // eine eigene Adresse, weil jede von ihnen ein eigener Datensatz mit
+  // eigenem Veröffentlichungszustand ist -- ohne eigene Adresse gäbe es
+  // keinen Zurück-Knopf aus dem Zoneneditor heraus. Begründung ausführlich
+  // in on-tour-view.ts.
+  | { view: 'onTour' }
+  | { view: 'seminario'; id: string | 'nuevo' }
+  | { view: 'zona'; id: string | 'nueva' }
   // Dokumentenablage. Anders als Talleres/Casas sind das nicht zwei Ebenen
   // (Liste + Editor), sondern sechs gleichrangige Ansichten -- deshalb
   // montiert dieser Bereich über `mount(container, route)` statt über
@@ -55,6 +77,16 @@ export function routeToHash(route: Route): string {
       return '#/casas';
     case 'casa':
       return `#/casas/${route.id}`;
+    case 'modulos':
+      return '#/modulos';
+    case 'modulo':
+      return `#/modulos/${route.id}`;
+    case 'onTour':
+      return '#/on-tour';
+    case 'seminario':
+      return `#/on-tour/${route.id}`;
+    case 'zona':
+      return `#/on-tour/zona/${route.id}`;
     case 'documentos':
       return '#/documentos';
     case 'carpeta':
@@ -81,6 +113,19 @@ export function parseRoute(hash: string): Route {
   }
   if (section === 'talleres') {
     return id ? { view: 'taller', id } : { view: 'talleres' };
+  }
+  if (section === 'modulos') {
+    return id ? { view: 'modulo', id } : { view: 'modulos' };
+  }
+  // Wie bei der Ablage weiter unten: der zweite Teil kann hier ausnahmsweise
+  // eine Unteransicht benennen statt eines Datensatzes. Das geht gut, weil
+  // Kennungen uuids sind und "zona" damit nie eine sein kann.
+  if (section === 'on-tour') {
+    if (id === 'zona') {
+      const target = parts[2];
+      return target ? { view: 'zona', id: target } : { view: 'onTour' };
+    }
+    return id ? { view: 'seminario', id } : { view: 'onTour' };
   }
   // Die Ablage hat eine Ebene mehr: der zweite Teil benennt hier die
   // Unteransicht, nicht schon den Datensatz. Unbekannte Unteransichten und

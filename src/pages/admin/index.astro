@@ -43,6 +43,15 @@ import Base from '../../layouts/Base.astro';
         <nav class="adm-nav" aria-label="Secciones del panel">
           <button type="button" class="adm-nav__btn" data-admin-nav="talleres">Talleres</button>
           <button type="button" class="adm-nav__btn" data-admin-nav="casas">Casas de barro</button>
+          <!-- "Las abejas educan": die vier Schulmodule. Der Knopf heißt
+               Módulos und nicht "Abejas educan", weil in der Liste genau das
+               steht, was hier bearbeitet wird -- ein Modul nach dem anderen. -->
+          <button type="button" class="adm-nav__btn" data-admin-nav="modulos">Módulos</button>
+          <!-- "On Tour": die Seminare, die zum Kunden fahren, UND die
+               Anfahrtszonen. Ein Knopf für beides, weil beides dieselbe Frage
+               beantwortet -- was ein Termin kostet, ist Seminarpreis plus
+               Anfahrt. Ausführliche Begründung in on-tour-view.ts. -->
+          <button type="button" class="adm-nav__btn" data-admin-nav="onTour">On Tour</button>
           <button type="button" class="adm-nav__btn" data-admin-nav="documentos">Documentos</button>
         </nav>
 

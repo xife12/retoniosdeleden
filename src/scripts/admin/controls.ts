@@ -372,6 +372,98 @@ export function radioCards(o: RadioCardsOptions): Control<string> {
   };
 }
 
+export interface CheckChipsOptions {
+  label: string;
+  hint?: string;
+  options: SelectOption[];
+  /** Schaltet ALLE an bzw. aus; nur zeigen, wo das eine sinnvolle Geste ist. */
+  toggleAllLabel?: string;
+  onChange?: () => void;
+}
+
+/**
+ * Mehrfachauswahl als Kästchen-Reihe -- gebraucht für die Monate eines
+ * Moduls ("Las abejas educan").
+ *
+ * Bewusst KEIN `<select multiple>`: das ist am Handy ein winziges Rollfeld,
+ * in dem man mit dem Daumen versehentlich die ganze Auswahl ersetzt, statt
+ * einen Eintrag zu ergänzen. Zwölf Monate passen dagegen als Kästchen in
+ * zwei Reihen, jedes davon groß genug zum Antippen, und man SIEHT die
+ * gesamte Auswahl auf einmal -- bei zwölf Möglichkeiten der einzige Weg,
+ * "März bis November" auf einen Blick zu erkennen.
+ *
+ * Echte `<input type="checkbox">` in einem `<fieldset>`, damit Tastatur und
+ * Screenreader ohne eine Zeile ARIA funktionieren -- derselbe Grund wie bei
+ * `radioCards()` weiter oben (Problem P12).
+ */
+export function checkChips(o: CheckChipsOptions): Control<string[]> {
+  const name = `cc-${++uid}`;
+  const el = document.createElement('fieldset');
+  el.className = 'adm-chips';
+
+  const legend = document.createElement('legend');
+  legend.className = 'adm-label';
+  legend.textContent = o.label;
+  el.append(legend);
+
+  const grid = document.createElement('div');
+  grid.className = 'adm-chips__grid';
+  el.append(grid);
+
+  const inputs: HTMLInputElement[] = [];
+
+  for (const opt of o.options) {
+    const id = `${name}-${opt.value}`;
+    const input = document.createElement('input');
+    input.type = 'checkbox';
+    input.id = id;
+    input.value = opt.value;
+    input.className = 'adm-chips__input';
+    input.addEventListener('change', () => o.onChange?.());
+
+    const label = document.createElement('label');
+    label.className = 'adm-chips__chip';
+    label.htmlFor = id;
+    label.textContent = opt.label;
+
+    grid.append(input, label);
+    inputs.push(input);
+  }
+
+  if (o.toggleAllLabel) {
+    const all = document.createElement('button');
+    all.type = 'button';
+    all.className = 'btn btn--ghost btn--sm adm-chips__all';
+    all.textContent = o.toggleAllLabel;
+    // Ein Knopf statt zweier: er tut immer das, was gerade fehlt. Sind
+    // nicht alle an, schaltet er alle an; sind alle an, schaltet er alle
+    // aus. Zwei Knöpfe wären eine Entscheidung mehr für dieselbe Sache.
+    all.addEventListener('click', () => {
+      const target = !inputs.every((i) => i.checked);
+      for (const i of inputs) i.checked = target;
+      o.onChange?.();
+    });
+    el.append(all);
+  }
+
+  if (o.hint) {
+    const p = document.createElement('p');
+    p.className = 'adm-ctl__hint';
+    p.textContent = o.hint;
+    el.append(p);
+  }
+
+  return {
+    el,
+    get: () => inputs.filter((i) => i.checked).map((i) => i.value),
+    set: (v) => {
+      const on = new Set(v);
+      for (const i of inputs) i.checked = on.has(i.value);
+    },
+    focus: () => inputs[0]?.focus(),
+  };
+}
+
 /** Reihe aus mehreren schmalen Feldern (Preis, Dauer, Plätze …). */
 export function controlRow(...controls: Control<unknown>[]): HTMLElement {
   const el = document.createElement('div');
