@@ -373,6 +373,9 @@ export function moduloPatch(d: ModuloDraft): Partial<ModuloRow> {
   return {
     slug: d.slug,
     numero: d.numero,
+    // Wie bei den Zonen: die Reihenfolge ist die Nummer, sort_order läuft
+    // nur mit (für die Datenbank-Indizes und den Deploy-Trigger).
+    sort_order: d.numero,
     lugar: d.lugar,
     estado: d.estado,
     edad_min: d.edadMin,

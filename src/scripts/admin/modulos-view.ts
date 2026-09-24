@@ -124,10 +124,13 @@ export async function mountList(container: HTMLElement): Promise<void> {
     newLabel: '+ Nuevo módulo',
     emptyText: 'Todavía no hay módulos. Creá el primero.',
     searchPlaceholder: 'Buscar módulo…',
-    load: () => store.list(),
+    // Die Reihenfolge ist die Nummer im Panal -- in der Liste wie auf der
+    // Website. Deshalb kein Ziehgriff: wer ein Modul verschieben will,
+    // ändert seine Nummer.
+    load: async () =>
+      (await store.list()).sort((a, b) => (Number(a.numero) || 0) - (Number(b.numero) || 0)),
     onNew: () => navigate({ view: 'modulo', id: 'nuevo' }),
     onOpen: (row) => navigate({ view: 'modulo', id: row.id }),
-    onReorder: (row, value) => store.setSortOrder(row.id, value),
     onArchive: async (row, archived) => {
       await store.setStatus(row.id, archived ? 'archived' : 'published');
     },
@@ -169,6 +172,10 @@ export async function mountEditor(container: HTMLElement, id: string): Promise<v
   if (isNew) {
     draft = emptyModuloDraft();
     draft.slug = draftSlug('modulo');
+    // Nächste freie Nummer statt der 1 aus emptyModuloDraft() -- die ist
+    // fast immer schon vergeben, und die Nummer ist eindeutig (012).
+    const all = await store.list();
+    draft.numero = Math.max(0, ...all.map((r) => Number(r.numero) || 0)) + 1;
   } else {
     const all = await store.list();
     row = all.find((r) => r.id === id) ?? null;
@@ -213,7 +220,7 @@ export async function mountEditor(container: HTMLElement, id: string): Promise<v
 
   const numero = numberField({
     label: 'Número en la ruta',
-    hint: 'Es el número que se ve dentro del panal. El orden de la lista se cambia arrastrando.',
+    hint: 'Es el número que se ve dentro del panal y define el orden en la lista y en la web. Cada número se usa una sola vez.',
     min: 1,
     step: 1,
     integer: true,

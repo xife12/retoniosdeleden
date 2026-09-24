@@ -3,13 +3,15 @@
 --
 -- WARUM DIESE MIGRATION EXISTIERT
 -- --------------------------------------------------------------------------
--- Beobachtet am 24. September 2026: im Panel wurde ein Modul per Pfeiltaste
--- in vier Schritten von Position 1 auf Position 5 geschoben. Der erste
--- Schritt loeste einen Vercel-Build aus, die drei folgenden fielen in die
--- Sperrfrist aus 003 (hoechstens ein Build pro Minute) und wurden
--- uebersprungen. Der Build las einen Zwischenstand -- auf der Website stand
--- das Modul danach an vierter statt an fuenfter Stelle, und dabei blieb es,
--- weil kein weiteres Ereignis mehr kam.
+-- Die Sperrfrist aus 003 (hoechstens ein Build pro Minute) verwirft jedes
+-- Ereignis, das in die Minute nach einem Build faellt. Wer also zwei Dinge
+-- kurz hintereinander veroeffentlicht, bekommt nur einen Build -- und ob
+-- der die zweite Aenderung schon sieht, haengt davon ab, wann Vercel die
+-- Daten liest. Kommt danach kein weiteres Ereignis, bleibt die Website auf
+-- dem Zwischenstand stehen.
+--
+-- NOCH NICHT EINGESPIELT (Stand 24. September 2026): richtet einen
+-- dauerhaften pg_cron-Job ein und wartet auf ausdrueckliche Freigabe.
 --
 -- Die Annahme in 003 ("jede uebersprungene Aenderung ist spaetestens im
 -- naechsten Build enthalten") gilt nur, wenn es einen naechsten Build gibt.
