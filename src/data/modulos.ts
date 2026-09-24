@@ -268,9 +268,7 @@ export interface AbejasEducanUI {
   marca: string;
   filtroLabel: string;
   filtroTodas: string;
-  enAula: string;
   enChacra: string;
-  enAulaNota: string;
   enChacraNota: string;
   leerMas: string;
   cerrar: string;
@@ -336,10 +334,8 @@ export const abejasEducanUI: Record<Lang, AbejasEducanUI> = {
     marca: 'Las abejas educan',
     filtroLabel: 'Edad',
     filtroTodas: 'Todas',
-    enAula: 'En el aula',
     enChacra: 'En la chacra',
-    enAulaNota: 'Vamos nosotros a tu escuela, con todo el material.',
-    enChacraNota: 'La visita que cierra el recorrido.',
+    enChacraNota: 'Esta vez la escuela nos visita a nosotros.',
     leerMas: 'Leer más',
     cerrar: 'Cerrar',
     objetivos: 'Objetivos',
@@ -404,10 +400,8 @@ export const abejasEducanUI: Record<Lang, AbejasEducanUI> = {
     marca: 'Las abejas educan',
     filtroLabel: 'Age',
     filtroTodas: 'All',
-    enAula: 'In the classroom',
     enChacra: 'On the farm',
-    enAulaNota: 'We come to your school, with all the material.',
-    enChacraNota: 'The visit that closes the route.',
+    enChacraNota: 'This time the school comes to visit us.',
     leerMas: 'Read more',
     cerrar: 'Close',
     objetivos: 'Learning goals',
