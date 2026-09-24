@@ -145,8 +145,26 @@ export function createStore<T extends Entity>(table: StoreTable): Store<T> {
       return (data ?? []) as T[];
     },
 
+    /**
+     * Ohne eigenes sort_order hängt ein neuer Eintrag hinten an. Der
+     * Spalten-Default 0 würde ihn sonst vor alle bestehenden Einträge
+     * setzen -- in Liste und auf der Website ganz oben, obwohl er etwa als
+     * "Modul 5" angelegt wurde. Die Zonen bringen ihr sort_order selbst mit
+     * (= orden) und bleiben davon unberührt.
+     */
     async create(patch: Partial<T>): Promise<T> {
       return withSession(async () => {
+        if (patch.sort_order === undefined) {
+          const { data: last, error: lastError } = await supabase
+            .from(table)
+            .select('sort_order')
+            .order('sort_order', { ascending: false })
+            .limit(1)
+            .maybeSingle();
+          if (lastError) fail(lastError);
+          const max = Number((last as { sort_order?: number } | null)?.sort_order) || 0;
+          patch = { ...patch, sort_order: Math.floor(max) + 1 };
+        }
         const { data, error } = await supabase
           .from(table)
           .insert(columns(patch))
