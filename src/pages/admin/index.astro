@@ -52,6 +52,11 @@ import Base from '../../layouts/Base.astro';
                beantwortet -- was ein Termin kostet, ist Seminarpreis plus
                Anfahrt. Ausführliche Begründung in on-tour-view.ts. -->
           <button type="button" class="adm-nav__btn" data-admin-nav="onTour">On Tour</button>
+          <!-- Anfragen aus "Las abejas educan" und "On Tour" (public.solicitudes,
+               Migration 005/008). Eigener Knopf statt Unterpunkt: eine neue
+               Anfrage ist der Grund, weshalb jemand das Panel überhaupt öffnet,
+               nicht ein Nebenaspekt der Bereiche, aus denen sie kommt. -->
+          <button type="button" class="adm-nav__btn" data-admin-nav="solicitudes">Solicitudes</button>
           <button type="button" class="adm-nav__btn" data-admin-nav="documentos">Documentos</button>
         </nav>
 
