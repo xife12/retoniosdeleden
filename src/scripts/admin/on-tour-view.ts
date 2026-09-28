@@ -300,7 +300,7 @@ export async function mountList(container: HTMLElement): Promise<void> {
         // Der Preis steht zuerst und IMMER mit seiner Lesart: das ist die
         // Angabe, die man in einer Liste vergleicht, und ohne den Zusatz
         // stünden hier drei Beträge nebeneinander, die Verschiedenes meinen.
-        precioTexto(row),
+        row.precio_visible === false ? `${precioTexto(row)} · oculto en la web` : precioTexto(row),
         `${duracionTexto(Number(row.duracion) || 0)} · ${UI.desde} ${row.min_personas} ${UI.hasta} ${row.max_personas} ${UI.personas}`,
         row.activo ? 'Se puede elegir' : 'Desactivado — se ve, pero no se puede elegir',
       ],
@@ -408,7 +408,13 @@ export async function mountSeminarioEditor(
   precioNota.textContent =
     'Elegí siempre las dos cosas juntas. “US$ 40” quiere decir una cosa por persona y otra muy distinta por el grupo: con veinte personas, la diferencia es de veinte veces.';
 
-  precioSection.append(controlRow(precio, currency), precioTipo.el, precioNota);
+  const precioVisible = switchRow({
+    label: 'Mostrar el precio en la web',
+    hint: 'Si lo apagás, la web dice “Precio a consultar” y en la consulta no aparece la estimación mientras este seminario esté elegido. El precio sigue guardado acá.',
+    onChange: touched,
+  });
+
+  precioSection.append(controlRow(precio, currency), precioTipo.el, precioNota, precioVisible.el);
 
   /* ---------------- Abschnitt: Datos ---------------- */
 
@@ -582,6 +588,7 @@ export async function mountSeminarioEditor(
     precio.set(draft.precio);
     currency.set(draft.currency);
     precioTipo.set(draft.precioTipo);
+    precioVisible.set(draft.precioVisible);
     numero.set(draft.numero);
     pigmento.set(draft.pigmento);
     duracion.set(draft.duracion);
@@ -599,6 +606,7 @@ export async function mountSeminarioEditor(
     // trotzdem da, weil eine falsch geratene Preisart der teuerste Fehler
     // dieses Formulars wäre.
     draft.precioTipo = precioTipo.get() === 'total' ? 'total' : 'porPersona';
+    draft.precioVisible = precioVisible.get();
     draft.numero = numero.get();
     draft.pigmento = pigmento.get() as SeminarioDraft['pigmento'];
     draft.duracion = duracion.get();

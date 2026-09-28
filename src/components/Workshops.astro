@@ -9,6 +9,7 @@ import {
 } from '../data/workshops';
 import { workshopThemes } from '../data/workshop-themes';
 import { fetchWorkshops } from '../lib/fetch-workshops';
+import { privacidadRuta } from '../data/privacidad';
 
 interface Props {
   t: Dict;
@@ -255,7 +256,9 @@ const datesAttr = (dates: string[]) =>
     })}
   </div>
 
-  <!-- Buchungs-Dialog (Demo) -->
+  <!-- Buchungs-Dialog. Seit Migration 014 echt: "Enviar reserva" schreibt
+       nach public.solicitudes (origen 'taller'), zu sehen im Panel unter
+       "Solicitudes". Bezahlt wird nichts -- bestätigt wird per Mail. -->
   <div class="modal-backdrop" data-booking-backdrop hidden></div>
   <div
     class="modal"
@@ -304,6 +307,17 @@ const datesAttr = (dates: string[]) =>
         <input id="bk-email" type="email" required autocomplete="email" />
         <p class="err" data-err-email hidden>{b.errEmail}</p>
       </div>
+      {/* Einwilligung wie bei "Las abejas educan": der textContent des
+          <span> wird beim Absenden wörtlich als Nachweis gespeichert
+          (Art. 9 Ley 18.331). Deshalb steht der Link NICHT im Satz. */}
+      <label class="bk-consent">
+        <input type="checkbox" id="bk-consent" />
+        <span data-bk-consent-texto>{b.consent}</span>
+      </label>
+      <p class="bk-consent-priv">
+        <a href={privacidadRuta[lang]} target="_blank" rel="noopener noreferrer">{b.privacy}</a>
+      </p>
+      <p class="err" data-err-consent hidden>{b.errConsent}</p>
       <div class="bk-actions">
         <button type="button" class="btn btn--ghost" data-bk-back>{b.back}</button>
         <button type="submit" class="btn">{b.next}</button>
@@ -320,9 +334,16 @@ const datesAttr = (dates: string[]) =>
         <div><dt>{b.email}</dt><dd data-sum-email></dd></div>
         <div class="bk-total"><dt>{b.total}</dt><dd data-sum-total></dd></div>
       </dl>
+      <p class="err" data-err-send role="alert" hidden>{b.errSend}</p>
       <div class="bk-actions">
         <button type="button" class="btn btn--ghost" data-bk-back>{b.back}</button>
-        <button type="button" class="btn btn--secondary" data-bk-confirm>{b.confirm}</button>
+        <button
+          type="button"
+          class="btn btn--secondary"
+          data-bk-confirm
+          data-txt-confirm={b.confirm}
+          data-txt-sending={b.sending}
+        >{b.confirm}</button>
       </div>
     </div>
 
@@ -345,6 +366,8 @@ const datesAttr = (dates: string[]) =>
 </section>
 
 <script>
+  import { enviarSolicitud } from '../lib/solicitudes';
+
   /* ---------------- gemeinsame Helfer ---------------- */
 
   const FOCUSABLE = 'button, input, select, textarea, [href], [tabindex]:not([tabindex="-1"])';
@@ -420,7 +443,11 @@ const datesAttr = (dates: string[]) =>
   const nameInp = modal.querySelector<HTMLInputElement>('#bk-name')!;
   const emailInp = modal.querySelector<HTMLInputElement>('#bk-email')!;
 
+  const consentInp = modal.querySelector<HTMLInputElement>('#bk-consent')!;
+
   let price = 0;
+  /** Slug des gerade gebuchten Workshops, kommt aus data-ws-id. */
+  let workshopId = '';
   /** Währungszeichen des gerade gebuchten Workshops, kommt aus data-ws-cur. */
   let currency = 'US$';
   /** Element, das nach dem Schließen der Buchung den Fokus zurückbekommt. */
@@ -441,14 +468,18 @@ const datesAttr = (dates: string[]) =>
   function open(src: HTMLElement, returnTo: HTMLElement | null) {
     bookingReturn = returnTo;
     titleEl.textContent = src.dataset.wsTitle ?? '';
+    workshopId = src.dataset.wsId ?? '';
     price = Number(src.dataset.wsPrice ?? 0);
     currency = src.dataset.wsCur ?? 'US$';
     peopleInp.max = src.dataset.wsMax ?? '12';
     peopleInp.value = '2';
     nameInp.value = '';
     emailInp.value = '';
+    consentInp.checked = false;
     modal.querySelector<HTMLElement>('[data-err-name]')!.hidden = true;
     modal.querySelector<HTMLElement>('[data-err-email]')!.hidden = true;
+    modal.querySelector<HTMLElement>('[data-err-consent]')!.hidden = true;
+    modal.querySelector<HTMLElement>('[data-err-send]')!.hidden = true;
 
     const dates: { iso: string; label: string }[] = JSON.parse(src.dataset.wsDates ?? '[]');
     dateSel.innerHTML = '';
@@ -514,9 +545,11 @@ const datesAttr = (dates: string[]) =>
     const errEmail = modal.querySelector<HTMLElement>('[data-err-email]')!;
     const nameOk = nameInp.value.trim().length > 1;
     const emailOk = /.+@.+\..+/.test(emailInp.value);
+    const errConsent = modal.querySelector<HTMLElement>('[data-err-consent]')!;
     errName.hidden = nameOk;
     errEmail.hidden = emailOk;
-    if (!nameOk || !emailOk) return;
+    errConsent.hidden = consentInp.checked;
+    if (!nameOk || !emailOk || !consentInp.checked) return;
 
     const people = Math.max(1, Number(peopleInp.value || 1));
     modal.querySelector('[data-sum-date]')!.textContent =
@@ -537,8 +570,37 @@ const datesAttr = (dates: string[]) =>
     })
   );
 
-  // Bestätigen → Pollen-Konfetti + Erfolg
-  modal.querySelector('[data-bk-confirm]')!.addEventListener('click', () => {
+  // Bestätigen → senden → Pollen-Konfetti + Erfolg. Scheitert das Senden,
+  // bleibt die Zusammenfassung stehen: ein Dankesbildschirm ohne
+  // gespeicherte Reservierung wäre eine Lüge.
+  const confirmBtn = modal.querySelector<HTMLButtonElement>('[data-bk-confirm]')!;
+  const errSend = modal.querySelector<HTMLElement>('[data-err-send]')!;
+  confirmBtn.addEventListener('click', async () => {
+    if (confirmBtn.disabled) return;
+    confirmBtn.disabled = true;
+    confirmBtn.textContent = confirmBtn.dataset.txtSending ?? '';
+    errSend.hidden = true;
+
+    const res = await enviarSolicitud({
+      origen: 'taller',
+      modulos: [workshopId],
+      fecha1: dateSel.value,
+      personas: Math.max(1, Number(peopleInp.value || 1)),
+      docente: nameInp.value,
+      mail: emailInp.value,
+      consentimiento: consentInp.checked,
+      consentimientoTexto:
+        modal.querySelector<HTMLElement>('[data-bk-consent-texto]')?.textContent?.trim() ?? '',
+    });
+
+    confirmBtn.disabled = false;
+    confirmBtn.textContent = confirmBtn.dataset.txtConfirm ?? '';
+    if (!res.ok) {
+      if (res.detalle) console.warn('[talleres] Reserva no enviada:', res.motivo, res.detalle);
+      errSend.hidden = false;
+      return;
+    }
+
     showStep(4);
     const party = modal.querySelector<HTMLElement>('.bk-party')!;
     const colors = ['#e8a13d', '#f3c87f', '#9b8ec4', '#7a8b5a', '#c1714f'];
@@ -856,6 +918,37 @@ const datesAttr = (dates: string[]) =>
     color: var(--barro-700);
     font-size: var(--fs-300);
     font-weight: 600;
+  }
+
+  /* Einwilligung: Häkchen und Satz nebeneinander, der Link zur
+     Datenschutzseite darunter und um die Kästchenbreite eingerückt --
+     sichtbar zugehörig, aber nicht Teil des gespeicherten Wortlauts. */
+  .bk-consent {
+    display: flex;
+    gap: var(--sp-3);
+    align-items: flex-start;
+    font-size: var(--fs-300);
+    color: var(--tinta-suave);
+    line-height: var(--lh-snug);
+  }
+
+  .bk-consent input {
+    margin-top: 0.2em;
+    flex: none;
+    width: 1.1rem;
+    height: 1.1rem;
+    accent-color: var(--miel-700);
+  }
+
+  .bk-consent-priv {
+    margin: calc(var(--sp-2) * -1) 0 0;
+    padding-left: calc(1.1rem + var(--sp-3));
+    font-size: var(--fs-200);
+  }
+
+  .bk-consent-priv a {
+    color: var(--tinta-suave);
+    text-underline-offset: 0.2em;
   }
 
   .bk-summary {

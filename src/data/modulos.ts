@@ -268,6 +268,8 @@ export interface AbejasEducanUI {
   marca: string;
   filtroLabel: string;
   filtroTodas: string;
+  /** Nur noch im Panel (Karte und Vorschau), nicht mehr auf der Website. */
+  enAula: string;
   enChacra: string;
   enChacraNota: string;
   leerMas: string;
@@ -334,6 +336,7 @@ export const abejasEducanUI: Record<Lang, AbejasEducanUI> = {
     marca: 'Las abejas educan',
     filtroLabel: 'Edad',
     filtroTodas: 'Todas',
+    enAula: 'En el aula',
     enChacra: 'En la chacra',
     enChacraNota: 'Esta vez la escuela nos visita a nosotros.',
     leerMas: 'Leer más',
@@ -385,11 +388,11 @@ export const abejasEducanUI: Record<Lang, AbejasEducanUI> = {
       'No pudimos enviar la consulta: parece que no hay conexión. Tus datos siguen acá, probá de nuevo en un momento o escribinos a los contactos de más abajo.',
     errorEnvio:
       'Algo salió mal al guardar la consulta. Tus datos siguen acá: probá de nuevo, y si vuelve a fallar escribinos a los contactos de más abajo.',
-    libroKicker: 'Se está escribiendo',
+    libroKicker: 'En la recta final',
     libroTitulo: 'El libro que cuenta Meli',
     libroTexto:
       'Una abeja narra su propio mundo: cómo ve, cómo baila, cómo decide una colmena. El libro acompaña los módulos y después se queda en la biblioteca de la escuela, para el año que viene y el siguiente.',
-    libroFirma: '— Meli lo está imprimiendo',
+    libroFirma: '— Meli, dándole los últimos retoques',
     mesesCortos: ['ene', 'feb', 'mar', 'abr', 'may', 'jun', 'jul', 'ago', 'set', 'oct', 'nov', 'dic'],
   },
   en: {
@@ -400,6 +403,7 @@ export const abejasEducanUI: Record<Lang, AbejasEducanUI> = {
     marca: 'Las abejas educan',
     filtroLabel: 'Age',
     filtroTodas: 'All',
+    enAula: 'In the classroom',
     enChacra: 'On the farm',
     enChacraNota: 'This time the school comes to visit us.',
     leerMas: 'Read more',
@@ -451,11 +455,11 @@ export const abejasEducanUI: Record<Lang, AbejasEducanUI> = {
       'We could not send the enquiry: there seems to be no connection. Your details are still here — try again in a moment, or write to us using the contact details further down.',
     errorEnvio:
       'Something went wrong while saving the enquiry. Your details are still here: please try again, and if it fails once more use the contact details further down.',
-    libroKicker: 'Being written',
+    libroKicker: 'On the home stretch',
     libroTitulo: 'The book Meli tells',
     libroTexto:
       'A bee narrates her own world: how she sees, how she dances, how a hive makes up its mind. The book comes with the modules and then stays in the school library, for next year and the year after.',
-    libroFirma: '— Meli is printing it',
+    libroFirma: '— Meli, putting on the finishing touches',
     mesesCortos: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'],
   },
 };

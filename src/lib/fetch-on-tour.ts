@@ -110,8 +110,11 @@ interface SeminarioPublicRow {
   slug: string;
   numero: number;
   pigmento: string;
-  precio: number;
+  /** NULL, wenn der Preis ausgeblendet ist -- die View gibt ihn dann nicht heraus. */
+  precio: number | null;
   precio_tipo: string;
+  /** Seit 013; fehlt bei älteren Schnappschüssen und heißt dann "sichtbar". */
+  precio_visible: boolean | null;
   currency: string;
   /** Minuten, nicht Stunden. */
   duracion: number;
@@ -195,6 +198,7 @@ function toSeminario(row: SeminarioPublicRow): Seminario | null {
     pigmento: toPigmento(row.pigmento),
     precio: Number(row.precio) || 0,
     precioTipo,
+    precioVisible: row.precio_visible !== false,
     currency: toCurrency(row.currency),
     duracion: Number(row.duracion) || 0,
     minPersonas,

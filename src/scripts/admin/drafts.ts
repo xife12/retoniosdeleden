@@ -566,6 +566,8 @@ export interface SeminarioDraft {
   pigmento: 'miel' | 'barro' | 'lavanda';
   precio: number;
   precioTipo: 'porPersona' | 'total';
+  /** Preis auf der Website zeigen; aus = „Precio a consultar" (013). */
+  precioVisible: boolean;
   currency: WorkshopCurrency;
   /** Dauer in Minuten -- als Zahl, damit sich Summen rechnen lassen. */
   duracion: number;
@@ -598,6 +600,7 @@ export interface SeminarioRow extends Entity {
   pigmento: 'miel' | 'barro' | 'lavanda';
   precio: number;
   precio_tipo: 'porPersona' | 'total';
+  precio_visible: boolean;
   currency: WorkshopCurrency;
   duracion: number;
   min_personas: number;
@@ -617,6 +620,7 @@ export function emptySeminarioDraft(): SeminarioDraft {
     // versteckt. Ein leerer Zustand wäre hier keine Hilfe: er ließe die
     // Nutzerin nur raten, was passiert, wenn sie nichts anfasst.
     precioTipo: 'porPersona',
+    precioVisible: true,
     currency: 'USD',
     duracion: 120,
     minPersonas: 6,
@@ -641,6 +645,7 @@ export function draftFromSeminario(row: SeminarioRow): SeminarioDraft {
     pigmento: row.pigmento ?? 'miel',
     precio: Number(row.precio) || 0,
     precioTipo: row.precio_tipo === 'total' ? 'total' : 'porPersona',
+    precioVisible: row.precio_visible !== false,
     currency: row.currency ?? 'USD',
     duracion: Number(row.duracion) || 0,
     minPersonas,
@@ -671,6 +676,7 @@ export function seminarioPatch(d: SeminarioDraft): Partial<SeminarioRow> {
     pigmento: d.pigmento,
     precio: d.precio,
     precio_tipo: d.precioTipo,
+    precio_visible: d.precioVisible,
     currency: d.currency,
     duracion: d.duracion,
     min_personas: d.minPersonas,

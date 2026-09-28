@@ -93,6 +93,8 @@ const ESTADO_ORDER: SolicitudEstado[] = ['neu', 'beantwortet', 'confirmado', 'ca
 const ORIGEN_LABEL: Record<SolicitudRow['origen'], string> = {
   escuelas: 'Las abejas educan',
   on_tour: 'On Tour',
+  taller: 'Reserva de taller',
+  contacto: 'Mensaje (Escribinos)',
 };
 
 function formatFecha(iso: string | null): string {
@@ -119,15 +121,37 @@ function formatFechaHora(iso: string): string {
   });
 }
 
-/** Wer/was die Anfrage betrifft, in einer Zeile -- Schule oder Organisation. */
+/**
+ * Wer/was die Anfrage betrifft, in einer Zeile. Schule oder Organisation;
+ * bei Reservierung und Nachricht gibt es beides nicht, dort steht die
+ * Person selbst -- eine Liste voller "Sin nombre" hilft niemandem.
+ */
 function tituloDe(row: SolicitudRow): string {
-  return row.origen === 'escuelas' ? row.escuela || 'Sin nombre' : row.organizacion || 'Sin nombre';
+  switch (row.origen) {
+    case 'escuelas':
+      return row.escuela || 'Sin nombre';
+    case 'on_tour':
+      return row.organizacion || row.docente || 'Sin nombre';
+    case 'taller':
+      return `${row.docente} · ${row.modulos[0] ?? 'taller'}`;
+    default:
+      return row.docente || 'Sin nombre';
+  }
 }
 
 /** Anzahl Kinder/Personen, unabhängig von der Herkunft. */
 function cantidadDe(row: SolicitudRow): string {
   const n = row.origen === 'escuelas' ? row.alumnos : row.personas;
-  return n ? `${n} ${row.origen === 'escuelas' ? 'alumnos' : 'personas'}` : '—';
+  if (!n) return '';
+  if (row.origen === 'escuelas') return `${n} alumnos`;
+  if (row.origen === 'taller') return `${n} ${n === 1 ? 'lugar' : 'lugares'}`;
+  return `${n} personas`;
+}
+
+/** Die ersten Worte einer Nachricht, für die Listenzeile. */
+function anrissDe(nota: string | null): string {
+  const t = (nota ?? '').replace(/\s+/g, ' ').trim();
+  return t.length > 70 ? `${t.slice(0, 70)}…` : t;
 }
 
 /* ===========================================================================
@@ -209,13 +233,16 @@ async function mountList(container: HTMLElement): Promise<void> {
     titleRow.append(el('span', 'sol-origen', ORIGEN_LABEL[row.origen]));
     body.append(titleRow);
 
-    const meta = [
-      row.docente,
-      `Fecha pedida: ${formatFecha(row.fecha_1)}`,
-      cantidadDe(row),
-      `Llegó el ${formatFechaHora(row.creado_en)}`,
-    ];
-    body.append(el('span', 'adm-card__meta', meta.join(' · ')));
+    const meta =
+      row.origen === 'contacto'
+        ? [row.mail, anrissDe(row.nota), `Llegó el ${formatFechaHora(row.creado_en)}`]
+        : [
+            row.origen === 'taller' ? row.mail : row.docente,
+            `${row.origen === 'taller' ? 'Fecha' : 'Fecha pedida'}: ${formatFecha(row.fecha_1)}`,
+            cantidadDe(row),
+            `Llegó el ${formatFechaHora(row.creado_en)}`,
+          ];
+    body.append(el('span', 'adm-card__meta', meta.filter(Boolean).join(' · ')));
 
     open.append(body);
     li.append(open);
@@ -325,30 +352,42 @@ async function mountDetail(container: HTMLElement, id: string): Promise<void> {
     row2('Teléfono', row.telefono || '—'),
   );
 
-  const datos = section(row.origen === 'escuelas' ? 'Datos de la escuela' : 'Datos de la salida');
   if (row.origen === 'escuelas') {
+    const datos = section('Datos de la escuela');
     datos.append(
       row2('Escuela', row.escuela || '—'),
       row2('Clase', row.clase || '—'),
       row2('Alumnos', row.alumnos != null ? String(row.alumnos) : '—'),
     );
-  } else {
+  } else if (row.origen === 'on_tour') {
+    const datos = section('Datos de la salida');
     datos.append(
       row2('Organización', row.organizacion || '—'),
       row2('Personas', row.personas != null ? String(row.personas) : '—'),
       row2('Zona', row.zona || '—'),
       row2('Lugar', row.lugar || '—'),
     );
+  } else if (row.origen === 'taller') {
+    // Eine Reservierung hat genau einen Taller und genau einen Termin --
+    // "Primera/Segunda opción" wäre hier die falsche Frage.
+    const datos = section('Reserva');
+    datos.append(
+      row2('Taller', row.modulos[0] ?? '—'),
+      row2('Fecha', formatFecha(row.fecha_1)),
+      row2('Lugares', row.personas != null ? String(row.personas) : '—'),
+    );
   }
 
-  const fechas = section('Fechas pedidas');
-  fechas.append(row2('Primera opción', formatFecha(row.fecha_1)), row2('Segunda opción', formatFecha(row.fecha_2)));
+  if (row.origen === 'escuelas' || row.origen === 'on_tour') {
+    const fechas = section('Fechas pedidas');
+    fechas.append(row2('Primera opción', formatFecha(row.fecha_1)), row2('Segunda opción', formatFecha(row.fecha_2)));
 
-  const modulos = section(row.origen === 'escuelas' ? 'Módulos elegidos' : 'Seminarios elegidos');
-  modulos.append(el('p', 'sol-detail__ids', row.modulos.length ? row.modulos.join(' · ') : 'Ninguno.'));
+    const modulos = section(row.origen === 'escuelas' ? 'Módulos elegidos' : 'Seminarios elegidos');
+    modulos.append(el('p', 'sol-detail__ids', row.modulos.length ? row.modulos.join(' · ') : 'Ninguno.'));
+  }
 
   if (row.nota) {
-    const nota = section('Nota de la persona');
+    const nota = section(row.origen === 'contacto' ? 'Mensaje' : 'Nota de la persona');
     nota.append(el('p', 'sol-detail__nota', row.nota));
   }
 

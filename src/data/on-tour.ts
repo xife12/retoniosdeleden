@@ -66,6 +66,14 @@ export interface Seminario {
   pigmento: 'miel' | 'barro' | 'lavanda';
   precio: number;
   precioTipo: PrecioTipo;
+  /**
+   * Steht der Preis auf der Website? Fehlt der Wert, ja. Ist er `false`,
+   * zeigt die Karte „Precio a consultar", und die Schätzung im
+   * Anfragedialog entfällt, sobald dieses Seminar gewählt ist -- eine
+   * Summe ohne einen ihrer Posten wäre falsch, und mit ihm verriete sie
+   * den Preis doch.
+   */
+  precioVisible?: boolean;
   currency: WorkshopCurrency;
   /** Dauer in Minuten, wie bei den Módulos — damit sich Summen rechnen. */
   duracion: number;
@@ -289,6 +297,8 @@ export interface OnTourUI {
   hasta: string;
   porPersona: string;
   precioTotal: string;
+  precioConsultar: string;
+  estimacionConsultar: string;
   elegir: string;
   /* Zonen */
   zonasTitulo: string;
@@ -373,6 +383,9 @@ export const onTourUI: Record<Lang, OnTourUI> = {
     hasta: 'hasta',
     porPersona: 'por persona',
     precioTotal: 'por el grupo entero',
+    precioConsultar: 'Precio a consultar',
+    estimacionConsultar:
+      'Uno de los seminarios que elegiste tiene precio a consultar. Te lo pasamos en la propuesta, junto con el total.',
     elegir: 'Elegir seminario',
     zonasTitulo: 'Cuánto cuesta que vayamos',
     zonasIntro:
@@ -441,6 +454,9 @@ export const onTourUI: Record<Lang, OnTourUI> = {
     hasta: 'up to',
     porPersona: 'per person',
     precioTotal: 'for the whole group',
+    precioConsultar: 'Price on request',
+    estimacionConsultar:
+      'One of the sessions you chose has its price on request. We will send it with the proposal, together with the total.',
     elegir: 'Choose session',
     zonasTitulo: 'What it costs for us to come',
     zonasIntro:

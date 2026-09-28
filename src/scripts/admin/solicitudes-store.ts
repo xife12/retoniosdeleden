@@ -38,14 +38,17 @@ import { withSession, fail } from './documents-store';
  */
 
 export type SolicitudEstado = 'neu' | 'beantwortet' | 'confirmado' | 'cancelado';
-export type SolicitudOrigen = 'escuelas' | 'on_tour';
+/** Seit 014 auch Taller-Reservierungen und Nachrichten aus "Escribinos". */
+export type SolicitudOrigen = 'escuelas' | 'on_tour' | 'taller' | 'contacto';
 
 export interface SolicitudRow {
   id: string;
   creado_en: string;
   origen: SolicitudOrigen;
+  /** Bei 'taller' genau ein Eintrag (Slug des Talleres), bei 'contacto' leer. */
   modulos: string[];
-  fecha_1: string;
+  /** NULL nur bei 'contacto'. */
+  fecha_1: string | null;
   fecha_2: string | null;
 
   /* --- Schulanfrage (origen = 'escuelas') --- */
@@ -53,8 +56,10 @@ export interface SolicitudRow {
   clase: string | null;
   escuela: string | null;
 
-  /* --- On-Tour-Anfrage (origen = 'on_tour') --- */
+  /* --- On Tour und Taller-Reservierung --- */
   personas: number | null;
+
+  /* --- nur On Tour --- */
   zona: string | null;
   organizacion: string | null;
   lugar: string | null;
