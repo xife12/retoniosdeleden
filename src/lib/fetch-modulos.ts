@@ -168,7 +168,9 @@ async function loadClient(): Promise<SupabaseClient | null> {
 }
 
 /**
- * Nur veröffentlichte Module, in der im Backend gesetzten Reihenfolge.
+ * Nur veröffentlichte Module, geordnet nach ihrer veröffentlichten Nummer
+ * im Panal (nicht nach sort_order: das ist die Live-Spalte und würde eine
+ * noch unveröffentlichte Nummernänderung schon vorwegnehmen).
  * Kommt nichts Brauchbares zurück, gilt der Satz aus src/data/modulos.ts.
  */
 export async function fetchModulos(): Promise<Modulo[]> {
@@ -178,6 +180,7 @@ export async function fetchModulos(): Promise<Modulo[]> {
   const { data, error } = await client
     .from('modulos_public')
     .select('*')
+    .order('numero', { ascending: true })
     .order('sort_order', { ascending: true });
 
   if (error) {

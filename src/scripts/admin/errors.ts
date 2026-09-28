@@ -109,6 +109,12 @@ const RULES: Rule[] = [
 
   // ---- Datenfehler ---------------------------------------------------------
   {
+    // Vor der allgemeinen 23505-Regel: sonst hieße es "enlace (slug)".
+    when: (e) => has(e.message, 'modulos_numero_unico'),
+    message:
+      'Ya hay otro módulo con ese número. Cada número se usa una sola vez: para intercambiar dos, poné primero uno libre en el otro módulo.',
+  },
+  {
     when: (e) => e.code === '23505' || has(e.message, 'duplicate key value'),
     message:
       'Ya existe otra entrada con ese enlace. Cambiá el título o el enlace (slug) y guardá otra vez.',

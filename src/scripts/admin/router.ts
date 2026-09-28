@@ -20,6 +20,8 @@
  *   #/on-tour/<id>        Editor, bestehendes Seminar
  *   #/on-tour/zona/nueva  Editor, neue Anfahrtszone
  *   #/on-tour/zona/<id>   Editor, bestehende Anfahrtszone
+ *   #/solicitudes         Liste Anfragen (Startansicht)
+ *   #/solicitudes/<id>    Detailansicht einer Anfrage
  *
  * Verwerf-Schutz (P3): ein Editor meldet über `setLeaveGuard()` an, dass es
  * ungespeicherte Änderungen gibt. Der Router fragt vor jedem Wechsel. Beim
@@ -46,6 +48,11 @@ export type Route =
   | { view: 'onTour' }
   | { view: 'seminario'; id: string | 'nuevo' }
   | { view: 'zona'; id: string | 'nueva' }
+  // Anfragen: kein Editor, nur Liste und Detailansicht -- eine Anfrage wird
+  // hier nie neu angelegt, nur gelesen, mit einem Status versehen und
+  // notfalls gelöscht (siehe solicitudes-view.ts).
+  | { view: 'solicitudes' }
+  | { view: 'solicitud'; id: string }
   // Dokumentenablage. Anders als Talleres/Casas sind das nicht zwei Ebenen
   // (Liste + Editor), sondern sechs gleichrangige Ansichten -- deshalb
   // montiert dieser Bereich über `mount(container, route)` statt über
@@ -87,6 +94,10 @@ export function routeToHash(route: Route): string {
       return `#/on-tour/${route.id}`;
     case 'zona':
       return `#/on-tour/zona/${route.id}`;
+    case 'solicitudes':
+      return '#/solicitudes';
+    case 'solicitud':
+      return `#/solicitudes/${route.id}`;
     case 'documentos':
       return '#/documentos';
     case 'carpeta':
@@ -126,6 +137,9 @@ export function parseRoute(hash: string): Route {
       return target ? { view: 'zona', id: target } : { view: 'onTour' };
     }
     return id ? { view: 'seminario', id } : { view: 'onTour' };
+  }
+  if (section === 'solicitudes') {
+    return id ? { view: 'solicitud', id } : { view: 'solicitudes' };
   }
   // Die Ablage hat eine Ebene mehr: der zweite Teil benennt hier die
   // Unteransicht, nicht schon den Datensatz. Unbekannte Unteransichten und

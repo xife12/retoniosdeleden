@@ -35,8 +35,11 @@
  * Schulen lesen könnte. Nicht tun.
  */
 
-/** Woher die Anfrage stammt. Beide Herkünfte sind in Benutzung. */
-export type SolicitudOrigen = 'escuelas' | 'on_tour';
+/**
+ * Woher die Anfrage stammt. Seit Migration 014 auch Taller-Reservierungen
+ * (`taller`) und Nachrichten aus "Escribinos" (`contacto`).
+ */
+export type SolicitudOrigen = 'escuelas' | 'on_tour' | 'taller' | 'contacto';
 
 /**
  * Was ein Formular sammelt.
@@ -67,10 +70,13 @@ export type SolicitudOrigen = 'escuelas' | 'on_tour';
  */
 export interface SolicitudEntrada {
   origen: SolicitudOrigen;
-  /** Stabile IDs der gewählten Module bzw. Seminare, mindestens eine. */
+  /**
+   * Stabile IDs der gewählten Module bzw. Seminare, mindestens eine. Bei
+   * `taller` genau eine (der Slug des Talleres), bei `contacto` keine.
+   */
   modulos: string[];
-  /** ISO-Datum (YYYY-MM-DD) aus dem <input type="date">. */
-  fecha1: string;
+  /** ISO-Datum (YYYY-MM-DD). Bei `taller` der gewählte Termin, bei `contacto` leer. */
+  fecha1?: string;
   fecha2?: string;
 
   /* --- nur bei origen === 'escuelas' --- */
@@ -78,8 +84,10 @@ export interface SolicitudEntrada {
   clase?: string;
   escuela?: string;
 
-  /* --- nur bei origen === 'on_tour' --- */
+  /* --- bei origen === 'on_tour' und 'taller' --- */
   personas?: number;
+
+  /* --- nur bei origen === 'on_tour' --- */
   /** Kennung der Anfahrtszone, entspricht `Zona.id` in src/data/on-tour.ts. */
   zona?: string;
   organizacion?: string;
@@ -166,6 +174,8 @@ export async function enviarSolicitud(datos: SolicitudEntrada): Promise<Solicitu
 
   try {
     const esEscuela = datos.origen === 'escuelas';
+    const esOnTour = datos.origen === 'on_tour';
+    const conPersonas = esOnTour || datos.origen === 'taller';
 
     /*
      * Nur die Felder der eigenen Herkunft schicken, die der anderen als
@@ -176,17 +186,17 @@ export async function enviarSolicitud(datos: SolicitudEntrada): Promise<Solicitu
     const { error } = await supabase.from('solicitudes').insert({
       origen: datos.origen,
       modulos: datos.modulos,
-      fecha_1: datos.fecha1,
+      fecha_1: limpio(datos.fecha1),
       fecha_2: limpio(datos.fecha2),
 
       alumnos: esEscuela ? (datos.alumnos ?? null) : null,
       clase: esEscuela ? limpio(datos.clase) : null,
       escuela: esEscuela ? limpio(datos.escuela) : null,
 
-      personas: esEscuela ? null : (datos.personas ?? null),
-      zona: esEscuela ? null : limpio(datos.zona),
-      organizacion: esEscuela ? null : limpio(datos.organizacion),
-      lugar: esEscuela ? null : limpio(datos.lugar),
+      personas: conPersonas ? (datos.personas ?? null) : null,
+      zona: esOnTour ? limpio(datos.zona) : null,
+      organizacion: esOnTour ? limpio(datos.organizacion) : null,
+      lugar: esOnTour ? limpio(datos.lugar) : null,
 
       docente: datos.docente.trim(),
       mail: datos.mail.trim(),

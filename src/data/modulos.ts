@@ -268,9 +268,9 @@ export interface AbejasEducanUI {
   marca: string;
   filtroLabel: string;
   filtroTodas: string;
+  /** Nur noch im Panel (Karte und Vorschau), nicht mehr auf der Website. */
   enAula: string;
   enChacra: string;
-  enAulaNota: string;
   enChacraNota: string;
   leerMas: string;
   cerrar: string;
@@ -332,14 +332,13 @@ export const abejasEducanUI: Record<Lang, AbejasEducanUI> = {
     kicker: 'Un proyecto educativo de Retoños del Edén',
     title: 'Las abejas educan',
     intro:
-      'Las abejas no solo polinizan: enseñan. Cuatro módulos para escuelas, tres en el aula y uno acá en la chacra, pensados para que los chicos aprendan DE las abejas, no solo SOBRE ellas. Elegí los que te sirvan y pedinos un presupuesto.',
+      'Módulos para escuelas en el aula y aquí en la chacra, pensados para que los chicos aprendan de las abejas, no sólo sobre ellas, sino también a través de ellas: física, matemática, química y muchas cosas más que pasan en la naturaleza.',
     marca: 'Las abejas educan',
     filtroLabel: 'Edad',
     filtroTodas: 'Todas',
     enAula: 'En el aula',
     enChacra: 'En la chacra',
-    enAulaNota: 'Vamos nosotros a tu escuela, con todo el material.',
-    enChacraNota: 'La visita que cierra el recorrido.',
+    enChacraNota: 'Esta vez la escuela nos visita a nosotros.',
     leerMas: 'Leer más',
     cerrar: 'Cerrar',
     objetivos: 'Objetivos',
@@ -389,25 +388,24 @@ export const abejasEducanUI: Record<Lang, AbejasEducanUI> = {
       'No pudimos enviar la consulta: parece que no hay conexión. Tus datos siguen acá, probá de nuevo en un momento o escribinos a los contactos de más abajo.',
     errorEnvio:
       'Algo salió mal al guardar la consulta. Tus datos siguen acá: probá de nuevo, y si vuelve a fallar escribinos a los contactos de más abajo.',
-    libroKicker: 'Se está escribiendo',
+    libroKicker: 'En la recta final',
     libroTitulo: 'El libro que cuenta Meli',
     libroTexto:
       'Una abeja narra su propio mundo: cómo ve, cómo baila, cómo decide una colmena. El libro acompaña los módulos y después se queda en la biblioteca de la escuela, para el año que viene y el siguiente.',
-    libroFirma: '— Meli, que todavía no terminó el capítulo tres',
+    libroFirma: '— Meli, dándole los últimos retoques',
     mesesCortos: ['ene', 'feb', 'mar', 'abr', 'may', 'jun', 'jul', 'ago', 'set', 'oct', 'nov', 'dic'],
   },
   en: {
     kicker: 'An educational project by Retoños del Edén',
     title: 'Bees teach',
     intro:
-      'Bees do not only pollinate: they teach. Four modules for schools, three in your classroom and one here on the farm, built so that children learn FROM bees, not only ABOUT them. Pick the ones that suit you and ask us for a quote.',
+      'Modules for schools, in the classroom and here on the farm, built so that children learn from bees, not only about them, but also through them: physics, maths, chemistry and so many other things that happen in nature.',
     marca: 'Las abejas educan',
     filtroLabel: 'Age',
     filtroTodas: 'All',
     enAula: 'In the classroom',
     enChacra: 'On the farm',
-    enAulaNota: 'We come to your school, with all the material.',
-    enChacraNota: 'The visit that closes the route.',
+    enChacraNota: 'This time the school comes to visit us.',
     leerMas: 'Read more',
     cerrar: 'Close',
     objetivos: 'Learning goals',
@@ -457,11 +455,11 @@ export const abejasEducanUI: Record<Lang, AbejasEducanUI> = {
       'We could not send the enquiry: there seems to be no connection. Your details are still here — try again in a moment, or write to us using the contact details further down.',
     errorEnvio:
       'Something went wrong while saving the enquiry. Your details are still here: please try again, and if it fails once more use the contact details further down.',
-    libroKicker: 'Being written',
+    libroKicker: 'On the home stretch',
     libroTitulo: 'The book Meli tells',
     libroTexto:
       'A bee narrates her own world: how she sees, how she dances, how a hive makes up its mind. The book comes with the modules and then stays in the school library, for next year and the year after.',
-    libroFirma: '— Meli, who has not finished chapter three',
+    libroFirma: '— Meli, putting on the finishing touches',
     mesesCortos: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'],
   },
 };

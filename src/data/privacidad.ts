@@ -48,7 +48,7 @@ export const urcdpUrl = 'https://www.gub.uy/unidad-reguladora-control-datos-pers
  * mitgeändert — sonst behauptet die Seite eine Aktualität, die nicht
  * stimmt.
  */
-export const privacidadFecha = '2026-09-01';
+export const privacidadFecha = '2026-09-28';
 
 export interface PrivacidadSeccion {
   titulo: string;
@@ -96,6 +96,15 @@ export const privacidad: Record<Lang, PrivacidadContenido> = {
           'de la o el docente que consulta: nombre, correo y, si querés, teléfono;',
           'de la visita: los módulos elegidos, una o dos fechas deseadas, la clase o año y la CANTIDAD de alumnos;',
           'lo que quieras contarnos en el campo libre.',
+        ],
+      },
+      {
+        titulo: 'Los otros formularios',
+        parrafos: [
+          'En la consulta de "On Tour" pedimos tu nombre, correo y, si querés, teléfono; la organización o el lugar, si los hay; los seminarios elegidos, la zona, cuántas personas son y una o dos fechas.',
+          'Al reservar un lugar en un taller pedimos tu nombre y correo, la fecha elegida y cuántos lugares querés. Reservar no cobra nada: con esos datos te escribimos para confirmar.',
+          'En "Escribinos" pedimos tu nombre, tu correo y el mensaje que nos quieras dejar.',
+          'Para todos vale lo mismo que se explica en esta página: se usan solo para responderte, se guardan con el texto exacto de la casilla que aceptaste y los podés hacer borrar cuando quieras.',
         ],
       },
       {
@@ -181,6 +190,15 @@ export const privacidad: Record<Lang, PrivacidadContenido> = {
           'about the teacher asking: name, email and, if you like, a phone number;',
           'about the visit: the modules chosen, one or two preferred dates, the class or year, and the NUMBER of pupils;',
           'whatever you want to tell us in the free-text field.',
+        ],
+      },
+      {
+        titulo: 'The other forms',
+        parrafos: [
+          'The "On Tour" enquiry asks for your name, email and, if you like, a phone number; the organisation or place, if there is one; the sessions chosen, the zone, how many people and one or two dates.',
+          'Booking a place in a workshop asks for your name and email, the chosen date and how many places you want. Booking costs nothing: we use these details to write to you and confirm.',
+          '"Write to us" asks for your name, your email and the message you want to leave.',
+          'Everything on this page applies to all of them: the details are used only to answer you, are stored together with the exact wording of the box you ticked, and you can have them deleted whenever you like.',
         ],
       },
       {

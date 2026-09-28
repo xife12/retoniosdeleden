@@ -40,7 +40,11 @@ export interface EntityListOptions<T extends Entity> {
   load: () => Promise<T[]>;
   onNew: () => void;
   onOpen: (row: T) => void;
-  onReorder: (row: T, newSortOrder: number) => Promise<void>;
+  /**
+   * Fehlt er, zeigt die Liste keinen Ziehgriff -- die Reihenfolge ergibt
+   * sich dann aus dem Inhalt selbst (bei den Módulos aus der Nummer).
+   */
+  onReorder?: (row: T, newSortOrder: number) => Promise<void>;
   onArchive: (row: T, archived: boolean) => Promise<void>;
   onDelete: (row: T) => Promise<void>;
   nameOf: (row: T) => string;
@@ -164,12 +168,14 @@ export function entityList<T extends Entity>(o: EntityListOptions<T>): EntityLis
     const li = el('li', 'adm-card');
     li.dataset.id = rowData.id;
 
-    const handle = el('button', 'adm-card__handle');
-    handle.type = 'button';
-    handle.dataset.dragHandle = '';
-    handle.setAttribute('aria-label', `Mover ${info.title}. Usá las flechas arriba y abajo.`);
-    handle.innerHTML = '<span aria-hidden="true">⠿</span>';
-    li.append(handle);
+    if (o.onReorder) {
+      const handle = el('button', 'adm-card__handle');
+      handle.type = 'button';
+      handle.dataset.dragHandle = '';
+      handle.setAttribute('aria-label', `Mover ${info.title}. Usá las flechas arriba y abajo.`);
+      handle.innerHTML = '<span aria-hidden="true">⠿</span>';
+      li.append(handle);
+    }
 
     const open = el('button', 'adm-card__open');
     open.type = 'button';
@@ -308,7 +314,8 @@ export function entityList<T extends Entity>(o: EntityListOptions<T>): EntityLis
 
   document.addEventListener('click', closeAllMenus);
 
-  const sorter = sortable({
+  const onReorder = o.onReorder;
+  const sorter = onReorder && sortable({
     list: listEl,
     onReorder: async (_from, _to, value) => {
       const id = listEl.children[_to] instanceof HTMLElement
@@ -317,7 +324,7 @@ export function entityList<T extends Entity>(o: EntityListOptions<T>): EntityLis
       const moved = rows.find((r) => r.id === id);
       if (!moved) return;
       await guard(async () => {
-        await o.onReorder(moved, value);
+        await onReorder(moved, value);
         moved.sort_order = value;
         rows.sort((a, b) => a.sort_order - b.sort_order);
       });
@@ -342,7 +349,7 @@ export function entityList<T extends Entity>(o: EntityListOptions<T>): EntityLis
     reload,
     destroy() {
       document.removeEventListener('click', closeAllMenus);
-      sorter.destroy();
+      sorter?.destroy();
       root.remove();
     },
   };

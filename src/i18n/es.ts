@@ -169,7 +169,7 @@ export const es = {
     people: 'personas',
     nextDates: 'Próximas fechas',
     book: 'Reservar lugar',
-    demoNote: 'Demo: las reservas todavía no se cobran ni se confirman de verdad.',
+    demoNote: 'Reservar no cobra nada: te escribimos para confirmar el lugar y coordinar el pago.',
     booking: {
       title: 'Reservar',
       steps: ['Fecha', 'Datos', 'Confirmar'],
@@ -181,13 +181,20 @@ export const es = {
       back: 'Volver',
       summary: 'Tu reserva',
       total: 'Total',
-      confirm: 'Confirmar reserva (demo)',
-      successTitle: '¡Listo! Reserva demo creada',
+      confirm: 'Enviar reserva',
+      sending: 'Enviando…',
+      successTitle: '¡Listo! Recibimos tu reserva',
       successText:
-        'Esto es una demostración: no se envió nada ni se cobró nada. En la versión final, acá te llega un mail con todos los detalles.',
+        'Te escribimos en estos días para confirmar el lugar y coordinar el pago. Hasta entonces no se cobra nada.',
       close: 'Cerrar',
       errRequired: 'Completá este campo, porfa.',
       errEmail: 'Ese email no parece completo.',
+      consent:
+        'Acepto que Retoños del Edén guarde estos datos para responder a esta reserva y coordinar el taller.',
+      errConsent: 'Para poder reservar, marcá la casilla.',
+      privacy: 'Cómo cuidamos tus datos',
+      errSend:
+        'No pudimos enviar la reserva. Probá de nuevo en un momento; tus datos siguen acá.',
     },
   },
   stay: {
@@ -223,11 +230,13 @@ export const es = {
     email: 'Email',
     message: 'Mensaje',
     send: 'Enviar mensaje',
+    sending: 'Enviando…',
     successTitle: '¡Gracias!',
-    successText:
-      'Te respondemos pronto. (Demo: el mensaje no se envió de verdad.)',
-    whereTitle: 'Dónde estamos',
-    where: 'Sur del Uruguay · 34°42′00.4″S 55°03′39.4″W',
+    successText: 'Recibimos tu mensaje. Te respondemos pronto.',
+    consent: 'Acepto que Retoños del Edén guarde estos datos para responder a este mensaje.',
+    errConsent: 'Para poder enviar, marcá la casilla.',
+    privacy: 'Cómo cuidamos tus datos',
+    errSend: 'No pudimos enviar el mensaje. Probá de nuevo en un momento; tu texto sigue acá.',
     foundersTitle: 'Quiénes somos',
     founders:
       'Catalina Marzorati y Stefan Strauß, y unas 60.000 abejas que opinan en todo.',
@@ -237,7 +246,6 @@ export const es = {
     tagline: 'Un edén que crece despacito, al ritmo de las abejas.',
     demo: 'Sitio de demostración: los contenidos, precios y fechas son de ejemplo.',
     rights: 'Retoños del Edén',
-    design: 'Sistema de diseño',
   },
   pistacho: {
     title: 'El pistacho, nuestra estrella',
@@ -414,7 +422,7 @@ export const es = {
     intro: 'No solo pistachos: más de 300 árboles y un jardín entero conviven acá. Tocá cada planta y conocela.',
     plants: [
       {
-        n: 'Saúco',
+        n: 'Sauco',
         d: 'Los guardianes de la casa. Flores para el té y jarabes.',
       },
       {
@@ -448,6 +456,10 @@ export const es = {
       {
         n: 'Hisopo y aciano',
         d: 'Hierbas y flores azules entre los canteros: medicina antigua, néctar nuevo.',
+      },
+      {
+        n: 'Y muchas más',
+        d: 'Este herbario nunca está terminado: en la chacra siguen apareciendo plantas por conocer.',
       },
     ],
   },

@@ -120,12 +120,18 @@ function recargoTexto(z: (typeof listaZonas)[number]): string {
                   Angebote, und der Unterschied steckt allein im zweiten
                   Teil. Er ist deshalb nicht kleingedruckt, sondern
                   gleichrangig gesetzt. */}
-              <p class="sem-precio">
-                <strong>{formatPrice(s.precio, s.currency)}</strong>
-                <span class="sem-precio-tipo">
-                  {s.precioTipo === 'porPersona' ? ui.porPersona : ui.precioTotal}
-                </span>
-              </p>
+              {s.precioVisible !== false ? (
+                <p class="sem-precio">
+                  <strong>{formatPrice(s.precio, s.currency)}</strong>
+                  <span class="sem-precio-tipo">
+                    {s.precioTipo === 'porPersona' ? ui.porPersona : ui.precioTotal}
+                  </span>
+                </p>
+              ) : (
+                <p class="sem-precio">
+                  <strong>{ui.precioConsultar}</strong>
+                </p>
+              )}
 
               <ul class="sem-chips">
                 <li class="chip">{duracionTexto(s.duracion)}</li>
@@ -239,6 +245,7 @@ function recargoTexto(z: (typeof listaZonas)[number]): string {
       data-txt-aviso-minimo={ui.avisoMinimo}
       data-txt-personas={ui.personas}
       data-txt-seminarios={ui.estimacionSeminarios}
+      data-txt-consultar={ui.estimacionConsultar}
       data-txt-traslado={ui.estimacionTraslado}
       data-txt-apedido={ui.estimacionAPedido}
       data-txt-sin-recargo={ui.zonaSinRecargo}
@@ -262,7 +269,8 @@ function recargoTexto(z: (typeof listaZonas)[number]): string {
                   type="checkbox"
                   data-sem-check
                   value={s.id}
-                  data-precio={s.precio}
+                  data-precio={s.precioVisible !== false ? s.precio : undefined}
+                  data-consultar={s.precioVisible === false ? '' : undefined}
                   data-tipo={s.precioTipo}
                   data-moneda={s.currency}
                   data-prefijo={currencyPrefix[s.currency]}
@@ -273,8 +281,9 @@ function recargoTexto(z: (typeof listaZonas)[number]): string {
                 <span class="picker-txt">
                   <strong>{s.text[lang].title}</strong>
                   <em>
-                    {formatPrice(s.precio, s.currency)} ·{' '}
-                    {s.precioTipo === 'porPersona' ? ui.porPersona : ui.precioTotal}
+                    {s.precioVisible !== false
+                      ? `${formatPrice(s.precio, s.currency)} · ${s.precioTipo === 'porPersona' ? ui.porPersona : ui.precioTotal}`
+                      : ui.precioConsultar}
                   </em>
                 </span>
               </label>
@@ -517,6 +526,16 @@ function recargoTexto(z: (typeof listaZonas)[number]): string {
         return;
       }
 
+      const d = form.dataset;
+
+      /* Ein gewähltes Seminar mit "Precio a consultar": keine Summe, nur
+         der Satz dazu. Eine Summe ohne diesen Posten wäre falsch. */
+      if (checks.some((c) => elegidos.has(c.value) && c.dataset.consultar !== undefined)) {
+        linea(d.txtSeminarios ?? '', d.txtConsultar ?? '', false);
+        cajaEstim.hidden = false;
+        return;
+      }
+
       const bolsaSem: Bolsa = {};
       checks
         .filter((c) => elegidos.has(c.value))
@@ -538,7 +557,6 @@ function recargoTexto(z: (typeof listaZonas)[number]): string {
       const prefijoZona = opcion!.dataset.prefijo ?? '';
       if (!aPedido && recargo > 0) sumar(total, monedaZona, prefijoZona, recargo);
 
-      const d = form.dataset;
       linea(d.txtSeminarios ?? '', textoBolsa(bolsaSem), false);
 
       /*

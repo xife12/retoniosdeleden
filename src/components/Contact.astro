@@ -1,6 +1,7 @@
 ---
 import type { Dict, Lang } from '../i18n';
 import BeeMeli from './BeeMeli.astro';
+import { privacidadRuta } from '../data/privacidad';
 
 interface Props {
   t: Dict;
@@ -18,11 +19,6 @@ const nosotrosHref = `/${lang}/${lang === 'es' ? 'nosotros' : 'about'}`;
         <h2><span class="swash">{t.contact.title}</span></h2>
         <p class="lead">{t.contact.intro}</p>
       </header>
-
-      <div class="info-block" data-reveal>
-        <h4>{t.contact.whereTitle}</h4>
-        <p>{t.contact.where}</p>
-      </div>
 
       <div class="info-block" data-reveal>
         <h4>{t.contact.foundersTitle}</h4>
@@ -46,9 +42,24 @@ const nosotrosHref = `/${lang}/${lang === 'es' ? 'nosotros' : 'about'}`;
       </div>
       <div class="field">
         <label for="ct-msg">{t.contact.message}</label>
-        <textarea id="ct-msg" name="message" rows="5" required></textarea>
+        <textarea id="ct-msg" name="message" rows="5" required maxlength="2000"></textarea>
       </div>
-      <button class="btn" type="submit">{t.contact.send}</button>
+      {/* Einwilligung: der textContent des <span> wird wörtlich als
+          Nachweis gespeichert (Art. 9 Ley 18.331), siehe AbejasEducan. */}
+      <label class="ct-consent">
+        <input type="checkbox" name="consentimiento" required />
+        <span data-ct-consent-texto>{t.contact.consent}</span>
+      </label>
+      <p class="ct-consent-priv">
+        <a href={privacidadRuta[lang]} target="_blank" rel="noopener noreferrer">{t.contact.privacy}</a>
+      </p>
+      <p class="ct-err" data-ct-err role="alert" hidden>{t.contact.errSend}</p>
+      <button
+        class="btn"
+        type="submit"
+        data-txt-send={t.contact.send}
+        data-txt-sending={t.contact.sending}
+      >{t.contact.send}</button>
 
       <div class="form-success" data-contact-success hidden>
         <svg viewBox="0 0 60 60" width="54" aria-hidden="true">
@@ -63,13 +74,48 @@ const nosotrosHref = `/${lang}/${lang === 'es' ? 'nosotros' : 'about'}`;
 </section>
 
 <script>
+  /*
+   * Seit Migration 014 echt: die Nachricht landet in public.solicitudes
+   * (origen 'contacto') und ist im Panel unter "Solicitudes" zu lesen.
+   * Scheitert das Senden, bleibt alles ausgefüllt stehen und eine Meldung
+   * erscheint -- ein "¡Gracias!" ohne gespeicherte Nachricht wäre gelogen.
+   */
+  import { enviarSolicitud } from '../lib/solicitudes';
+
   const form = document.querySelector<HTMLFormElement>('[data-contact-form]')!;
   const success = form.querySelector<HTMLElement>('[data-contact-success]')!;
+  const err = form.querySelector<HTMLElement>('[data-ct-err]')!;
+  const btn = form.querySelector<HTMLButtonElement>('button[type="submit"]')!;
 
-  form.addEventListener('submit', (e) => {
+  form.addEventListener('submit', async (e) => {
     e.preventDefault();
-    if (!form.reportValidity()) return;
-    for (const el of form.querySelectorAll<HTMLElement>('.field, .btn')) {
+    if (!form.reportValidity() || btn.disabled) return;
+
+    const datos = new FormData(form);
+    btn.disabled = true;
+    btn.textContent = btn.dataset.txtSending ?? '';
+    err.hidden = true;
+
+    const res = await enviarSolicitud({
+      origen: 'contacto',
+      modulos: [],
+      docente: String(datos.get('name') ?? ''),
+      mail: String(datos.get('email') ?? ''),
+      nota: String(datos.get('message') ?? ''),
+      consentimiento: datos.get('consentimiento') !== null,
+      consentimientoTexto:
+        form.querySelector<HTMLElement>('[data-ct-consent-texto]')?.textContent?.trim() ?? '',
+    });
+
+    btn.disabled = false;
+    btn.textContent = btn.dataset.txtSend ?? '';
+    if (!res.ok) {
+      if (res.detalle) console.warn('[contacto] Mensaje no enviado:', res.motivo, res.detalle);
+      err.hidden = false;
+      return;
+    }
+
+    for (const el of form.querySelectorAll<HTMLElement>('.field, .btn, .ct-consent, .ct-consent-priv, .ct-err')) {
       el.style.display = 'none';
     }
     success.hidden = false;
@@ -121,6 +167,44 @@ const nosotrosHref = `/${lang}/${lang === 'es' ? 'nosotros' : 'about'}`;
 
   .contact-form .btn {
     justify-self: start;
+  }
+
+  .ct-err {
+    color: var(--barro-700);
+    font-size: var(--fs-300);
+    font-weight: 600;
+    margin: 0;
+  }
+
+  /* Einwilligung: Häkchen und Satz nebeneinander, der Link zur
+     Datenschutzseite darunter und um die Kästchenbreite eingerückt --
+     sichtbar zugehörig, aber nicht Teil des gespeicherten Wortlauts. */
+  .ct-consent {
+    display: flex;
+    gap: var(--sp-3);
+    align-items: flex-start;
+    font-size: var(--fs-300);
+    color: var(--tinta-suave);
+    line-height: var(--lh-snug);
+  }
+
+  .ct-consent input {
+    margin-top: 0.2em;
+    flex: none;
+    width: 1.1rem;
+    height: 1.1rem;
+    accent-color: var(--lavanda-700);
+  }
+
+  .ct-consent-priv {
+    margin: calc(var(--sp-2) * -1) 0 0;
+    padding-left: calc(1.1rem + var(--sp-3));
+    font-size: var(--fs-200);
+  }
+
+  .ct-consent-priv a {
+    color: var(--tinta-suave);
+    text-underline-offset: 0.2em;
   }
 
   .form-success {
