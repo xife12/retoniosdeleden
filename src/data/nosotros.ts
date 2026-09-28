@@ -101,12 +101,12 @@ export const personas: Persona[] = [
     pigmento: 'miel',
     name: { es: 'Catalina', en: 'Catalina' },
     role: {
-      es: 'Las manos y la voz de las abejas. Guía los talleres y cuida cada colmena.',
-      en: 'The hands and voice of the bees. Leads the workshops and tends every hive.',
+      es: 'Las manos y la voz de las abejas. Guía «Las abejas educan» y cuida que todos en la colmena estén bien.',
+      en: 'The hands and voice of the bees. Leads “Las abejas educan” and makes sure everyone in the hive is well.',
     },
     detail: {
-      es: 'Abre las colmenas sin guantes y sin apuro, y explica lo que ve mientras lo ve. La mayoría de las personas que visitan la chacra conocen su primera abeja de cerca gracias a ella.',
-      en: 'She opens the hives without gloves and without hurry, explaining what she sees as she sees it. Most people who visit the farm meet their first close-up bee through her.',
+      es: 'Abre las colmenas sin apuro y te va mostrando y explicando todo: te hace sentir que vos sos una abeja.',
+      en: 'She opens the hives without hurry and shows and explains everything as she goes: she makes you feel like you are a bee yourself.',
     },
   },
   {
@@ -135,12 +135,12 @@ export const personas: Persona[] = [
     pigmento: 'pistacho',
     name: { es: 'Abuela Alba', en: 'Grandmother Alba' },
     role: {
-      es: 'La raíz de todo. Sembró la primera idea (y, dicen, el primer árbol).',
-      en: 'The root of it all. Planted the first idea (and, they say, the first tree).',
+      es: 'Tal vez la raíz más fuerte y profunda. Siempre sembrando ideas y apoyando.',
+      en: 'Perhaps the strongest, deepest root. Always sowing ideas and lending support.',
     },
     detail: {
-      es: 'Clavó un palo en la tierra sin más intención que ver qué pasaba, y la tierra respondió. Desde entonces todo lo que se planta acá se planta con esa misma pregunta: ¿y si crece?',
-      en: 'She pushed a stick into the ground with no intention beyond seeing what would happen, and the ground answered. Everything planted here since carries the same question: what if it grows?',
+      es: 'Clavó un palo en la tierra, respondiéndole a Catalina la pregunta: ¿por dónde se empieza, cuando no hay nada? Un palo, un pájaro y una semilla le dieron vida a la chacra.',
+      en: 'She pushed a stick into the ground, answering Catalina’s question: where do you begin when there is nothing? A stick, a bird and a seed brought the farm to life.',
     },
   },
   {
@@ -156,8 +156,8 @@ export const personas: Persona[] = [
       en: 'Keeps shaping the project from afar, never losing the thread.',
     },
     detail: {
-      es: 'La distancia no le impide estar en cada decisión importante. Piensa la chacra en años, no en temporadas — y suele ser el que pregunta qué pasa si esto sale bien.',
-      en: 'Distance does not keep him out of any decision that matters. He thinks about the farm in years rather than seasons — and he is usually the one asking what happens if this works.',
+      es: 'La distancia no le impide estar en el proceso de crecimiento del proyecto, y trae ideas muy modernas y sociales. Suele ser el que se pregunta: ¿qué pasa si esto sale bien?',
+      en: 'Distance does not keep him out of the way the project grows, and he brings very modern, socially minded ideas. He is usually the one asking: what happens if this works?',
     },
   },
   {
@@ -169,12 +169,12 @@ export const personas: Persona[] = [
     pigmento: 'lavanda',
     name: { es: 'Maxi', en: 'Maxi' },
     role: {
-      es: 'Ayuda a que la chacra también viva online, entre otras ideas raras.',
-      en: 'Helps the farm live online too, among other odd ideas.',
+      es: 'El que mantiene la chacra viva en el mundo cibernético, para que todos nos vean.',
+      en: 'The one who keeps the farm alive in the digital world, so everyone can see us.',
     },
     detail: {
-      es: 'Todo lo que ves en esta página pasó por sus manos: los textos, los mapas dibujados, la abeja que te acompaña al bajar. La chacra existe en la tierra; acá existe una segunda vez.',
-      en: 'Everything on this page passed through his hands: the words, the drawn maps, the bee that follows you down the page. The farm exists on the land; here it exists a second time.',
+      es: 'Todo lo que ves en esta página pasó por sus manos y fue construido con sus ideas: los textos, los mapas dibujados, Meli que te acompaña. Le da la voz y el eco a la chacra.',
+      en: 'Everything you see on this page passed through his hands and was built from his ideas: the words, the drawn maps, Meli keeping you company. He gives the farm its voice and its echo.',
     },
   },
   {
@@ -186,12 +186,12 @@ export const personas: Persona[] = [
     pigmento: 'pistacho',
     name: { es: 'Jasmin', en: 'Jasmin' },
     role: {
-      es: 'Se sumó a la familia y ya no se imagina la chacra sin ella.',
-      en: 'Joined the family and can’t imagine the farm without her anymore.',
+      es: 'Jamás se hubiera imaginado cuánto trabajo hay en una colmena para crecer y compartir.',
+      en: 'Never would have imagined how much work goes into a hive to grow and to share.',
     },
     detail: {
-      es: 'Llegó de visita, como todo el mundo, y se quedó del otro lado: la que planta, la que ordena, la que se acuerda de lo que hay que hacer antes de que haga falta.',
-      en: 'She came to visit, like everyone does, and ended up on the other side: the one who plants, who tidies, who remembers what needs doing before it needs doing.',
+      es: 'Llegó de visita, como todo el mundo, y se quedó alucinada con el aroma del panal. Ahora ayuda a darle vida al viaje de Luna y Meli con sus ilustraciones e ideas.',
+      en: 'She came to visit, like everyone does, and was enchanted by the scent of the hive. Now she helps bring Luna and Meli’s journey to life with her illustrations and ideas.',
     },
   },
   {
@@ -204,12 +204,12 @@ export const personas: Persona[] = [
     grupo: true,
     name: { es: 'Los nietos', en: 'The grandchildren' },
     role: {
-      es: 'La generación que todavía no sabe que ya es parte de esto.',
-      en: 'The generation that doesn’t yet know it’s already part of this.',
+      es: 'La generación que descubre la libertad en la naturaleza de la chacra.',
+      en: 'The generation discovering freedom in the nature of the farm.',
     },
     detail: {
-      es: 'Van a heredar árboles que todavía no dieron fruto y paredes que todavía no están secas. Por eso plantamos pistachos: para que alguien más los coseche.',
-      en: 'They will inherit trees that have not fruited yet and walls that are not yet dry. That is why we plant pistachios: so that somebody else can harvest them.',
+      es: 'Como los pistachos, todavía tienen que crecer para dar sus frutos… pero ya sienten que pertenecer a un panal es algo dulce y aromático.',
+      en: 'Like the pistachios, they still have some growing to do before they bear fruit… but they already feel that belonging to a hive is something sweet and fragrant.',
     },
   },
   {
@@ -222,12 +222,12 @@ export const personas: Persona[] = [
     grupo: true,
     name: { es: 'Los vecinos', en: 'The neighbours' },
     role: {
-      es: 'Prestan una mano, un tractor o un consejo cuando hace falta.',
-      en: 'Lend a hand, a tractor or a piece of advice when it is needed.',
+      es: 'Dan una mano, un tractor o un consejo cuando hace falta.',
+      en: 'Give a hand, a tractor or a piece of advice when it is needed.',
     },
     detail: {
-      es: 'En el campo nadie termina nada solo. Los vecinos aparecen el día que hay que mover algo pesado y se van antes de que uno alcance a agradecer.',
-      en: 'Out here nobody finishes anything alone. The neighbours turn up on the day something heavy has to move, and leave before you manage to thank them.',
+      es: 'En el campo nadie termina las cosas solo. Los vecinos siempre están, o aparecen el día que hay que mover algo pesado, arreglar la bomba de agua o alguna cosa más, y se van con una galletita en la mano o con un mate antes del atardecer.',
+      en: 'Out here nobody finishes things alone. The neighbours are always around, or turn up on the day something heavy has to move, the water pump needs fixing or something else comes up, and they leave with a biscuit in hand or a mate before sunset.',
     },
   },
   {
@@ -240,12 +240,12 @@ export const personas: Persona[] = [
     grupo: true,
     name: { es: 'Los voluntarios', en: 'The volunteers' },
     role: {
-      es: 'Vienen por una temporada y quedan en las paredes que ayudaron a levantar.',
-      en: 'They come for a season and stay in the walls they helped raise.',
+      es: 'Vienen por un tiempo y se quedan en las paredes que ayudaron a levantar, o en los árboles que plantaron.',
+      en: 'They come for a while and stay in the walls they helped raise, or in the trees they planted.',
     },
     detail: {
-      es: 'Algunos se quedan un mes, otros vuelven cada año. Cada pared de barro tiene manos de gente que ya no está acá, y eso también es la chacra.',
-      en: 'Some stay a month, others come back every year. Every clay wall holds the hands of people who are no longer here, and that is part of the farm too.',
+      es: 'Algunos se quedan solo unos días, otros vuelven todos los años. Cada pared de barro tiene manos de gente que ya no está, y hay árboles que plantaron pasantes… Todo crece con todos.',
+      en: 'Some stay only a few days, others come back every year. Every clay wall holds the hands of people who are no longer here, and some trees were planted by interns… Everything grows with everyone.',
     },
   },
   {
@@ -258,12 +258,35 @@ export const personas: Persona[] = [
     grupo: true,
     name: { es: 'Las escuelas', en: 'The schools' },
     role: {
-      es: 'Llegan con treinta preguntas y se van con treinta y una.',
-      en: 'They arrive with thirty questions and leave with thirty-one.',
+      es: 'Llegan con treinta preguntas y se van con ojos brillantes de felicidad y ganas de más.',
+      en: 'They arrive with thirty questions and leave with eyes shining with happiness, wanting more.',
     },
     detail: {
       es: 'Las visitas de escuela son el motivo por el que esto es un proyecto educativo y no solo una chacra. Ahí nació «Las abejas educan».',
       en: 'School visits are the reason this is an educational project and not only a farm. That is where “Las abejas educan” was born.',
+    },
+  },
+  {
+    /*
+     * Neu am 28. September 2026. Liegt auf der bisher freien Zelle (1, 1)
+     * und berührt Florian (1, 0) und Maxi (0, 1). Die zwei übrigen freien
+     * Zellen bleiben: der Stock ist weiterhin nicht fertig.
+     */
+    id: 'familia',
+    q: 1,
+    r: 1,
+    generation: 'padres',
+    vinculo: 'vuelo',
+    pigmento: 'lavanda',
+    grupo: true,
+    name: { es: 'La familia', en: 'The family' },
+    role: {
+      es: 'Vienen y se van. Traen ideas, arte, cerámica, consejos y buenos asados.',
+      en: 'They come and go. They bring ideas, art, ceramics, advice and good barbecues.',
+    },
+    detail: {
+      es: 'Cada uno, con su experiencia, nos apoya y ajusta el GPS del panal para que no perdamos la orientación.',
+      en: 'Each of them, with their own experience, backs us up and adjusts the hive’s GPS so we never lose our bearings.',
     },
   },
 ];
@@ -275,7 +298,6 @@ export const personas: Persona[] = [
  */
 export const celdasLibres: { q: number; r: number }[] = [
   { q: -2, r: 1 },
-  { q: 1, r: 1 },
   { q: -1, r: -1 },
 ];
 
