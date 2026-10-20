@@ -6,9 +6,10 @@
  * Die Bühne ist fest 1920 × 1080 und wird als Ganzes auf das Fenster
  * skaliert — so sieht die Aufnahme auf jedem Bildschirm gleich aus.
  *
- * Grundsatz (Vorgabe der Dozentin): kein Text auf den Folien. Wer liest,
- * hört nicht zu. Erlaubt ist höchstens eine große Zahl pro Folie — die
- * wird nicht gelesen, sondern verankert, was Catalina gerade sagt.
+ * Grundsatz (Vorgabe der Dozentin): so wenig Text wie möglich — wer liest,
+ * hört nicht zu. Erlaubt sind eine kurze Überschrift, Zahlen mit Einheit
+ * und auf der letzten Folie Name, Leitsatz und Webadresse. Nie ein Satz,
+ * den Catalina im selben Moment spricht.
  *
  * Bedienung: Leertaste / Pfeil rechts / Bild ab / Klick = weiter,
  * Pfeil links / Bild auf = zurück, F = Vollbild, Pos1 = Anfang.
@@ -36,9 +37,9 @@ function hexagono(cx: number, cy: number, r: number) {
 }
 
 const celdas = [
-  { id: 'a', cx: 960, cy: 330, r: 210, src: '/pitch/aula.jpg' },
-  { id: 'b', cx: 750, cy: 700, r: 190, src: '/pitch/plantacion.jpg' },
-  { id: 'c', cx: 1170, cy: 700, r: 190, src: '/pitch/casa-barro.jpg' },
+  { id: 'a', cx: 960, cy: 400, r: 200, src: '/pitch/aula.jpg', texto: 'Las abejas educan', tx: 1170, ty: 415, ancla: 'start', fuerte: true },
+  { id: 'b', cx: 755, cy: 760, r: 180, src: '/pitch/plantacion.jpg', texto: 'Producción', tx: 555, ty: 775, ancla: 'end', fuerte: false },
+  { id: 'c', cx: 1165, cy: 760, r: 180, src: '/pitch/casa-barro.jpg', texto: 'Experiencias', tx: 1365, ty: 775, ancla: 'start', fuerte: false },
 ];
 ---
 
@@ -67,6 +68,7 @@ const celdas = [
 
       <!-- ============ 1 + 2 · PROBLEMA ============ -->
       <section class="diapo" data-en="1,2">
+        <h1 class="titulo t-por-que">Colaborar con la naturaleza, no luchar contra ella</h1>
         <svg class="lienzo escena" viewBox="0 0 1920 1080" aria-hidden="true">
           <g transform="translate(60 -40) scale(1.15)">
             <g class="suelo" filter="url(#ink)">
@@ -94,7 +96,9 @@ const celdas = [
 
         <!-- Schritt 2: nur die Zahl -->
         <div class="dato">
-          <p class="dato-num">1<span>/</span>3</p>
+          <p class="dato-num">1 <span>de cada</span> 3</p>
+          <p class="dato-unidad">estudiantes de 15 años</p>
+          <p class="dato-nota">sin nivel básico en ciencias ambientales</p>
           <p class="fuente">PISA 2025 · OCDE</p>
           <svg class="chicos" viewBox="0 0 520 220" aria-hidden="true">
             <g class="chico c1" transform="translate(90 200)"><circle cx="0" cy="-122" r="34" /><path d="M-50 0 Q-54 -78 0 -80 Q54 -78 50 0 Z" /></g>
@@ -106,6 +110,7 @@ const celdas = [
 
       <!-- ============ 3 · SOLUCIÓN: drei Waben, eine Biene ============ -->
       <section class="diapo" data-en="3">
+        <h2 class="titulo">Una chacra que también es un aula</h2>
         <svg class="lienzo panal" viewBox="0 0 1920 1080" aria-hidden="true">
           <defs>
             {celdas.map((c) => (
@@ -127,9 +132,10 @@ const celdas = [
                 clip-path={`url(#hx-${c.id})`}
               />
               <polygon class="borde-celda" points={hexagono(c.cx, c.cy, c.r - 4)} filter="url(#wc-rough)" />
+              <text x={c.tx} y={c.ty} text-anchor={c.ancla} class={c.fuerte ? 'rotulo fuerte' : 'rotulo'}>{c.texto}</text>
             </g>
           ))}
-          <path id="ruta-abeja" d="M960 150 C1250 150 1440 360 1440 590 C1440 830 1220 1000 960 1000 C700 1000 480 830 480 590 C480 360 670 150 960 150 Z" fill="none" />
+          <path id="ruta-abeja" d="M960 175 C1250 175 1440 390 1440 620 C1440 850 1220 1010 960 1010 C700 1010 480 850 480 620 C480 390 670 175 960 175 Z" fill="none" />
           <g class="abeja-vuela">
             <g class="abeja">
               <ellipse cx="0" cy="0" rx="18" ry="12" fill="url(#pg-miel)" />
@@ -146,6 +152,7 @@ const celdas = [
 
       <!-- ============ 4 · DIFERENCIAL: vereinzelt → Kreislauf ============ -->
       <section class="diapo" data-en="4">
+        <h2 class="titulo">Un programa continuo</h2>
         <svg class="lienzo ciclo" viewBox="0 0 1920 1080" aria-hidden="true">
           <!-- drei vereinzelte Momente: Unterricht, Vortrag, Ausflug -->
           <g class="suelto s1">
@@ -184,28 +191,34 @@ const celdas = [
 
       <!-- ============ 5 · ESTADO ACTUAL: drei Zahlen, drei Bilder ============ -->
       <section class="diapo" data-en="5">
+        <h2 class="titulo">Probado y en marcha</h2>
         <div class="cifras">
-          <p class="cifra-n c-1"><span id="contador">+3.000</span></p>
-          <p class="cifra-n c-2">2</p>
-          <p class="cifra-n c-3">1ª</p>
+          <div class="cifra c-1"><p class="cifra-n"><span id="contador">+3.000</span></p><p class="cifra-u">alumnos en Alemania</p></div>
+          <div class="cifra c-2"><p class="cifra-n">2</p><p class="cifra-u">escuelas piloto en Uruguay</p></div>
+          <div class="cifra c-3"><p class="cifra-n">1ª</p><p class="cifra-u">plantación orgánica de pistachos del Uruguay</p></div>
         </div>
-        <Foto id="colmena" src="/pitch/colmena-ninos.jpg" ancho={520} alto={330} retraso={0.3} clase="f-colmena" />
-        <Foto id="abeja" src="/pitch/abeja-mano.jpg" ancho={520} alto={330} retraso={1} clase="f-abeja" />
-        <Foto id="campo" src="/pitch/campo.jpg" ancho={520} alto={330} retraso={1.7} clase="f-campo" />
+        <Foto id="colmena" src="/pitch/colmena-ninos.jpg" ancho={520} alto={250} retraso={0.3} clase="f-colmena" />
+        <Foto id="abeja" src="/pitch/abeja-mano.jpg" ancho={520} alto={250} retraso={1} clase="f-abeja" />
+        <Foto id="campo" src="/pitch/campo.jpg" ancho={520} alto={250} retraso={1.7} clase="f-campo" />
       </section>
 
       <!-- ============ 6 · EQUIPO ============ -->
       <section class="diapo" data-en="6">
-        <Foto id="catalina" src="/pitch/catalina.jpg" ancho={760} alto={560} encuadre={{ x: -640, y: -153, w: 1400, h: 788 }} retraso={0.2} clase="f-catalina" />
+        <h2 class="titulo">¿Por qué nosotros?</h2>
+        <p class="subtitulo">Catalina · docente, apicultora y pedagoga apícola certificada</p>
+        <p class="pie-grupo">4 generaciones + la comunidad</p>
+        <Foto id="catalina" src="/pitch/catalina.jpg" ancho={720} alto={430} encuadre={{ x: -640, y: -150, w: 1400, h: 788 }} retraso={0.2} clase="f-catalina" />
         <Foto id="grupo" src="/pitch/grupo.jpg" ancho={700} alto={525} retraso={0.9} clase="f-grupo" />
       </section>
 
       <!-- ============ 7 · CIERRE: das Ziel ============ -->
       <section class="diapo" data-en="7">
+        <h2 class="titulo">Nuestra meta en 2 meses, con la CIE</h2>
         <p class="meta-n">10–15</p>
+        <p class="meta-u">colegios privados de Maldonado</p>
         <svg class="lienzo escuelas" viewBox="0 0 1920 1080" aria-hidden="true">
           {Array.from({ length: 15 }, (_, i) => (
-            <circle class={`punto-escuela${i >= 10 ? ' extra' : ''}`} cx={250 + i * 58} cy="700" r="16" fill="url(#pg-pistacho)" filter="url(#wc-soft)" style={`animation-delay:${(1 + i * 0.07).toFixed(2)}s`} />
+            <circle class={`punto-escuela${i >= 10 ? ' extra' : ''}`} cx={450 + i * 54} cy="770" r="16" fill="url(#pg-pistacho)" filter="url(#wc-soft)" style={`animation-delay:${(1 + i * 0.07).toFixed(2)}s`} />
           ))}
         </svg>
         <Foto id="vela" src="/pitch/vela.jpg" ancho={460} alto={620} retraso={0.6} clase="f-vela" />
@@ -236,7 +249,10 @@ const celdas = [
             <ellipse class="flor" cx="470" cy="470" rx="15" ry="12" fill="url(#pg-miel)" />
           </g>
         </svg>
-        <Foto id="cartel" src="/pitch/cartel.jpg" ancho={640} alto={500} retraso={1.6} clase="f-cartel" />
+        <p class="firma">Retoños del Edén</p>
+        <p class="lema">donde el tiempo se vuelve raíz</p>
+        <Foto id="cartel" src="/pitch/cartel.jpg" ancho={560} alto={400} retraso={1.6} clase="f-cartel" />
+        <p class="web">retoniosdeleden.com</p>
       </section>
 
     </div>
@@ -418,6 +434,37 @@ const celdas = [
     stroke-linejoin: round;
   }
 
+  /* ---------- Überschriften ---------- */
+  .titulo {
+    position: absolute;
+    left: 120px;
+    top: 90px;
+    max-width: 1100px;
+    margin: 0;
+    font-family: var(--font-display);
+    font-weight: 600;
+    font-size: 64px;
+    line-height: var(--lh-tight);
+    letter-spacing: -0.01em;
+    color: var(--tinta);
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  .activa .titulo { animation: subir 0.8s var(--ease-out) 0.2s forwards; }
+  .subtitulo,
+  .pie-grupo {
+    position: absolute;
+    max-width: none;
+    margin: 0;
+    font-size: 30px;
+    color: var(--tinta-suave);
+    opacity: 0;
+  }
+  .subtitulo { left: 122px; top: 176px; }
+  .pie-grupo { left: 1100px; top: 870px; }
+  .activa .subtitulo { animation: aparecer 0.8s 0.6s forwards; }
+  .activa .pie-grupo { animation: aparecer 0.8s 1.6s forwards; }
+
   /* ---------- 1 · Problema ---------- */
   .chirca {
     fill: none;
@@ -466,15 +513,17 @@ const celdas = [
   .brote { transform-box: fill-box; transform-origin: 50% 100%; transform: scale(0); }
   .activa .brote { animation: brotar 1s var(--ease-bounce) 5.3s forwards; }
 
-  :global(.f-tierra) { left: 800px; top: 200px; }
+  :global(.f-tierra) { left: 800px; top: 230px; }
+  .t-por-que { max-width: 640px; transition: opacity 0.8s var(--ease-out), transform 0.8s var(--ease-out); }
+  .escenario[data-paso='2'] .t-por-que { opacity: 0 !important; transform: translateY(-16px) !important; animation: none; }
 
   /* Schritt 2: Szene weicht der Zahl, das Foto verliert die Farbe */
   .escena { transition: opacity 0.8s var(--ease-out), transform 0.8s var(--ease-out); }
   .dato {
     position: absolute;
     left: 150px;
-    top: 210px;
-    width: 600px;
+    top: 200px;
+    width: 640px;
     opacity: 0;
     transform: translateY(24px);
     transition: opacity 0.8s var(--ease-out), transform 0.8s var(--ease-out);
@@ -483,19 +532,22 @@ const celdas = [
     margin: 0;
     font-family: var(--font-display);
     font-weight: 700;
-    font-size: 220px;
+    font-size: 170px;
     line-height: 1;
+    white-space: nowrap;
     color: var(--barro-700);
   }
-  .dato-num span { font-weight: 400; color: var(--tinta-tenue); margin: 0 0.04em; }
+  .dato-num span { font-size: 80px; font-weight: 500; color: var(--tinta-suave); }
+  .dato-nota { margin: 4px 0 0; max-width: none; font-size: 28px; color: var(--tinta-suave); }
+  .dato-unidad { margin: 6px 0 0; font-size: 42px; font-family: var(--font-display); color: var(--tinta); }
   .fuente {
-    margin: 6px 0 0 8px;
+    margin: 10px 0 0;
     font-size: 18px;
     letter-spacing: 0.14em;
     text-transform: uppercase;
     color: var(--tinta-tenue);
   }
-  .chicos { display: block; width: 440px; height: 186px; margin-top: 34px; overflow: visible; }
+  .chicos { display: block; width: 360px; height: 152px; margin-top: 24px; overflow: visible; }
   .chico { filter: url(#wc-soft); }
   .chico circle, .chico path { fill: url(#pg-miel); transition: fill 1.2s, opacity 1.2s; }
   .c2 circle, .c2 path { fill: url(#pg-pistacho); }
@@ -515,6 +567,8 @@ const celdas = [
   .activa .celda-c { animation-delay: 1s; }
   @keyframes celda { to { opacity: 1; transform: none; } }
   .borde-celda { fill: none; stroke: var(--miel-500); stroke-width: 7; stroke-linejoin: round; }
+  .rotulo { font-family: var(--font-display); font-weight: 600; font-size: 38px; fill: var(--tinta-suave); }
+  .rotulo.fuerte { font-size: 48px; fill: var(--miel-800); }
 
   .abeja-vuela { opacity: 0; }
   .activa .abeja-vuela { animation: aparecer 0.6s 1.6s forwards; }
@@ -548,45 +602,49 @@ const celdas = [
 
   /* ---------- 5 · Estado actual ---------- */
   .cifras { position: absolute; inset: 0; }
-  .cifra-n {
+  .cifra {
     position: absolute;
-    top: 170px;
+    top: 200px;
     width: 520px;
+    text-align: center;
+    opacity: 0;
+    transform: translateY(16px);
+  }
+  .cifra-u { margin: 6px 0 0; max-width: none; font-size: 28px; line-height: 1.25; color: var(--tinta-suave); }
+  .cifra-n {
     margin: 0;
     text-align: center;
     font-family: var(--font-display);
     font-weight: 700;
-    font-size: 150px;
+    font-size: 130px;
     line-height: 1;
     color: var(--miel-800);
     font-variant-numeric: tabular-nums;
-    opacity: 0;
-    transform: translateY(16px);
   }
   .c-1 { left: 150px; }
   .c-2 { left: 700px; }
   .c-3 { left: 1250px; }
-  .activa .cifra-n { animation: subir 0.8s var(--ease-out) forwards; }
+  .activa .cifra { animation: subir 0.8s var(--ease-out) forwards; }
   .activa .c-1 { animation-delay: 0.2s; }
   .activa .c-2 { animation-delay: 0.9s; }
   .activa .c-3 { animation-delay: 1.6s; }
-  :global(.f-colmena) { left: 150px; top: 370px; }
-  :global(.f-abeja) { left: 700px; top: 370px; }
-  :global(.f-campo) { left: 1250px; top: 370px; }
+  :global(.f-colmena) { left: 150px; top: 425px; }
+  :global(.f-abeja) { left: 700px; top: 425px; }
+  :global(.f-campo) { left: 1250px; top: 425px; }
 
   /* ---------- 6 · Equipo ---------- */
-  :global(.f-catalina) { left: 230px; top: 110px; }
-  :global(.f-grupo) { left: 1050px; top: 330px; }
+  :global(.f-catalina) { left: 150px; top: 245px; }
+  :global(.f-grupo) { left: 1060px; top: 320px; }
 
   /* ---------- 7 · Cierre ---------- */
   .meta-n {
     position: absolute;
-    left: 200px;
-    top: 260px;
+    left: 190px;
+    top: 230px;
     margin: 0;
     font-family: var(--font-display);
     font-weight: 700;
-    font-size: 340px;
+    font-size: 300px;
     line-height: 1;
     white-space: nowrap;
     color: var(--pistacho-700);
@@ -594,10 +652,22 @@ const celdas = [
     transform: translateY(24px);
   }
   .activa .meta-n { animation: subir 1s var(--ease-out) 0.3s forwards; }
+  .meta-u {
+    position: absolute;
+    left: 202px;
+    top: 560px;
+    max-width: none;
+    margin: 0;
+    font-family: var(--font-display);
+    font-size: 52px;
+    color: var(--tinta);
+    opacity: 0;
+  }
+  .activa .meta-u { animation: aparecer 0.8s 0.8s forwards; }
   .punto-escuela { transform-box: fill-box; transform-origin: center; transform: scale(0); }
   .punto-escuela.extra { opacity: 0.55; }
   .activa .punto-escuela { animation: brotar 0.5s var(--ease-bounce) forwards; }
-  :global(.f-vela) { left: 1290px; top: 200px; }
+  :global(.f-vela) { left: 1330px; top: 200px; }
 
   /* ---------- 8 · Final ---------- */
   .tronco { fill: none; stroke: var(--tinta); stroke-width: 8; stroke-linecap: round; stroke-dasharray: 1600; stroke-dashoffset: 1600; }
@@ -621,7 +691,16 @@ const celdas = [
   .activa .flor:nth-child(4) { animation-delay: 3.45s; }
   .activa .flor:nth-child(5) { animation-delay: 3.6s; }
   .activa .flor:nth-child(6) { animation-delay: 3.75s; }
-  :global(.f-cartel) { left: 1110px; top: 290px; }
+  :global(.f-cartel) { left: 1080px; top: 400px; }
+  .firma,
+  .lema,
+  .web { position: absolute; left: 1090px; max-width: none; margin: 0; opacity: 0; }
+  .firma { top: 170px; font-family: var(--font-display); font-weight: 700; font-size: 84px; line-height: 1; color: var(--miel-800); }
+  .lema { top: 275px; font-family: var(--font-display); font-style: italic; font-size: 46px; color: var(--pistacho-700); }
+  .web { top: 850px; font-size: 32px; letter-spacing: 0.06em; color: var(--tinta-suave); }
+  .activa .firma { animation: subir 0.9s var(--ease-out) 2.4s forwards; }
+  .activa .lema { animation: aparecer 0.9s 2.9s forwards; }
+  .activa .web { animation: aparecer 0.9s 3.4s forwards; }
 
   /* Bis die Fotos dekodiert sind, nichts zeigen */
   .escenario:not(.listo) .diapo { visibility: hidden; }
