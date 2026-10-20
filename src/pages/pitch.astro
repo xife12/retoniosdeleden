@@ -6,6 +6,10 @@
  * Die Bühne ist fest 1920 × 1080 und wird als Ganzes auf das Fenster
  * skaliert — so sieht die Aufnahme auf jedem Bildschirm gleich aus.
  *
+ * Grundsatz (Vorgabe der Dozentin): kein Text auf den Folien. Wer liest,
+ * hört nicht zu. Erlaubt ist höchstens eine große Zahl pro Folie — die
+ * wird nicht gelesen, sondern verankert, was Catalina gerade sagt.
+ *
  * Bedienung: Leertaste / Pfeil rechts / Bild ab / Klick = weiter,
  * Pfeil links / Bild auf = zurück, F = Vollbild, Pos1 = Anfang.
  * Schritt 0 ist leeres Papier; danach 8 Schritte.
@@ -15,6 +19,27 @@
  */
 import Base from '../layouts/Base.astro';
 import Foto from '../components/pitch/FotoAcuarela.astro';
+
+/** Sechseck mit Spitze oben, als points-Attribut */
+function hexagono(cx: number, cy: number, r: number) {
+  const w = r * 0.866;
+  return [
+    [cx, cy - r],
+    [cx + w, cy - r / 2],
+    [cx + w, cy + r / 2],
+    [cx, cy + r],
+    [cx - w, cy + r / 2],
+    [cx - w, cy - r / 2],
+  ]
+    .map((p) => p.join(','))
+    .join(' ');
+}
+
+const celdas = [
+  { id: 'a', cx: 960, cy: 330, r: 210, src: '/pitch/aula.jpg' },
+  { id: 'b', cx: 750, cy: 700, r: 190, src: '/pitch/plantacion.jpg' },
+  { id: 'c', cx: 1170, cy: 700, r: 190, src: '/pitch/casa-barro.jpg' },
+];
 ---
 
 <Base lang="es" title="Retoños del Edén — Pitch CIE" description="Presentación" noindex>
@@ -37,38 +62,39 @@ import Foto from '../components/pitch/FotoAcuarela.astro';
         <ellipse cx="1650" cy="1040" rx="520" ry="160" fill="url(#pg-pistacho-light)" opacity="0.6" />
       </g>
     </svg>
+
     <div class="escenario" id="escenario" data-paso="0">
 
       <!-- ============ 1 + 2 · PROBLEMA ============ -->
       <section class="diapo" data-en="1,2">
-        <h1 class="titulo t-pregunta">¿Qué se hace con una tierra que todos dan por muerta?</h1>
-
-        <svg class="escena" viewBox="0 0 1920 1080" aria-hidden="true">
-          <g class="suelo" filter="url(#ink)">
-            <path class="trazo" d="M120 652 C260 640 380 662 520 650 S760 646 820 654" />
-            <path class="chirca" d="M190 651 l-8 -30 M196 651 l3 -36 M203 651 l13 -27 M640 649 l-7 -24 M646 649 l4 -31 M652 649 l12 -22 M300 652 l-5 -18 M306 652 l7 -20" />
-          </g>
-          <path class="estaca" filter="url(#ink)" d="M434 446 L426 654" />
-          <g class="pajaro-vuelo">
-            <g class="pajaro" filter="url(#ink)">
-              <path d="M-30 -2 q18 -16 44 -8 q10 3 17 -5 l5 7 q-7 5 -11 11 q-16 18 -46 9 z" />
-              <path class="ala" d="M-12 -8 q8 -26 32 -30 q-6 18 -18 30 z" />
-              <path class="patas" d="M-6 14 l-2 10 M4 14 l2 10" />
+        <svg class="lienzo escena" viewBox="0 0 1920 1080" aria-hidden="true">
+          <g transform="translate(60 -40) scale(1.15)">
+            <g class="suelo" filter="url(#ink)">
+              <path class="trazo" d="M320 652 C420 642 520 660 600 650 S760 646 820 654" />
+              <path class="chirca" d="M372 651 l-8 -30 M378 651 l3 -36 M385 651 l13 -27 M690 649 l-7 -24 M696 649 l4 -31 M702 649 l12 -22 M520 652 l-5 -18 M526 652 l7 -20" />
             </g>
-          </g>
-          <ellipse class="semilla" cx="446" cy="470" rx="5" ry="8" />
-          <g class="brote">
-            <path d="M452 652 q-3 -22 2 -38" />
-            <ellipse cx="441" cy="616" rx="12" ry="6" transform="rotate(-30 441 616)" />
-            <ellipse cx="465" cy="610" rx="13" ry="6" transform="rotate(25 465 610)" />
+            <path class="estaca" filter="url(#ink)" d="M434 446 L426 654" />
+            <g class="pajaro-vuelo">
+              <g class="pajaro" filter="url(#ink)">
+                <path d="M-30 -2 q18 -16 44 -8 q10 3 17 -5 l5 7 q-7 5 -11 11 q-16 18 -46 9 z" />
+                <path class="ala" d="M-12 -8 q8 -26 32 -30 q-6 18 -18 30 z" />
+                <path class="patas" d="M-6 14 l-2 10 M4 14 l2 10" />
+              </g>
+            </g>
+            <ellipse class="semilla" cx="446" cy="470" rx="5" ry="8" />
+            <g class="brote">
+              <path d="M452 652 q-3 -22 2 -38" />
+              <ellipse cx="441" cy="616" rx="12" ry="6" transform="rotate(-30 441 616)" />
+              <ellipse cx="465" cy="610" rx="13" ry="6" transform="rotate(25 465 610)" />
+            </g>
           </g>
         </svg>
 
-        <Foto id="tierra" clase="f-tierra" src="/pitch/tierra.jpg" ancho={1000} alto={600} retraso={0.3} />
+        <Foto id="tierra" clase="f-tierra" src="/pitch/tierra.jpg" ancho={1040} alto={640} retraso={0.3} />
 
+        <!-- Schritt 2: nur die Zahl -->
         <div class="dato">
-          <p class="dato-num">1 <span>de cada</span> 3</p>
-          <p class="dato-txt">estudiantes de 15 años en Uruguay no alcanza el nivel básico en ciencias ambientales</p>
+          <p class="dato-num">1<span>/</span>3</p>
           <p class="fuente">PISA 2025 · OCDE</p>
           <svg class="chicos" viewBox="0 0 520 220" aria-hidden="true">
             <g class="chico c1" transform="translate(90 200)"><circle cx="0" cy="-122" r="34" /><path d="M-50 0 Q-54 -78 0 -80 Q54 -78 50 0 Z" /></g>
@@ -78,133 +104,116 @@ import Foto from '../components/pitch/FotoAcuarela.astro';
         </div>
       </section>
 
-      <!-- ============ 3 · SOLUCIÓN ============ -->
+      <!-- ============ 3 · SOLUCIÓN: drei Waben, eine Biene ============ -->
       <section class="diapo" data-en="3">
-        <p class="antetitulo">Retoños del Edén</p>
-        <h2 class="titulo">Una chacra que también es un aula</h2>
-
-        <svg class="panal" viewBox="0 0 1920 1080" aria-hidden="true">
-          <g class="flechas" filter="url(#ink)">
-            <path class="trazo-anim" d="M610 560 Q560 600 545 640" />
-            <path class="trazo-anim" d="M690 760 Q740 790 790 760" />
-            <path class="trazo-anim" d="M830 640 Q815 600 765 560" />
-          </g>
-          <g class="celda celda-a">
-            <polygon points="700,250 852,337 852,512 700,600 548,512 548,337" fill="url(#pg-miel)" filter="url(#wc-soft)" />
-            <text x="700" y="400" class="celda-t grande">Las abejas</text>
-            <text x="700" y="448" class="celda-t grande">educan</text>
-            <text x="700" y="500" class="celda-sub">principal fuente de ingresos</text>
-          </g>
-          <g class="celda celda-b">
-            <polygon points="520,600 641,670 641,810 520,880 399,810 399,670" fill="url(#pg-pistacho-light)" filter="url(#wc-soft)" />
-            <text x="520" y="735" class="celda-t">Producción</text>
-            <text x="520" y="770" class="celda-t">regenerativa</text>
-          </g>
-          <g class="celda celda-c">
-            <polygon points="880,600 1001,670 1001,810 880,880 759,810 759,670" fill="url(#pg-barro)" filter="url(#wc-soft)" opacity="0.85" />
-            <text x="880" y="735" class="celda-t">Experiencias</text>
-            <text x="880" y="770" class="celda-t">en la chacra</text>
-          </g>
-          <path id="ruta-abeja" d="M700 215 C1010 215 1060 640 1010 840 C900 930 560 930 450 840 C400 640 390 215 700 215 Z" fill="none" />
+        <svg class="lienzo panal" viewBox="0 0 1920 1080" aria-hidden="true">
+          <defs>
+            {celdas.map((c) => (
+              <clipPath id={`hx-${c.id}`}>
+                <polygon points={hexagono(c.cx, c.cy, c.r - 6)} />
+              </clipPath>
+            ))}
+          </defs>
+          {celdas.map((c) => (
+            <g class={`celda celda-${c.id}`}>
+              <polygon points={hexagono(c.cx, c.cy, c.r + 14)} fill="url(#pg-miel)" filter="url(#wc-soft)" opacity="0.55" />
+              <image
+                href={c.src}
+                x={c.cx - c.r}
+                y={c.cy - c.r}
+                width={c.r * 2}
+                height={c.r * 2}
+                preserveAspectRatio="xMidYMid slice"
+                clip-path={`url(#hx-${c.id})`}
+              />
+              <polygon class="borde-celda" points={hexagono(c.cx, c.cy, c.r - 4)} filter="url(#wc-rough)" />
+            </g>
+          ))}
+          <path id="ruta-abeja" d="M960 150 C1250 150 1440 360 1440 590 C1440 830 1220 1000 960 1000 C700 1000 480 830 480 590 C480 360 670 150 960 150 Z" fill="none" />
           <g class="abeja-vuela">
             <g class="abeja">
-              <ellipse cx="0" cy="0" rx="15" ry="10" fill="url(#pg-miel)" />
-              <path d="M-4 -9 v18 M5 -8 v16" class="rayas" />
-              <ellipse class="ala-abeja" cx="-3" cy="-13" rx="9" ry="6" />
-              <ellipse class="ala-abeja" cx="5" cy="-12" rx="8" ry="5" />
+              <ellipse cx="0" cy="0" rx="18" ry="12" fill="url(#pg-miel)" />
+              <path d="M-5 -11 v22 M6 -10 v20" class="rayas" />
+              <ellipse class="ala-abeja" cx="-3" cy="-15" rx="11" ry="7" />
+              <ellipse class="ala-abeja" cx="6" cy="-14" rx="9" ry="6" />
             </g>
-            <animateMotion id="vuelo-abeja" dur="7s" repeatCount="indefinite" rotate="auto" begin="indefinite">
+            <animateMotion id="vuelo-abeja" dur="8s" repeatCount="indefinite" rotate="auto" begin="indefinite">
               <mpath href="#ruta-abeja" />
             </animateMotion>
           </g>
         </svg>
-
-        <Foto id="abeja-mano" src="/pitch/abeja-mano.jpg" ancho={780} alto={351} retraso={0.3} clase="f-abeja" />
-
-        <ul class="idea">
-          <li><span class="idea-k">Todo nace de la misma idea:</span> trabajar con lo que la naturaleza ya da</li>
-          <li>Pistachos en secano, sin riego</li>
-          <li>Casas de barro con materiales que otros descartan</li>
-          <li>Abejas que enseñan</li>
-        </ul>
       </section>
 
-      <!-- ============ 4 · DIFERENCIAL ============ -->
+      <!-- ============ 4 · DIFERENCIAL: vereinzelt → Kreislauf ============ -->
       <section class="diapo" data-en="4">
-        <h2 class="titulo">Todas suman, pero son momentos aislados</h2>
+        <svg class="lienzo ciclo" viewBox="0 0 1920 1080" aria-hidden="true">
+          <!-- drei vereinzelte Momente: Unterricht, Vortrag, Ausflug -->
+          <g class="suelto s1">
+            <circle cx="300" cy="300" r="74" class="mancha-gris" filter="url(#wc-soft)" />
+            <path class="icono" filter="url(#ink)" d="M266 280 q17 -8 34 0 v40 q-17 -8 -34 0 z M334 280 q-17 -8 -34 0 v40 q17 -8 34 0 z" />
+          </g>
+          <g class="suelto s2">
+            <circle cx="570" cy="460" r="74" class="mancha-gris" filter="url(#wc-soft)" />
+            <path class="icono" filter="url(#ink)" d="M546 434 h48 a10 10 0 0 1 10 10 v26 a10 10 0 0 1 -10 10 h-28 l-16 16 v-16 h-4 a10 10 0 0 1 -10 -10 v-26 a10 10 0 0 1 10 -10 z" />
+          </g>
+          <g class="suelto s3">
+            <circle cx="320" cy="600" r="74" class="mancha-gris" filter="url(#wc-soft)" />
+            <path class="icono" filter="url(#ink)" d="M268 626 q52 -34 104 0 M300 610 v-24 M346 568 m-10 0 a10 10 0 1 0 20 0 a10 10 0 1 0 -20 0 M346 548 v-6 M362 556 l5 -5 M330 556 l-5 -5" />
+            <circle class="icono" cx="300" cy="576" r="13" filter="url(#ink)" />
+          </g>
 
-        <p class="etiqueta-gris">Hoy</p>
-        <ul class="aislados">
-          <li><span class="punto"></span>Clase en el aula</li>
-          <li><span class="punto"></span>Charla puntual</li>
-          <li><span class="punto"></span>Salida al campo</li>
-        </ul>
+          <path class="flecha trazo-anim" filter="url(#ink)" d="M700 470 C780 460 850 460 910 474 M888 458 l24 16 l-24 16" />
 
-        <svg class="ciclo" viewBox="0 0 1920 1080" aria-hidden="true">
-          <path class="flecha-gris trazo-anim" filter="url(#ink)" d="M690 520 C770 508 840 508 910 520 M888 504 l24 16 l-24 16" />
-          <circle class="anillo trazo-anim" cx="1310" cy="520" r="270" filter="url(#ink)" />
+          <circle class="anillo" cx="1310" cy="520" r="270" filter="url(#ink)" />
           <path class="punta" d="M1310 250 l-22 -14 M1310 250 l-22 14" filter="url(#ink)" />
           <path class="punta" d="M1310 790 l22 -14 M1310 790 l22 14" filter="url(#ink)" />
-          <g class="nodo nodo-1"><ellipse cx="1040" cy="520" rx="112" ry="62" fill="url(#pg-cielo)" filter="url(#wc-soft)" /><text x="1040" y="532" class="nodo-t">Escuela</text></g>
-          <g class="nodo nodo-2"><ellipse cx="1580" cy="520" rx="112" ry="62" fill="url(#pg-pistacho-light)" filter="url(#wc-soft)" /><text x="1580" y="532" class="nodo-t">Chacra</text></g>
+
+          <!-- Schule und Chacra als gemalte Zeichen statt Worte -->
+          <g class="nodo nodo-1">
+            <ellipse cx="1040" cy="520" rx="96" ry="84" fill="url(#pg-cielo)" filter="url(#wc-soft)" />
+            <path class="icono" filter="url(#ink)" d="M1008 552 v-36 l32 -24 l32 24 v36 z M1031 552 v-20 h18 v20 M1040 492 v-22 l16 7 l-16 7" />
+          </g>
+          <g class="nodo nodo-2">
+            <ellipse cx="1580" cy="520" rx="96" ry="84" fill="url(#pg-pistacho-light)" filter="url(#wc-soft)" />
+            <path class="icono" filter="url(#ink)" d="M1580 560 v-34 M1580 540 l-14 -10 M1580 534 l14 -10" />
+            <circle cx="1580" cy="500" r="30" fill="url(#pg-pistacho)" filter="url(#wc-soft)" />
+          </g>
         </svg>
-        <Foto id="panal" src="/pitch/panal-manos.jpg" ancho={360} alto={360} retraso={0.8} clase="f-panal" />
-        <p class="continuo"><strong>Un programa continuo</strong><br />en una chacra real</p>
+        <Foto id="panal" src="/pitch/panal-manos.jpg" ancho={360} alto={360} retraso={0.9} clase="f-panal" />
       </section>
 
-      <!-- ============ 5 · ESTADO ACTUAL ============ -->
+      <!-- ============ 5 · ESTADO ACTUAL: drei Zahlen, drei Bilder ============ -->
       <section class="diapo" data-en="5">
-        <h2 class="titulo">El método está probado. La chacra, en marcha.</h2>
-
         <div class="cifras">
-          <div class="cifra"><p class="cifra-n"><span id="contador">+3.000</span></p><p class="cifra-t">alumnos en Alemania</p></div>
-          <div class="cifra"><p class="cifra-n">2</p><p class="cifra-t">escuelas piloto en Uruguay</p></div>
-          <div class="cifra"><p class="cifra-n">1ª</p><p class="cifra-t">plantación orgánica de pistachos del Uruguay</p></div>
+          <p class="cifra-n c-1"><span id="contador">+3.000</span></p>
+          <p class="cifra-n c-2">2</p>
+          <p class="cifra-n c-3">1ª</p>
         </div>
-
-        <Foto id="colmena" src="/pitch/colmena-ninos.jpg" ancho={620} alto={290} retraso={0.5} clase="f-colmena" />
-        <Foto id="casa" src="/pitch/casa-barro.jpg" ancho={300} alto={430} retraso={0.75} clase="f-casa" />
-        <Foto id="plantacion" src="/pitch/plantacion.jpg" ancho={300} alto={430} retraso={1} clase="f-plantacion" />
-
-        <p class="falta"><span>Lo que falta:</span> precio · formato · canal de venta</p>
+        <Foto id="colmena" src="/pitch/colmena-ninos.jpg" ancho={520} alto={330} retraso={0.3} clase="f-colmena" />
+        <Foto id="abeja" src="/pitch/abeja-mano.jpg" ancho={520} alto={330} retraso={1} clase="f-abeja" />
+        <Foto id="campo" src="/pitch/campo.jpg" ancho={520} alto={330} retraso={1.7} clase="f-campo" />
       </section>
 
       <!-- ============ 6 · EQUIPO ============ -->
       <section class="diapo" data-en="6">
-        <h2 class="titulo">¿Por qué nosotros?</h2>
-
-        <div class="equipo">
-          <p class="persona">Catalina</p>
-          <p class="rol">docente · apicultora · pedagoga apícola certificada</p>
-          <p class="gen"><strong>4 generaciones</strong></p>
-          <ul class="familia">
-            <li><strong>Stefan</strong> — casas de barro</li>
-            <li><strong>Maxi</strong> — digital</li>
-            <li><strong>Jasmin</strong> — diseño</li>
-          </ul>
-          <p class="red">+ vecinos, apicultores y productores de la zona</p>
-        </div>
-
-        <Foto id="catalina" src="/pitch/catalina.jpg" ancho={560} alto={420} encuadre={{ x: -540, y: -130, w: 1100, h: 619 }} retraso={0.3} clase="f-catalina" />
-        <Foto id="grupo" src="/pitch/grupo.jpg" ancho={560} alto={420} retraso={0.7} clase="f-grupo" />
+        <Foto id="catalina" src="/pitch/catalina.jpg" ancho={760} alto={560} encuadre={{ x: -640, y: -153, w: 1400, h: 788 }} retraso={0.2} clase="f-catalina" />
+        <Foto id="grupo" src="/pitch/grupo.jpg" ancho={700} alto={525} retraso={0.9} clase="f-grupo" />
       </section>
 
-      <!-- ============ 7 · CIERRE ============ -->
+      <!-- ============ 7 · CIERRE: das Ziel ============ -->
       <section class="diapo" data-en="7">
-        <p class="meta-k">Nuestra meta · en 2 meses, con la CIE</p>
         <p class="meta-n">10–15</p>
-        <p class="meta-t">colegios privados de Maldonado reservan un módulo de <em>Las abejas educan</em></p>
-        <ul class="chips">
-          <li>precio y formato validados</li>
-          <li>registro de marca iniciado</li>
-        </ul>
-
-        <Foto id="vela" src="/pitch/vela.jpg" ancho={420} alto={560} retraso={0.6} clase="f-vela" />
+        <svg class="lienzo escuelas" viewBox="0 0 1920 1080" aria-hidden="true">
+          {Array.from({ length: 15 }, (_, i) => (
+            <circle class={`punto-escuela${i >= 10 ? ' extra' : ''}`} cx={250 + i * 58} cy="700" r="16" fill="url(#pg-pistacho)" filter="url(#wc-soft)" style={`animation-delay:${(1 + i * 0.07).toFixed(2)}s`} />
+          ))}
+        </svg>
+        <Foto id="vela" src="/pitch/vela.jpg" ancho={460} alto={620} retraso={0.6} clase="f-vela" />
       </section>
 
       <!-- ============ 8 · FINAL ============ -->
       <section class="diapo" data-en="8">
-        <svg class="arbol" viewBox="0 0 1920 1080" aria-hidden="true">
+        <svg class="lienzo arbol" viewBox="0 0 1920 1080" aria-hidden="true">
           <path class="trazo" filter="url(#ink)" d="M440 905 C560 895 700 912 960 900" />
           <path class="tronco" filter="url(#ink)" d="M640 902 C632 800 646 700 634 560 M636 720 C590 660 540 620 480 590 M638 650 C690 600 740 560 800 530 M636 600 C620 500 600 420 570 330 M640 560 C680 470 700 380 730 300" />
           <g class="copa" filter="url(#wc-wash)">
@@ -227,14 +236,7 @@ import Foto from '../components/pitch/FotoAcuarela.astro';
             <ellipse class="flor" cx="470" cy="470" rx="15" ry="12" fill="url(#pg-miel)" />
           </g>
         </svg>
-
-        <blockquote class="cita">
-          Donde algunos ven una tierra agotada,<br /><em>nosotros vemos un aula.</em>
-        </blockquote>
-        <p class="firma">Retoños del Edén</p>
-        <p class="lema">donde el tiempo se vuelve raíz</p>
-        <Foto id="cartel" src="/pitch/cartel.jpg" ancho={460} alto={330} retraso={1.4} clase="f-cartel" />
-        <p class="web">retoniosdeleden.com</p>
+        <Foto id="cartel" src="/pitch/cartel.jpg" ancho={640} alto={500} retraso={1.6} clase="f-cartel" />
       </section>
 
     </div>
@@ -257,7 +259,6 @@ import Foto from '../components/pitch/FotoAcuarela.astro';
   }
   window.addEventListener('resize', ajustar);
   ajustar();
-
 
   function contar() {
     const fin = 3000;
@@ -354,10 +355,7 @@ import Foto from '../components/pitch/FotoAcuarela.astro';
     overflow: hidden;
   }
 
-  .escena,
-  .panal,
-  .ciclo,
-  .arbol {
+  .lienzo {
     position: absolute;
     inset: 0;
     width: 1920px;
@@ -391,30 +389,6 @@ import Foto from '../components/pitch/FotoAcuarela.astro';
       visibility 0s;
   }
 
-  .titulo {
-    position: absolute;
-    left: 120px;
-    top: 96px;
-    max-width: 1100px;
-    margin: 0;
-    font-family: var(--font-display);
-    font-weight: 600;
-    font-size: 68px;
-    line-height: var(--lh-tight);
-    letter-spacing: -0.01em;
-    color: var(--tinta);
-  }
-  .antetitulo {
-    position: absolute;
-    left: 122px;
-    top: 58px;
-    margin: 0;
-    font-size: 22px;
-    letter-spacing: 0.16em;
-    text-transform: uppercase;
-    color: var(--miel-800);
-  }
-
   /* Gemeinsame Zeichen-Animation für Tuschelinien */
   .trazo,
   .trazo-anim {
@@ -432,13 +406,19 @@ import Foto from '../components/pitch/FotoAcuarela.astro';
   @keyframes dibujar {
     to { stroke-dashoffset: 0; }
   }
+  @keyframes aparecer { to { opacity: 1; } }
+  @keyframes subir { to { opacity: 1; transform: none; } }
+  @keyframes brotar { to { transform: scale(1); } }
+
+  .icono {
+    fill: none;
+    stroke: var(--tinta-suave);
+    stroke-width: 4;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+  }
 
   /* ---------- 1 · Problema ---------- */
-  .t-pregunta {
-    max-width: 720px;
-    top: 110px;
-    transition: opacity 0.8s var(--ease-out), transform 0.8s var(--ease-out);
-  }
   .chirca {
     fill: none;
     stroke: var(--tinta-tenue);
@@ -485,18 +465,16 @@ import Foto from '../components/pitch/FotoAcuarela.astro';
   .brote ellipse { fill: var(--pistacho-500); }
   .brote { transform-box: fill-box; transform-origin: 50% 100%; transform: scale(0); }
   .activa .brote { animation: brotar 1s var(--ease-bounce) 5.3s forwards; }
-  @keyframes brotar { to { transform: scale(1); } }
 
-  :global(.f-tierra) { left: 840px; top: 130px; }
+  :global(.f-tierra) { left: 800px; top: 200px; }
 
-  @keyframes aparecer { to { opacity: 1; } }
-
-  /* Schritt 2: Daten statt Szene */
+  /* Schritt 2: Szene weicht der Zahl, das Foto verliert die Farbe */
+  .escena { transition: opacity 0.8s var(--ease-out), transform 0.8s var(--ease-out); }
   .dato {
     position: absolute;
-    left: 120px;
-    top: 120px;
-    width: 700px;
+    left: 150px;
+    top: 210px;
+    width: 600px;
     opacity: 0;
     transform: translateY(24px);
     transition: opacity 0.8s var(--ease-out), transform 0.8s var(--ease-out);
@@ -505,231 +483,121 @@ import Foto from '../components/pitch/FotoAcuarela.astro';
     margin: 0;
     font-family: var(--font-display);
     font-weight: 700;
-    font-size: 170px;
+    font-size: 220px;
     line-height: 1;
     color: var(--barro-700);
   }
-  .dato-num span { font-size: 72px; font-weight: 500; color: var(--tinta-suave); }
-  .dato-txt { margin: 18px 0 0; font-size: 36px; line-height: var(--lh-snug); max-width: 660px; }
-  .fuente { margin: 14px 0 0; font-size: 20px; letter-spacing: 0.12em; text-transform: uppercase; color: var(--tinta-tenue); }
-  .chicos { position: absolute; left: 330px; top: 520px; width: 420px; height: 178px; overflow: visible; }
+  .dato-num span { font-weight: 400; color: var(--tinta-tenue); margin: 0 0.04em; }
+  .fuente {
+    margin: 6px 0 0 8px;
+    font-size: 18px;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--tinta-tenue);
+  }
+  .chicos { display: block; width: 440px; height: 186px; margin-top: 34px; overflow: visible; }
   .chico { filter: url(#wc-soft); }
   .chico circle, .chico path { fill: url(#pg-miel); transition: fill 1.2s, opacity 1.2s; }
   .c2 circle, .c2 path { fill: url(#pg-pistacho); }
   .c3 circle, .c3 path { fill: url(#pg-lavanda); }
 
-  .escenario[data-paso='2'] .t-pregunta,
   .escenario[data-paso='2'] .escena { opacity: 0; transform: translateY(-20px); }
-  .escena { transition: opacity 0.8s var(--ease-out), transform 0.8s var(--ease-out); }
   .escenario[data-paso='2'] .dato { opacity: 1; transform: none; transition-delay: 0.4s; }
   .escenario[data-paso='2'] .c3 circle,
   .escenario[data-paso='2'] .c3 path { fill: var(--tinta-tenue); opacity: 0.28; transition-delay: 1.6s; }
   .escenario[data-paso='2'] :global(.f-tierra image) { filter: grayscale(1) brightness(1.08) contrast(0.9); }
 
   /* ---------- 3 · Solución ---------- */
-  .celda { opacity: 0; transform-box: fill-box; transform-origin: center; transform: scale(0.6); }
-  .activa .celda { animation: celda 0.9s var(--ease-bounce) forwards; }
+  .celda { opacity: 0; transform-box: fill-box; transform-origin: center; transform: scale(0.7); }
+  .activa .celda { animation: celda 1s var(--ease-bounce) forwards; }
   .activa .celda-a { animation-delay: 0.3s; }
-  .activa .celda-b { animation-delay: 0.6s; }
-  .activa .celda-c { animation-delay: 0.85s; }
+  .activa .celda-b { animation-delay: 0.7s; }
+  .activa .celda-c { animation-delay: 1s; }
   @keyframes celda { to { opacity: 1; transform: none; } }
-  .celda-t { font-family: var(--font-display); font-weight: 600; font-size: 30px; text-anchor: middle; fill: var(--tinta); }
-  .celda-t.grande { font-size: 44px; }
-  .celda-sub { font-size: 21px; text-anchor: middle; fill: var(--tinta); font-weight: 600; letter-spacing: 0.02em; }
-  .flechas .trazo-anim { stroke-width: 4; }
-  .activa .flechas .trazo-anim { animation-delay: 1.3s; }
+  .borde-celda { fill: none; stroke: var(--miel-500); stroke-width: 7; stroke-linejoin: round; }
 
   .abeja-vuela { opacity: 0; }
   .activa .abeja-vuela { animation: aparecer 0.6s 1.6s forwards; }
-  .rayas { stroke: var(--tinta); stroke-width: 3.5; fill: none; }
+  .rayas { stroke: var(--tinta); stroke-width: 4; fill: none; }
   .ala-abeja { fill: var(--cielo-100); stroke: var(--tinta-suave); stroke-width: 1.5; opacity: 0.9; }
 
-  :global(.f-abeja) { left: 1060px; top: 200px; }
-  .idea {
-    position: absolute;
-    left: 1110px;
-    top: 600px;
-    width: 700px;
-    margin: 0;
-    padding: 0;
-    list-style: none;
-    font-size: 30px;
-    line-height: 1.35;
-  }
-  .idea li { margin: 0 0 14px; padding-left: 38px; position: relative; opacity: 0; transform: translateY(12px); }
-  .idea li::before {
-    content: '';
-    position: absolute;
-    left: 4px;
-    top: 13px;
-    width: 18px;
-    height: 10px;
-    border-radius: 50%;
-    background: var(--pistacho-500);
-    transform: rotate(-30deg);
-  }
-  .idea li:first-child { padding-left: 0; font-size: 26px; color: var(--tinta-suave); margin-bottom: 20px; }
-  .idea li:first-child::before { display: none; }
-  .idea-k { color: var(--miel-800); font-weight: 600; }
-  .activa .idea li { animation: subir 0.7s var(--ease-out) forwards; }
-  .activa .idea li:nth-child(1) { animation-delay: 1.6s; }
-  .activa .idea li:nth-child(2) { animation-delay: 1.9s; }
-  .activa .idea li:nth-child(3) { animation-delay: 2.15s; }
-  .activa .idea li:nth-child(4) { animation-delay: 2.4s; }
-  @keyframes subir { to { opacity: 1; transform: none; } }
-
   /* ---------- 4 · Diferencial ---------- */
-  .aislados {
-    position: absolute;
-    left: 160px;
-    top: 370px;
-    margin: 0;
-    padding: 0;
-    list-style: none;
-    font-size: 36px;
-    color: var(--tinta-suave);
+  .mancha-gris { fill: var(--tinta-tenue); opacity: 0.22; }
+  .suelto { opacity: 0; }
+  .activa .suelto { animation: aparecer 0.6s var(--ease-out) forwards; }
+  .activa .s1 { animation-delay: 0.4s; }
+  .activa .s2 { animation-delay: 1s; }
+  .activa .s3 { animation-delay: 1.6s; }
+  .flecha { stroke-width: 4; }
+  .activa .flecha { animation-delay: 2.2s; }
+  .anillo {
+    fill: none;
+    stroke: var(--miel-700);
+    stroke-width: 6;
+    stroke-linecap: round;
+    stroke-dasharray: 1700;
+    stroke-dashoffset: 1700;
   }
-  .aislados li { display: flex; align-items: center; gap: 24px; margin-bottom: 56px; opacity: 0; }
-  .punto { width: 48px; height: 48px; border-radius: var(--r-blob); background: var(--tinta-tenue); opacity: 0.6; }
-  .activa .aislados li { animation: aparecer 0.6s var(--ease-out) forwards; }
-  .activa .aislados li:nth-child(1) { animation-delay: 0.4s; }
-  .activa .aislados li:nth-child(2) { animation-delay: 0.7s; }
-  .activa .aislados li:nth-child(3) { animation-delay: 1s; }
-  .etiqueta-gris {
-    position: absolute;
-    left: 162px;
-    top: 300px;
-    margin: 0;
-    font-size: 24px;
-    font-weight: 600;
-    letter-spacing: 0.16em;
-    text-transform: uppercase;
-    color: var(--tinta-suave);
-  }
-  .flecha-gris { stroke: var(--tinta-suave); stroke-width: 4; }
-  .activa .flecha-gris { animation-delay: 1.4s; }
-  .anillo { stroke: var(--miel-700); stroke-width: 6; stroke-dasharray: 1700; stroke-dashoffset: 1700; }
-  .activa .anillo { animation: dibujar 1.8s var(--ease-in-out) 1.7s forwards; }
+  .activa .anillo { animation: dibujar 1.8s var(--ease-in-out) 2.6s forwards; }
   .punta { fill: none; stroke: var(--miel-700); stroke-width: 6; stroke-linecap: round; opacity: 0; }
-  .activa .punta { animation: aparecer 0.4s 3.3s forwards; }
+  .activa .punta { animation: aparecer 0.4s 4.2s forwards; }
   .nodo { opacity: 0; }
-  .activa .nodo-1 { animation: aparecer 0.6s 2s forwards; }
-  .activa .nodo-2 { animation: aparecer 0.6s 2.6s forwards; }
-  .nodo-t { font-family: var(--font-display); font-weight: 600; font-size: 36px; text-anchor: middle; fill: var(--tinta); }
+  .activa .nodo-1 { animation: aparecer 0.6s 2.8s forwards; }
+  .activa .nodo-2 { animation: aparecer 0.6s 3.4s forwards; }
   :global(.f-panal) { left: 1130px; top: 340px; }
-  .continuo {
-    position: absolute;
-    left: 1060px;
-    top: 830px;
-    width: 500px;
-    margin: 0;
-    text-align: center;
-    font-size: 30px;
-    line-height: 1.25;
-    color: var(--tinta-suave);
-    opacity: 0;
-  }
-  .continuo strong { font-family: var(--font-display); font-size: 40px; color: var(--miel-800); }
-  .activa .continuo { animation: aparecer 0.8s 3.2s forwards; }
 
   /* ---------- 5 · Estado actual ---------- */
-  .cifras { position: absolute; left: 120px; top: 300px; display: flex; gap: 70px; }
-  .cifra { width: 500px; opacity: 0; transform: translateY(16px); }
-  .activa .cifra { animation: subir 0.8s var(--ease-out) forwards; }
-  .activa .cifra:nth-child(1) { animation-delay: 0.3s; }
-  .activa .cifra:nth-child(2) { animation-delay: 1s; }
-  .activa .cifra:nth-child(3) { animation-delay: 1.7s; }
-  .cifra-n { margin: 0; font-family: var(--font-display); font-weight: 700; font-size: 108px; line-height: 1; color: var(--miel-800); font-variant-numeric: tabular-nums; }
-  .cifra-t { margin: 8px 0 0; font-size: 30px; line-height: var(--lh-snug); color: var(--tinta-suave); }
-  :global(.f-colmena) { left: 440px; top: 590px; }
-  :global(.f-casa) { left: 1120px; top: 540px; }
-  :global(.f-plantacion) { left: 1460px; top: 540px; }
-  .falta {
+  .cifras { position: absolute; inset: 0; }
+  .cifra-n {
     position: absolute;
-    left: 470px;
-    top: 900px;
+    top: 170px;
+    width: 520px;
     margin: 0;
-    font-size: 30px;
-    color: var(--barro-700);
+    text-align: center;
+    font-family: var(--font-display);
+    font-weight: 700;
+    font-size: 150px;
+    line-height: 1;
+    color: var(--miel-800);
+    font-variant-numeric: tabular-nums;
     opacity: 0;
+    transform: translateY(16px);
   }
-  .falta span { font-weight: 600; text-transform: uppercase; letter-spacing: 0.1em; font-size: 22px; margin-right: 10px; }
-  .activa .falta { animation: aparecer 0.8s 2.6s forwards; }
+  .c-1 { left: 150px; }
+  .c-2 { left: 700px; }
+  .c-3 { left: 1250px; }
+  .activa .cifra-n { animation: subir 0.8s var(--ease-out) forwards; }
+  .activa .c-1 { animation-delay: 0.2s; }
+  .activa .c-2 { animation-delay: 0.9s; }
+  .activa .c-3 { animation-delay: 1.6s; }
+  :global(.f-colmena) { left: 150px; top: 370px; }
+  :global(.f-abeja) { left: 700px; top: 370px; }
+  :global(.f-campo) { left: 1250px; top: 370px; }
 
   /* ---------- 6 · Equipo ---------- */
-  .equipo { position: absolute; left: 120px; top: 240px; width: 660px; }
-  .equipo > * { opacity: 0; transform: translateY(12px); }
-  .activa .equipo > * { animation: subir 0.7s var(--ease-out) forwards; }
-  .activa .equipo > :nth-child(1) { animation-delay: 0.3s; }
-  .activa .equipo > :nth-child(2) { animation-delay: 0.5s; }
-  .activa .equipo > :nth-child(3) { animation-delay: 1.4s; }
-  .activa .equipo > :nth-child(4) { animation-delay: 1.6s; }
-  .activa .equipo > :nth-child(5) { animation-delay: 2.4s; }
-  .persona { margin: 0; font-family: var(--font-display); font-weight: 700; font-size: 84px; line-height: 1; color: var(--miel-800); }
-  .rol { margin: 12px 0 0; font-size: 32px; line-height: var(--lh-snug); }
-  .gen { margin: 46px 0 0; font-size: 34px; }
-  .familia { margin: 14px 0 0; padding: 0; list-style: none; font-size: 30px; line-height: 1.5; color: var(--tinta-suave); }
-  .familia strong { color: var(--tinta); }
-  .red { margin: 26px 0 0; font-size: 28px; color: var(--pistacho-700); }
-  :global(.f-catalina) { left: 840px; top: 170px; }
-  :global(.f-grupo) { left: 1300px; top: 500px; }
+  :global(.f-catalina) { left: 230px; top: 110px; }
+  :global(.f-grupo) { left: 1050px; top: 330px; }
 
   /* ---------- 7 · Cierre ---------- */
-  .meta-k {
-    position: absolute;
-    left: 122px;
-    top: 120px;
-    margin: 0;
-    font-size: 28px;
-    font-weight: 600;
-    letter-spacing: 0.14em;
-    text-transform: uppercase;
-    color: var(--miel-800);
-    white-space: nowrap;
-    opacity: 0;
-  }
-  .activa .meta-k { animation: aparecer 0.6s 0.2s forwards; }
   .meta-n {
     position: absolute;
-    left: 106px;
-    top: 160px;
+    left: 200px;
+    top: 260px;
     margin: 0;
     font-family: var(--font-display);
     font-weight: 700;
-    font-size: 300px;
+    font-size: 340px;
     line-height: 1;
     white-space: nowrap;
     color: var(--pistacho-700);
     opacity: 0;
+    transform: translateY(24px);
   }
-  .activa .meta-n { animation: subir 0.9s var(--ease-out) 0.4s forwards; }
-  .meta-t {
-    position: absolute;
-    left: 122px;
-    top: 470px;
-    width: 1120px;
-    max-width: none;
-    margin: 0;
-    font-family: var(--font-display);
-    font-size: 54px;
-    line-height: 1.15;
-    opacity: 0;
-  }
-  .meta-t em { color: var(--miel-800); }
-  .activa .meta-t { animation: aparecer 0.8s 1s forwards; }
-  .chips { position: absolute; left: 122px; top: 630px; display: flex; gap: 16px; margin: 0; padding: 0; list-style: none; }
-  .chips li {
-    padding: 10px 22px;
-    border-radius: var(--r-full);
-    background: var(--miel-100);
-    border: 2px solid var(--miel-300);
-    font-size: 26px;
-    color: var(--miel-800);
-    opacity: 0;
-  }
-  .activa .chips li:nth-child(1) { animation: aparecer 0.6s 1.8s forwards; }
-  .activa .chips li:nth-child(2) { animation: aparecer 0.6s 2.1s forwards; }
-  :global(.f-vela) { left: 1370px; top: 170px; }
+  .activa .meta-n { animation: subir 1s var(--ease-out) 0.3s forwards; }
+  .punto-escuela { transform-box: fill-box; transform-origin: center; transform: scale(0); }
+  .punto-escuela.extra { opacity: 0.55; }
+  .activa .punto-escuela { animation: brotar 0.5s var(--ease-bounce) forwards; }
+  :global(.f-vela) { left: 1290px; top: 200px; }
 
   /* ---------- 8 · Final ---------- */
   .tronco { fill: none; stroke: var(--tinta); stroke-width: 8; stroke-linecap: round; stroke-dasharray: 1600; stroke-dashoffset: 1600; }
@@ -753,28 +621,7 @@ import Foto from '../components/pitch/FotoAcuarela.astro';
   .activa .flor:nth-child(4) { animation-delay: 3.45s; }
   .activa .flor:nth-child(5) { animation-delay: 3.6s; }
   .activa .flor:nth-child(6) { animation-delay: 3.75s; }
-  .cita {
-    position: absolute;
-    left: 1010px;
-    top: 150px;
-    width: 820px;
-    margin: 0;
-    font-family: var(--font-display);
-    font-size: 56px;
-    line-height: 1.18;
-    opacity: 0;
-  }
-  .cita em { color: var(--pistacho-700); font-style: italic; }
-  .activa .cita { animation: subir 1s var(--ease-out) 0.6s forwards; }
-  .firma, .lema, .web { position: absolute; left: 1010px; margin: 0; opacity: 0; }
-  .firma { top: 440px; font-family: var(--font-display); font-weight: 700; font-size: 46px; color: var(--miel-800); }
-  .lema { top: 500px; font-size: 32px; font-style: italic; color: var(--tinta-suave); }
-  .activa .firma { animation: aparecer 0.8s 2.6s forwards; }
-  .activa .lema { animation: aparecer 0.8s 3s forwards; }
-  :global(.f-cartel) { left: 1010px; top: 600px; }
-  .web { top: 960px; left: 1520px; font-size: 24px; letter-spacing: 0.08em; color: var(--tinta-tenue); }
-  .activa .web { animation: aparecer 0.8s 3.4s forwards; }
-
+  :global(.f-cartel) { left: 1110px; top: 290px; }
 
   /* Bis die Fotos dekodiert sind, nichts zeigen */
   .escenario:not(.listo) .diapo { visibility: hidden; }
