@@ -206,7 +206,6 @@ const celdas = [
       <section class="diapo" data-en="6">
         <h2 class="titulo">¿Por qué nosotros?</h2>
         <p class="subtitulo">Catalina · docente, apicultora y pedagoga apícola certificada</p>
-        <p class="pie-grupo">4 generaciones + la comunidad</p>
         <Foto id="catalina" src="/pitch/catalina.jpg" ancho={720} alto={430} encuadre={{ x: -640, y: -150, w: 1400, h: 788 }} retraso={0.2} clase="f-catalina" />
         <Foto id="grupo" src="/pitch/grupo.jpg" ancho={700} alto={525} retraso={0.9} clase="f-grupo" />
       </section>
@@ -451,8 +450,7 @@ const celdas = [
     transform: translateY(10px);
   }
   .activa .titulo { animation: subir 0.8s var(--ease-out) 0.2s forwards; }
-  .subtitulo,
-  .pie-grupo {
+  .subtitulo {
     position: absolute;
     max-width: none;
     margin: 0;
@@ -461,9 +459,7 @@ const celdas = [
     opacity: 0;
   }
   .subtitulo { left: 122px; top: 176px; }
-  .pie-grupo { left: 1100px; top: 870px; }
   .activa .subtitulo { animation: aparecer 0.8s 0.6s forwards; }
-  .activa .pie-grupo { animation: aparecer 0.8s 1.6s forwards; }
 
   /* ---------- 1 · Problema ---------- */
   .chirca {
