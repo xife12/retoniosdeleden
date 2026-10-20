@@ -1,0 +1,831 @@
+---
+/**
+ * Pitch-Präsentation für die CIE (Loom-Aufnahme, 3 Minuten).
+ *
+ * Versteckte Seite: nirgends verlinkt, noindex. Nur Desktop.
+ * Die Bühne ist fest 1920 × 1080 und wird als Ganzes auf das Fenster
+ * skaliert — so sieht die Aufnahme auf jedem Bildschirm gleich aus.
+ *
+ * Bedienung: Leertaste / Pfeil rechts / Bild ab / Klick = weiter,
+ * Pfeil links / Bild auf = zurück, F = Vollbild, Pos1 = Anfang.
+ * Schritt 0 ist leeres Papier; danach 8 Schritte (siehe PASOS unten).
+ *
+ * Ecke unten links (ca. 400 × 400) bleibt auf jeder Folie frei:
+ * dort sitzt die Loom-Kamerabubble.
+ */
+import Base from '../layouts/Base.astro';
+import Foto from '../components/pitch/FotoAcuarela.astro';
+---
+
+<Base lang="es" title="Retoños del Edén — Pitch CIE" description="Presentación" noindex>
+  <svg width="0" height="0" style="position:absolute" aria-hidden="true" focusable="false">
+    <defs>
+      <!-- Ausgefranster Aquarellrand für die Fotomasken -->
+      <filter id="pitch-borde" x="-15%" y="-15%" width="130%" height="130%">
+        <feTurbulence type="fractalNoise" baseFrequency="0.011 0.016" numOctaves="3" seed="9" result="n" />
+        <feDisplacementMap in="SourceGraphic" in2="n" scale="70" />
+      </filter>
+    </defs>
+  </svg>
+
+  <main class="sala" id="sala">
+    <div class="escenario" id="escenario" data-paso="0">
+      <!-- Papierwaschungen im Hintergrund -->
+      <svg class="fondo" viewBox="0 0 1920 1080" aria-hidden="true">
+        <g filter="url(#wc-wash)" opacity="0.32">
+          <ellipse cx="1780" cy="90" rx="380" ry="230" fill="url(#pg-miel)" opacity="0.35" />
+          <ellipse cx="160" cy="120" rx="300" ry="190" fill="url(#pg-pistacho-light)" opacity="0.5" />
+          <ellipse cx="1650" cy="1040" rx="520" ry="160" fill="url(#pg-pistacho-light)" opacity="0.6" />
+        </g>
+      </svg>
+
+      <!-- ============ 1 + 2 · PROBLEMA ============ -->
+      <section class="diapo" data-en="1,2">
+        <h1 class="titulo t-pregunta">¿Qué se hace con una tierra que todos dan por muerta?</h1>
+
+        <svg class="escena" viewBox="0 0 1920 1080" aria-hidden="true">
+          <g class="suelo" filter="url(#ink)">
+            <path class="trazo" d="M120 652 C260 640 380 662 520 650 S760 646 820 654" />
+            <path class="chirca" d="M190 651 l-8 -30 M196 651 l3 -36 M203 651 l13 -27 M640 649 l-7 -24 M646 649 l4 -31 M652 649 l12 -22 M300 652 l-5 -18 M306 652 l7 -20" />
+          </g>
+          <path class="estaca" filter="url(#ink)" d="M434 446 L426 654" />
+          <g class="pajaro-vuelo">
+            <g class="pajaro" filter="url(#ink)">
+              <path d="M-30 -2 q18 -16 44 -8 q10 3 17 -5 l5 7 q-7 5 -11 11 q-16 18 -46 9 z" />
+              <path class="ala" d="M-12 -8 q8 -26 32 -30 q-6 18 -18 30 z" />
+              <path class="patas" d="M-6 14 l-2 10 M4 14 l2 10" />
+            </g>
+          </g>
+          <ellipse class="semilla" cx="446" cy="470" rx="5" ry="8" />
+          <g class="brote">
+            <path d="M452 652 q-3 -22 2 -38" />
+            <ellipse cx="441" cy="616" rx="12" ry="6" transform="rotate(-30 441 616)" />
+            <ellipse cx="465" cy="610" rx="13" ry="6" transform="rotate(25 465 610)" />
+          </g>
+        </svg>
+
+        <Foto id="tierra" clase="f-tierra" src="/pitch/tierra.jpg" ancho={1000} alto={600} retraso={1.2} />
+
+        <div class="dato">
+          <p class="dato-num">1 <span>de cada</span> 3</p>
+          <p class="dato-txt">estudiantes de 15 años en Uruguay no alcanza el nivel básico en ciencias ambientales</p>
+          <p class="fuente">PISA 2025 · OCDE</p>
+          <svg class="chicos" viewBox="0 0 520 220" aria-hidden="true">
+            <g class="chico c1" transform="translate(90 200)"><circle cx="0" cy="-122" r="34" /><path d="M-50 0 Q-54 -78 0 -80 Q54 -78 50 0 Z" /></g>
+            <g class="chico c2" transform="translate(260 200)"><circle cx="0" cy="-122" r="34" /><path d="M-50 0 Q-54 -78 0 -80 Q54 -78 50 0 Z" /></g>
+            <g class="chico c3" transform="translate(430 200)"><circle cx="0" cy="-122" r="34" /><path d="M-50 0 Q-54 -78 0 -80 Q54 -78 50 0 Z" /></g>
+          </svg>
+        </div>
+      </section>
+
+      <!-- ============ 3 · SOLUCIÓN ============ -->
+      <section class="diapo" data-en="3">
+        <p class="antetitulo">Retoños del Edén</p>
+        <h2 class="titulo">Una chacra que también es un aula</h2>
+
+        <svg class="panal" viewBox="0 0 1920 1080" aria-hidden="true">
+          <g class="flechas" filter="url(#ink)">
+            <path class="trazo-anim" d="M610 560 Q560 600 545 640" />
+            <path class="trazo-anim" d="M690 760 Q740 790 790 760" />
+            <path class="trazo-anim" d="M830 640 Q815 600 765 560" />
+          </g>
+          <g class="celda celda-a">
+            <polygon points="700,250 852,337 852,512 700,600 548,512 548,337" fill="url(#pg-miel)" filter="url(#wc-soft)" />
+            <text x="700" y="400" class="celda-t grande">Las abejas</text>
+            <text x="700" y="448" class="celda-t grande">educan</text>
+            <text x="700" y="500" class="celda-sub">principal fuente de ingresos</text>
+          </g>
+          <g class="celda celda-b">
+            <polygon points="520,600 641,670 641,810 520,880 399,810 399,670" fill="url(#pg-pistacho-light)" filter="url(#wc-soft)" />
+            <text x="520" y="735" class="celda-t">Producción</text>
+            <text x="520" y="770" class="celda-t">regenerativa</text>
+          </g>
+          <g class="celda celda-c">
+            <polygon points="880,600 1001,670 1001,810 880,880 759,810 759,670" fill="url(#pg-barro)" filter="url(#wc-soft)" opacity="0.85" />
+            <text x="880" y="735" class="celda-t">Experiencias</text>
+            <text x="880" y="770" class="celda-t">en la chacra</text>
+          </g>
+          <path id="ruta-abeja" d="M700 215 C1010 215 1060 640 1010 840 C900 930 560 930 450 840 C400 640 390 215 700 215 Z" fill="none" />
+          <g class="abeja-vuela">
+            <g class="abeja">
+              <ellipse cx="0" cy="0" rx="15" ry="10" fill="url(#pg-miel)" />
+              <path d="M-4 -9 v18 M5 -8 v16" class="rayas" />
+              <ellipse class="ala-abeja" cx="-3" cy="-13" rx="9" ry="6" />
+              <ellipse class="ala-abeja" cx="5" cy="-12" rx="8" ry="5" />
+            </g>
+            <animateMotion id="vuelo-abeja" dur="7s" repeatCount="indefinite" rotate="auto" begin="indefinite">
+              <mpath href="#ruta-abeja" />
+            </animateMotion>
+          </g>
+        </svg>
+
+        <Foto id="abeja-mano" src="/pitch/abeja-mano.jpg" ancho={780} alto={351} retraso={0.3} clase="f-abeja" />
+
+        <ul class="idea">
+          <li><span class="idea-k">Todo nace de la misma idea:</span> trabajar con lo que la naturaleza ya da</li>
+          <li>Pistachos en secano, sin riego</li>
+          <li>Casas de barro con materiales que otros descartan</li>
+          <li>Abejas que enseñan</li>
+        </ul>
+      </section>
+
+      <!-- ============ 4 · DIFERENCIAL ============ -->
+      <section class="diapo" data-en="4">
+        <h2 class="titulo">Todas suman, pero son momentos aislados</h2>
+
+        <ul class="aislados">
+          <li><span class="punto"></span>Clase en el aula</li>
+          <li><span class="punto"></span>Charla puntual</li>
+          <li><span class="punto"></span>Salida al campo</li>
+        </ul>
+        <p class="etiqueta-gris">hoy</p>
+
+        <svg class="ciclo" viewBox="0 0 1920 1080" aria-hidden="true">
+          <path class="flecha-gris trazo-anim" filter="url(#ink)" d="M840 600 C900 590 940 590 990 600 M970 585 l22 15 l-22 15" />
+          <circle class="anillo trazo-anim" cx="1360" cy="600" r="290" filter="url(#ink)" />
+          <path class="punta" d="M1360 310 l-22 -14 M1360 310 l-22 14" filter="url(#ink)" />
+          <path class="punta" d="M1360 890 l22 -14 M1360 890 l22 14" filter="url(#ink)" />
+          <g class="nodo nodo-1"><ellipse cx="1070" cy="600" rx="112" ry="62" fill="url(#pg-cielo)" filter="url(#wc-soft)" /><text x="1070" y="612" class="nodo-t">Escuela</text></g>
+          <g class="nodo nodo-2"><ellipse cx="1650" cy="600" rx="112" ry="62" fill="url(#pg-pistacho-light)" filter="url(#wc-soft)" /><text x="1650" y="612" class="nodo-t">Chacra</text></g>
+        </svg>
+        <Foto id="panal" src="/pitch/panal-manos.jpg" ancho={380} alto={380} retraso={0.8} clase="f-panal" />
+        <p class="continuo"><strong>Un programa continuo</strong><br />en una chacra real</p>
+      </section>
+
+      <!-- ============ 5 · ESTADO ACTUAL ============ -->
+      <section class="diapo" data-en="5">
+        <h2 class="titulo">El método está probado. La chacra, en marcha.</h2>
+
+        <div class="cifras">
+          <div class="cifra"><p class="cifra-n"><span id="contador">+3.000</span></p><p class="cifra-t">alumnos en Alemania</p></div>
+          <div class="cifra"><p class="cifra-n">2</p><p class="cifra-t">escuelas piloto en Uruguay</p></div>
+          <div class="cifra"><p class="cifra-n">1ª</p><p class="cifra-t">plantación orgánica de pistachos del Uruguay</p></div>
+        </div>
+
+        <Foto id="colmena" src="/pitch/colmena-ninos.jpg" ancho={620} alto={290} retraso={0.5} clase="f-colmena" />
+        <Foto id="casa" src="/pitch/casa-barro.jpg" ancho={300} alto={430} retraso={0.75} clase="f-casa" />
+        <Foto id="plantacion" src="/pitch/plantacion.jpg" ancho={300} alto={430} retraso={1} clase="f-plantacion" />
+
+        <p class="falta"><span>Lo que falta:</span> precio · formato · canal de venta</p>
+      </section>
+
+      <!-- ============ 6 · EQUIPO ============ -->
+      <section class="diapo" data-en="6">
+        <h2 class="titulo">¿Por qué nosotros?</h2>
+
+        <div class="equipo">
+          <p class="persona">Catalina</p>
+          <p class="rol">docente · apicultora · pedagoga apícola certificada</p>
+          <p class="gen"><strong>4 generaciones</strong></p>
+          <ul class="familia">
+            <li><strong>Stefan</strong> — casas de barro</li>
+            <li><strong>Maxi</strong> — digital</li>
+            <li><strong>Jasmin</strong> — diseño</li>
+          </ul>
+          <p class="red">+ vecinos, apicultores y productores de la zona</p>
+        </div>
+
+        <Foto id="catalina" src="/pitch/catalina.jpg" ancho={560} alto={420} encuadre={{ x: -540, y: -130, w: 1100, h: 619 }} retraso={0.3} clase="f-catalina" />
+        <Foto id="grupo" src="/pitch/grupo.jpg" ancho={560} alto={420} retraso={0.7} clase="f-grupo" />
+      </section>
+
+      <!-- ============ 7 · CIERRE ============ -->
+      <section class="diapo" data-en="7">
+        <h2 class="titulo"><span class="tachado">gratuito</span> → listo para el mercado</h2>
+
+        <p class="meta-n">10–15</p>
+        <p class="meta-t">colegios privados de Maldonado<br />reservan un módulo</p>
+        <ul class="chips">
+          <li>precio y formato validados</li>
+          <li>registro de marca iniciado</li>
+        </ul>
+
+        <svg class="sello" viewBox="0 0 360 360" aria-hidden="true">
+          <circle cx="180" cy="180" r="150" fill="url(#pg-miel)" filter="url(#wc-wash)" />
+          <text x="180" y="170" class="sello-n">2 meses</text>
+          <text x="180" y="218" class="sello-t">con la CIE</text>
+        </svg>
+
+        <Foto id="vela" src="/pitch/vela.jpg" ancho={340} alto={460} retraso={0.6} clase="f-vela" />
+      </section>
+
+      <!-- ============ 8 · FINAL ============ -->
+      <section class="diapo" data-en="8">
+        <svg class="arbol" viewBox="0 0 1920 1080" aria-hidden="true">
+          <path class="trazo" filter="url(#ink)" d="M440 905 C560 895 700 912 960 900" />
+          <path class="tronco" filter="url(#ink)" d="M640 902 C632 800 646 700 634 560 M636 720 C590 660 540 620 480 590 M638 650 C690 600 740 560 800 530 M636 600 C620 500 600 420 570 330 M640 560 C680 470 700 380 730 300" />
+          <g class="copa" filter="url(#wc-wash)">
+            <ellipse class="hoja-c" cx="640" cy="420" rx="230" ry="190" fill="url(#pg-pistacho-light)" opacity="0.7" />
+            <ellipse class="hoja-c" cx="500" cy="500" rx="150" ry="120" fill="url(#pg-pistacho)" opacity="0.55" />
+            <ellipse class="hoja-c" cx="790" cy="490" rx="160" ry="125" fill="url(#pg-pistacho)" opacity="0.5" />
+            <ellipse class="hoja-c" cx="560" cy="300" rx="140" ry="110" fill="url(#pg-pistacho-light)" opacity="0.75" />
+            <ellipse class="hoja-c" cx="740" cy="290" rx="130" ry="105" fill="url(#pg-pistacho)" opacity="0.45" />
+            <ellipse class="hoja-c" cx="650" cy="210" rx="110" ry="85" fill="url(#pg-pistacho-light)" opacity="0.7" />
+            <ellipse class="hoja-c" cx="430" cy="400" rx="100" ry="85" fill="url(#pg-pistacho-light)" opacity="0.6" />
+            <ellipse class="hoja-c" cx="860" cy="380" rx="95" ry="80" fill="url(#pg-pistacho-light)" opacity="0.6" />
+            <ellipse class="hoja-c" cx="640" cy="560" rx="170" ry="90" fill="url(#pg-pistacho)" opacity="0.4" />
+          </g>
+          <g class="flores" filter="url(#wc-soft)">
+            <ellipse class="flor" cx="520" cy="360" rx="22" ry="18" fill="url(#pg-miel)" />
+            <ellipse class="flor" cx="760" cy="420" rx="20" ry="16" fill="url(#pg-miel)" />
+            <ellipse class="flor" cx="650" cy="300" rx="18" ry="15" fill="url(#pg-miel)" />
+            <ellipse class="flor" cx="590" cy="520" rx="20" ry="16" fill="url(#pg-miel)" />
+            <ellipse class="flor" cx="820" cy="300" rx="16" ry="13" fill="url(#pg-miel)" />
+            <ellipse class="flor" cx="470" cy="470" rx="15" ry="12" fill="url(#pg-miel)" />
+          </g>
+        </svg>
+
+        <blockquote class="cita">
+          Donde algunos ven una tierra agotada,<br /><em>nosotros vemos un aula.</em>
+        </blockquote>
+        <p class="firma">Retoños del Edén</p>
+        <p class="lema">donde el tiempo se vuelve raíz</p>
+        <Foto id="cartel" src="/pitch/cartel.jpg" ancho={460} alto={330} retraso={1.4} clase="f-cartel" />
+        <p class="web">retoniosdeleden.com</p>
+      </section>
+
+      <!-- Fortschritt: Ranke, die mit jedem Schritt wächst (rechts, weg von der Kamera) -->
+      <svg class="progreso" viewBox="0 0 1920 1080" aria-hidden="true">
+        <path id="rama" class="rama" filter="url(#ink)" d="M480 1040 C640 1010 760 1060 920 1035 S1200 1010 1360 1036 S1640 1050 1820 1020" />
+        <g class="hojas" id="hojas"></g>
+      </svg>
+    </div>
+  </main>
+</Base>
+
+<script>
+  const PASOS = 8;
+  const escenario = document.getElementById('escenario') as HTMLElement;
+  const sala = document.getElementById('sala') as HTMLElement;
+  const diapos = Array.from(document.querySelectorAll<HTMLElement>('.diapo'));
+  const rama = document.getElementById('rama') as unknown as SVGPathElement;
+  const hojas = document.getElementById('hojas') as unknown as SVGGElement;
+  const vuelo = document.getElementById('vuelo-abeja') as unknown as SVGAnimationElement | null;
+  const contador = document.getElementById('contador') as HTMLElement;
+  let paso = 0;
+
+  // Bühne auf das Fenster einpassen
+  function ajustar() {
+    const s = Math.min(window.innerWidth / 1920, window.innerHeight / 1080);
+    escenario.style.setProperty('--escala', String(s));
+  }
+  window.addEventListener('resize', ajustar);
+  ajustar();
+
+  // Ranke vorbereiten: Länge messen, Blätter entlang des Pfads verteilen
+  const largo = rama.getTotalLength();
+  rama.style.setProperty('--largo', String(largo));
+  const ns = 'http://www.w3.org/2000/svg';
+  for (let i = 1; i <= PASOS; i++) {
+    const p = rama.getPointAtLength((largo * i) / PASOS - 6);
+    const hoja = document.createElementNS(ns, 'ellipse');
+    hoja.setAttribute('cx', String(p.x));
+    hoja.setAttribute('cy', String(p.y - 14));
+    hoja.setAttribute('rx', '15');
+    hoja.setAttribute('ry', '7');
+    hoja.setAttribute('transform', `rotate(${i % 2 ? -35 : 35} ${p.x} ${p.y - 14})`);
+    hoja.setAttribute('class', 'hoja');
+    hoja.dataset.n = String(i);
+    hojas.appendChild(hoja);
+  }
+
+  function contar() {
+    const fin = 3000;
+    const t0 = performance.now();
+    const dur = 1600;
+    function cuadro(t: number) {
+      const k = Math.min(1, (t - t0) / dur);
+      const v = Math.round(fin * (1 - Math.pow(1 - k, 3)));
+      contador.textContent = '+' + v.toLocaleString('es-UY');
+      if (k < 1 && paso === 5) requestAnimationFrame(cuadro);
+    }
+    requestAnimationFrame(cuadro);
+  }
+
+  function ir(n: number) {
+    paso = Math.max(0, Math.min(PASOS, n));
+    escenario.dataset.paso = String(paso);
+    for (const d of diapos) {
+      const en = (d.dataset.en || '').split(',').map(Number);
+      d.classList.toggle('activa', en.includes(paso));
+    }
+    rama.style.setProperty('--avance', String(paso / PASOS));
+    hojas.querySelectorAll<SVGElement>('.hoja').forEach((h) => {
+      h.classList.toggle('visible', Number(h.dataset.n) <= paso);
+    });
+    if (paso === 3 && vuelo) vuelo.beginElement();
+    if (paso === 5) contar();
+  }
+
+  function siguiente() { ir(paso + 1); }
+  function anterior() { ir(paso - 1); }
+
+  document.addEventListener('keydown', (e) => {
+    if (['ArrowRight', ' ', 'PageDown', 'Enter'].includes(e.key)) { e.preventDefault(); siguiente(); }
+    else if (['ArrowLeft', 'PageUp', 'Backspace'].includes(e.key)) { e.preventDefault(); anterior(); }
+    else if (e.key === 'Home') ir(0);
+    else if (e.key === 'f' || e.key === 'F') {
+      if (document.fullscreenElement) document.exitFullscreen();
+      else document.documentElement.requestFullscreen();
+    }
+  });
+  sala.addEventListener('click', siguiente);
+
+  // Mauszeiger ausblenden, wenn er ruht
+  let reposo = 0;
+  document.addEventListener('mousemove', () => {
+    document.body.classList.remove('sin-cursor');
+    clearTimeout(reposo);
+    reposo = window.setTimeout(() => document.body.classList.add('sin-cursor'), 1500);
+  });
+
+  // Alle Fotos vorab dekodieren, damit während der Aufnahme nichts nachlädt
+  const fuentes = Array.from(document.querySelectorAll('image')).map((i) => i.getAttribute('href') || '');
+  Promise.all(fuentes.map((src) => { const im = new Image(); im.src = src; return im.decode().catch(() => {}); }))
+    .then(() => escenario.classList.add('listo'));
+
+  ir(0);
+</script>
+
+<style>
+  :global(html),
+  :global(body) {
+    margin: 0;
+    height: 100%;
+    overflow: hidden;
+    background: var(--papel);
+  }
+  :global(body.sin-cursor),
+  :global(body.sin-cursor *) {
+    cursor: none !important;
+  }
+
+  .sala {
+    position: fixed;
+    inset: 0;
+    overflow: hidden;
+    background: var(--papel);
+  }
+
+  .escenario {
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    width: 1920px;
+    height: 1080px;
+    transform: translate(-50%, -50%) scale(var(--escala, 1));
+    transform-origin: center;
+    background: var(--papel);
+    color: var(--tinta);
+    font-family: var(--font-body);
+    overflow: hidden;
+  }
+
+  .fondo,
+  .escena,
+  .panal,
+  .ciclo,
+  .arbol,
+  .progreso {
+    position: absolute;
+    inset: 0;
+    width: 1920px;
+    height: 1080px;
+    pointer-events: none;
+  }
+
+  /* ---------- Folien ---------- */
+  .diapo {
+    position: absolute;
+    inset: 0;
+    opacity: 0;
+    visibility: hidden;
+    transform: scale(1.015);
+    filter: blur(6px);
+    transition:
+      opacity 0.7s var(--ease-out),
+      transform 0.9s var(--ease-out),
+      filter 0.7s var(--ease-out),
+      visibility 0s linear 0.7s;
+  }
+  .diapo.activa {
+    opacity: 1;
+    visibility: visible;
+    transform: none;
+    filter: none;
+    transition:
+      opacity 0.9s var(--ease-out) 0.15s,
+      transform 1.2s var(--ease-out) 0.15s,
+      filter 0.9s var(--ease-out) 0.15s,
+      visibility 0s;
+  }
+
+  .titulo {
+    position: absolute;
+    left: 120px;
+    top: 96px;
+    max-width: 1100px;
+    margin: 0;
+    font-family: var(--font-display);
+    font-weight: 600;
+    font-size: 68px;
+    line-height: var(--lh-tight);
+    letter-spacing: -0.01em;
+    color: var(--tinta);
+  }
+  .antetitulo {
+    position: absolute;
+    left: 122px;
+    top: 58px;
+    margin: 0;
+    font-size: 22px;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: var(--miel-800);
+  }
+
+  /* Gemeinsame Zeichen-Animation für Tuschelinien */
+  .trazo,
+  .trazo-anim {
+    fill: none;
+    stroke: var(--tinta-suave);
+    stroke-width: 3.5;
+    stroke-linecap: round;
+    stroke-dasharray: 1400;
+    stroke-dashoffset: 1400;
+  }
+  .activa .trazo,
+  .activa .trazo-anim {
+    animation: dibujar 1.4s var(--ease-out) forwards;
+  }
+  @keyframes dibujar {
+    to { stroke-dashoffset: 0; }
+  }
+
+  /* ---------- 1 · Problema ---------- */
+  .t-pregunta {
+    max-width: 720px;
+    top: 110px;
+    transition: opacity 0.8s var(--ease-out), transform 0.8s var(--ease-out);
+  }
+  .chirca {
+    fill: none;
+    stroke: var(--tinta-tenue);
+    stroke-width: 2.5;
+    stroke-linecap: round;
+    opacity: 0;
+  }
+  .activa .chirca { animation: aparecer 0.8s var(--ease-out) 0.9s forwards; }
+
+  .estaca {
+    fill: none;
+    stroke: var(--tinta);
+    stroke-width: 11;
+    stroke-linecap: round;
+    stroke-dasharray: 220;
+    stroke-dashoffset: 220;
+  }
+  .activa .estaca { animation: dibujar 1.1s var(--ease-in-out) 4.2s forwards; }
+
+  .pajaro path { fill: var(--tinta); }
+  .pajaro .patas { fill: none; stroke: var(--tinta); stroke-width: 2.5; stroke-linecap: round; }
+  .pajaro-vuelo {
+    transform: translate(434px, 438px) translate(460px, -330px);
+    opacity: 0;
+  }
+  .activa .pajaro-vuelo { animation: vuelo-pajaro 2.2s var(--ease-out) 6.4s forwards; }
+  @keyframes vuelo-pajaro {
+    0% { transform: translate(434px, 438px) translate(460px, -330px); opacity: 0; }
+    15% { opacity: 1; }
+    60% { transform: translate(434px, 438px) translate(120px, -140px); }
+    100% { transform: translate(434px, 438px) translate(0, 0); opacity: 1; }
+  }
+  .activa .ala { transform-box: fill-box; transform-origin: 0% 100%; animation: aleteo 0.22s ease-in-out 6.4s 9 alternate; }
+  @keyframes aleteo { to { transform: rotate(-38deg) scaleY(0.6); } }
+
+  .semilla { fill: var(--miel-700); opacity: 0; }
+  .activa .semilla { animation: caer 1.1s cubic-bezier(0.55, 0, 0.9, 0.4) 9.2s forwards; }
+  @keyframes caer {
+    0% { opacity: 1; transform: translateY(0); }
+    100% { opacity: 1; transform: translateY(176px); }
+  }
+
+  .brote path { fill: none; stroke: var(--pistacho-700); stroke-width: 4; stroke-linecap: round; }
+  .brote ellipse { fill: var(--pistacho-500); }
+  .brote { transform-box: fill-box; transform-origin: 50% 100%; transform: scale(0); }
+  .activa .brote { animation: brotar 1.2s var(--ease-bounce) 10.4s forwards; }
+  @keyframes brotar { to { transform: scale(1); } }
+
+  :global(.f-tierra) { left: 840px; top: 130px; }
+
+  @keyframes aparecer { to { opacity: 1; } }
+
+  /* Schritt 2: Daten statt Szene */
+  .dato {
+    position: absolute;
+    left: 120px;
+    top: 120px;
+    width: 700px;
+    opacity: 0;
+    transform: translateY(24px);
+    transition: opacity 0.8s var(--ease-out), transform 0.8s var(--ease-out);
+  }
+  .dato-num {
+    margin: 0;
+    font-family: var(--font-display);
+    font-weight: 700;
+    font-size: 170px;
+    line-height: 1;
+    color: var(--barro-700);
+  }
+  .dato-num span { font-size: 72px; font-weight: 500; color: var(--tinta-suave); }
+  .dato-txt { margin: 18px 0 0; font-size: 36px; line-height: var(--lh-snug); max-width: 660px; }
+  .fuente { margin: 14px 0 0; font-size: 20px; letter-spacing: 0.12em; text-transform: uppercase; color: var(--tinta-tenue); }
+  .chicos { position: absolute; left: 330px; top: 520px; width: 420px; height: 178px; overflow: visible; }
+  .chico { filter: url(#wc-soft); }
+  .chico circle, .chico path { fill: url(#pg-miel); transition: fill 1.2s, opacity 1.2s; }
+  .c2 circle, .c2 path { fill: url(#pg-pistacho); }
+  .c3 circle, .c3 path { fill: url(#pg-lavanda); }
+
+  .escenario[data-paso='2'] .t-pregunta,
+  .escenario[data-paso='2'] .escena { opacity: 0; transform: translateY(-20px); }
+  .escena { transition: opacity 0.8s var(--ease-out), transform 0.8s var(--ease-out); }
+  .escenario[data-paso='2'] .dato { opacity: 1; transform: none; transition-delay: 0.4s; }
+  .escenario[data-paso='2'] .c3 circle,
+  .escenario[data-paso='2'] .c3 path { fill: var(--tinta-tenue); opacity: 0.28; transition-delay: 1.6s; }
+  .escenario[data-paso='2'] :global(.f-tierra image) { filter: grayscale(1) brightness(1.08) contrast(0.9); }
+
+  /* ---------- 3 · Solución ---------- */
+  .celda { opacity: 0; transform-box: fill-box; transform-origin: center; transform: scale(0.6); }
+  .activa .celda { animation: celda 0.9s var(--ease-bounce) forwards; }
+  .activa .celda-a { animation-delay: 0.3s; }
+  .activa .celda-b { animation-delay: 0.6s; }
+  .activa .celda-c { animation-delay: 0.85s; }
+  @keyframes celda { to { opacity: 1; transform: none; } }
+  .celda-t { font-family: var(--font-display); font-weight: 600; font-size: 30px; text-anchor: middle; fill: var(--tinta); }
+  .celda-t.grande { font-size: 44px; }
+  .celda-sub { font-size: 21px; text-anchor: middle; fill: var(--tinta); font-weight: 600; letter-spacing: 0.02em; }
+  .flechas .trazo-anim { stroke-width: 4; }
+  .activa .flechas .trazo-anim { animation-delay: 1.3s; }
+
+  .abeja-vuela { opacity: 0; }
+  .activa .abeja-vuela { animation: aparecer 0.6s 1.6s forwards; }
+  .rayas { stroke: var(--tinta); stroke-width: 3.5; fill: none; }
+  .ala-abeja { fill: var(--cielo-100); stroke: var(--tinta-suave); stroke-width: 1.5; opacity: 0.9; }
+
+  :global(.f-abeja) { left: 1060px; top: 200px; }
+  .idea {
+    position: absolute;
+    left: 1110px;
+    top: 600px;
+    width: 700px;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+    font-size: 30px;
+    line-height: 1.35;
+  }
+  .idea li { margin: 0 0 14px; padding-left: 38px; position: relative; opacity: 0; transform: translateY(12px); }
+  .idea li::before {
+    content: '';
+    position: absolute;
+    left: 4px;
+    top: 13px;
+    width: 18px;
+    height: 10px;
+    border-radius: 50%;
+    background: var(--pistacho-500);
+    transform: rotate(-30deg);
+  }
+  .idea li:first-child { padding-left: 0; font-size: 26px; color: var(--tinta-suave); margin-bottom: 20px; }
+  .idea li:first-child::before { display: none; }
+  .idea-k { color: var(--miel-800); font-weight: 600; }
+  .activa .idea li { animation: subir 0.7s var(--ease-out) forwards; }
+  .activa .idea li:nth-child(1) { animation-delay: 1.6s; }
+  .activa .idea li:nth-child(2) { animation-delay: 1.9s; }
+  .activa .idea li:nth-child(3) { animation-delay: 2.15s; }
+  .activa .idea li:nth-child(4) { animation-delay: 2.4s; }
+  @keyframes subir { to { opacity: 1; transform: none; } }
+
+  /* ---------- 4 · Diferencial ---------- */
+  .aislados {
+    position: absolute;
+    left: 450px;
+    top: 330px;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+    font-size: 32px;
+    color: var(--tinta-tenue);
+  }
+  .aislados li { display: flex; align-items: center; gap: 22px; margin-bottom: 64px; opacity: 0; }
+  .punto { width: 46px; height: 46px; border-radius: var(--r-blob); background: var(--tinta-tenue); opacity: 0.35; }
+  .activa .aislados li { animation: aparecer 0.6s var(--ease-out) forwards; }
+  .activa .aislados li:nth-child(1) { animation-delay: 0.4s; }
+  .activa .aislados li:nth-child(2) { animation-delay: 0.7s; }
+  .activa .aislados li:nth-child(3) { animation-delay: 1s; }
+  .etiqueta-gris {
+    position: absolute;
+    left: 452px;
+    top: 268px;
+    margin: 0;
+    font-size: 22px;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: var(--tinta-tenue);
+  }
+  .flecha-gris { stroke: var(--tinta-tenue); }
+  .activa .flecha-gris { animation-delay: 1.4s; }
+  .anillo { stroke: var(--miel-700); stroke-width: 6; stroke-dasharray: 1830; stroke-dashoffset: 1830; }
+  .activa .anillo { animation: dibujar 1.8s var(--ease-in-out) 1.7s forwards; }
+  .punta { fill: none; stroke: var(--miel-700); stroke-width: 6; stroke-linecap: round; opacity: 0; }
+  .activa .punta { animation: aparecer 0.4s 3.3s forwards; }
+  .nodo { opacity: 0; }
+  .activa .nodo-1 { animation: aparecer 0.6s 2s forwards; }
+  .activa .nodo-2 { animation: aparecer 0.6s 2.6s forwards; }
+  .nodo-t { font-family: var(--font-display); font-weight: 600; font-size: 36px; text-anchor: middle; fill: var(--tinta); }
+  :global(.f-panal) { left: 1170px; top: 300px; }
+  .continuo {
+    position: absolute;
+    left: 1110px;
+    top: 930px;
+    width: 500px;
+    margin: 0;
+    text-align: center;
+    font-size: 30px;
+    line-height: 1.25;
+    color: var(--tinta-suave);
+    opacity: 0;
+  }
+  .continuo strong { font-family: var(--font-display); font-size: 40px; color: var(--miel-800); }
+  .activa .continuo { animation: aparecer 0.8s 3.2s forwards; }
+
+  /* ---------- 5 · Estado actual ---------- */
+  .cifras { position: absolute; left: 120px; top: 300px; display: flex; gap: 70px; }
+  .cifra { width: 500px; opacity: 0; transform: translateY(16px); }
+  .activa .cifra { animation: subir 0.8s var(--ease-out) forwards; }
+  .activa .cifra:nth-child(1) { animation-delay: 0.3s; }
+  .activa .cifra:nth-child(2) { animation-delay: 1s; }
+  .activa .cifra:nth-child(3) { animation-delay: 1.7s; }
+  .cifra-n { margin: 0; font-family: var(--font-display); font-weight: 700; font-size: 108px; line-height: 1; color: var(--miel-800); font-variant-numeric: tabular-nums; }
+  .cifra-t { margin: 8px 0 0; font-size: 30px; line-height: var(--lh-snug); color: var(--tinta-suave); }
+  :global(.f-colmena) { left: 440px; top: 590px; }
+  :global(.f-casa) { left: 1120px; top: 540px; }
+  :global(.f-plantacion) { left: 1460px; top: 540px; }
+  .falta {
+    position: absolute;
+    left: 470px;
+    top: 900px;
+    margin: 0;
+    font-size: 30px;
+    color: var(--barro-700);
+    opacity: 0;
+  }
+  .falta span { font-weight: 600; text-transform: uppercase; letter-spacing: 0.1em; font-size: 22px; margin-right: 10px; }
+  .activa .falta { animation: aparecer 0.8s 2.6s forwards; }
+
+  /* ---------- 6 · Equipo ---------- */
+  .equipo { position: absolute; left: 120px; top: 240px; width: 660px; }
+  .equipo > * { opacity: 0; transform: translateY(12px); }
+  .activa .equipo > * { animation: subir 0.7s var(--ease-out) forwards; }
+  .activa .equipo > :nth-child(1) { animation-delay: 0.3s; }
+  .activa .equipo > :nth-child(2) { animation-delay: 0.5s; }
+  .activa .equipo > :nth-child(3) { animation-delay: 1.4s; }
+  .activa .equipo > :nth-child(4) { animation-delay: 1.6s; }
+  .activa .equipo > :nth-child(5) { animation-delay: 2.4s; }
+  .persona { margin: 0; font-family: var(--font-display); font-weight: 700; font-size: 84px; line-height: 1; color: var(--miel-800); }
+  .rol { margin: 12px 0 0; font-size: 32px; line-height: var(--lh-snug); }
+  .gen { margin: 46px 0 0; font-size: 34px; }
+  .familia { margin: 14px 0 0; padding: 0; list-style: none; font-size: 30px; line-height: 1.5; color: var(--tinta-suave); }
+  .familia strong { color: var(--tinta); }
+  .red { margin: 26px 0 0; font-size: 28px; color: var(--pistacho-700); }
+  :global(.f-catalina) { left: 840px; top: 170px; }
+  :global(.f-grupo) { left: 1300px; top: 500px; }
+
+  /* ---------- 7 · Cierre ---------- */
+  .tachado { color: var(--tinta-tenue); position: relative; }
+  .tachado::after {
+    content: '';
+    position: absolute;
+    left: -4px;
+    right: -4px;
+    top: 52%;
+    height: 6px;
+    border-radius: var(--r-full);
+    background: var(--barro-500);
+    transform: scaleX(0);
+    transform-origin: left;
+  }
+  .activa .tachado::after { animation: tachar 0.6s var(--ease-out) 0.9s forwards; }
+  @keyframes tachar { to { transform: scaleX(1); } }
+  .meta-n {
+    position: absolute;
+    left: 112px;
+    top: 230px;
+    margin: 0;
+    font-family: var(--font-display);
+    font-weight: 700;
+    font-size: 240px;
+    line-height: 1;
+    white-space: nowrap;
+    color: var(--pistacho-700);
+    opacity: 0;
+  }
+  .activa .meta-n { animation: subir 0.9s var(--ease-out) 1.3s forwards; }
+  .meta-t { position: absolute; left: 122px; top: 490px; margin: 0; font-size: 40px; line-height: var(--lh-snug); opacity: 0; }
+  .activa .meta-t { animation: aparecer 0.8s 1.8s forwards; }
+  .chips { position: absolute; left: 122px; top: 610px; display: flex; gap: 16px; margin: 0; padding: 0; list-style: none; }
+  .chips li {
+    padding: 10px 22px;
+    border-radius: var(--r-full);
+    background: var(--miel-100);
+    border: 2px solid var(--miel-300);
+    font-size: 26px;
+    color: var(--miel-800);
+    opacity: 0;
+  }
+  .activa .chips li:nth-child(1) { animation: aparecer 0.6s 2.4s forwards; }
+  .activa .chips li:nth-child(2) { animation: aparecer 0.6s 2.7s forwards; }
+  .sello { position: absolute; left: 1020px; top: 250px; width: 360px; height: 360px; transform: scale(0) rotate(-12deg); }
+  .activa .sello { animation: sello 0.9s var(--ease-bounce) 3s forwards; }
+  @keyframes sello { to { transform: scale(1) rotate(-6deg); } }
+  .sello-n { font-family: var(--font-display); font-weight: 700; font-size: 56px; text-anchor: middle; fill: var(--tinta); }
+  .sello-t { font-size: 30px; text-anchor: middle; fill: var(--tinta); }
+  :global(.f-vela) { left: 1460px; top: 210px; }
+
+  /* ---------- 8 · Final ---------- */
+  .tronco { fill: none; stroke: var(--tinta); stroke-width: 8; stroke-linecap: round; stroke-dasharray: 1600; stroke-dashoffset: 1600; }
+  .activa .tronco { animation: dibujar 1.6s var(--ease-in-out) 0.3s forwards; }
+  .hoja-c { transform-box: fill-box; transform-origin: 50% 80%; transform: scale(0); mix-blend-mode: multiply; }
+  .activa .hoja-c { animation: brotar 1.6s var(--ease-out) forwards; }
+  .activa .hoja-c:nth-child(1) { animation-delay: 1.5s; }
+  .activa .hoja-c:nth-child(2) { animation-delay: 1.7s; }
+  .activa .hoja-c:nth-child(3) { animation-delay: 1.85s; }
+  .activa .hoja-c:nth-child(4) { animation-delay: 2s; }
+  .activa .hoja-c:nth-child(5) { animation-delay: 2.15s; }
+  .activa .hoja-c:nth-child(6) { animation-delay: 2.3s; }
+  .activa .hoja-c:nth-child(7) { animation-delay: 2.4s; }
+  .activa .hoja-c:nth-child(8) { animation-delay: 2.5s; }
+  .activa .hoja-c:nth-child(9) { animation-delay: 2.6s; }
+  .flor { transform-box: fill-box; transform-origin: center; transform: scale(0); }
+  .activa .flor { animation: brotar 0.8s var(--ease-bounce) forwards; }
+  .activa .flor:nth-child(1) { animation-delay: 3s; }
+  .activa .flor:nth-child(2) { animation-delay: 3.15s; }
+  .activa .flor:nth-child(3) { animation-delay: 3.3s; }
+  .activa .flor:nth-child(4) { animation-delay: 3.45s; }
+  .activa .flor:nth-child(5) { animation-delay: 3.6s; }
+  .activa .flor:nth-child(6) { animation-delay: 3.75s; }
+  .cita {
+    position: absolute;
+    left: 1010px;
+    top: 150px;
+    width: 820px;
+    margin: 0;
+    font-family: var(--font-display);
+    font-size: 56px;
+    line-height: 1.18;
+    opacity: 0;
+  }
+  .cita em { color: var(--pistacho-700); font-style: italic; }
+  .activa .cita { animation: subir 1s var(--ease-out) 0.6s forwards; }
+  .firma, .lema, .web { position: absolute; left: 1010px; margin: 0; opacity: 0; }
+  .firma { top: 440px; font-family: var(--font-display); font-weight: 700; font-size: 46px; color: var(--miel-800); }
+  .lema { top: 500px; font-size: 32px; font-style: italic; color: var(--tinta-suave); }
+  .activa .firma { animation: aparecer 0.8s 2.6s forwards; }
+  .activa .lema { animation: aparecer 0.8s 3s forwards; }
+  :global(.f-cartel) { left: 1010px; top: 600px; }
+  .web { top: 960px; left: 1520px; font-size: 24px; letter-spacing: 0.08em; color: var(--tinta-tenue); }
+  .activa .web { animation: aparecer 0.8s 3.4s forwards; }
+
+  /* ---------- Fortschrittsranke ---------- */
+  .rama {
+    fill: none;
+    stroke: var(--pistacho-700);
+    stroke-width: 4;
+    stroke-linecap: round;
+    stroke-dasharray: var(--largo);
+    stroke-dashoffset: calc(var(--largo) * (1 - var(--avance, 0)));
+    transition: stroke-dashoffset 1.2s var(--ease-out);
+  }
+  .progreso :global(.hoja) {
+    fill: var(--pistacho-500);
+    opacity: 0;
+    transform-box: fill-box;
+    transform-origin: center;
+    transition: opacity 0.6s var(--ease-out) 0.6s;
+  }
+  .progreso :global(.hoja.visible) { opacity: 0.9; }
+  .escenario[data-paso='8'] .progreso { opacity: 0; transition: opacity 1s; }
+
+  /* Bis die Fotos dekodiert sind, nichts zeigen */
+  .escenario:not(.listo) .diapo { visibility: hidden; }
+
+  /* ---------- Ruhige Fassung ---------- */
+  :global(.reduced-motion) .escenario *,
+  :global(.reduced-motion) .escenario *::after {
+    animation-duration: 1ms !important;
+    animation-delay: 0s !important;
+    transition-duration: 1ms !important;
+    transition-delay: 0s !important;
+  }
+</style>

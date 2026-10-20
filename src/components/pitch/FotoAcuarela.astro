@@ -1,0 +1,110 @@
+---
+/**
+ * Foto mit Aquarellrand für die Pitch-Präsentation (/pitch).
+ *
+ * Das Bild liegt hinter einer Maske aus drei weißen Flecken, die durch den
+ * Filter #pitch-borde (in pitch.astro) verformt werden. Wird die Folie aktiv
+ * (Klasse `.activa` an einem Vorfahren), wachsen die Flecken auf — das Foto
+ * "läuft" wie nasse Farbe ins Papier. Danach zieht es sehr langsam heran.
+ *
+ * Maße sind Bühnen-Pixel (die Bühne ist 1920 × 1080 und wird als Ganzes
+ * skaliert), darum feste Zahlen statt Tokens.
+ */
+interface Props {
+  id: string;
+  src: string;
+  ancho: number;
+  alto: number;
+  /** preserveAspectRatio-Ausrichtung, z. B. 'xMidYMid' oder 'xMidYMin' */
+  foco?: string;
+  /**
+   * Eigener Bildausschnitt, wenn `foco` nicht reicht (Gesicht am Bildrand):
+   * Position und Größe des Bildes innerhalb des Rahmens.
+   */
+  encuadre?: { x: number; y: number; w: number; h: number };
+  /** Verzögerung des Aufblühens in Sekunden */
+  retraso?: number;
+  clase?: string;
+}
+
+const { id, src, ancho: w, alto: h, foco = 'xMidYMid', encuadre, retraso = 0, clase = '' } = Astro.props;
+const mascara = `pm-${id}`;
+const img = encuadre ?? { x: 0, y: 0, w, h };
+---
+
+<svg
+  class={`foto ${clase}`}
+  viewBox={`0 0 ${w} ${h}`}
+  width={w}
+  height={h}
+  style={`--retraso:${retraso}s`}
+  aria-hidden="true"
+>
+  <defs>
+    <mask id={mascara} maskUnits="userSpaceOnUse" x="0" y="0" width={w} height={h}>
+      <g filter="url(#pitch-borde)">
+        <ellipse class="mancha" cx={w * 0.5} cy={h * 0.5} rx={w * 0.43} ry={h * 0.41} fill="white" />
+        <ellipse class="mancha m2" cx={w * 0.34} cy={h * 0.4} rx={w * 0.3} ry={h * 0.35} fill="white" />
+        <ellipse class="mancha m3" cx={w * 0.66} cy={h * 0.6} rx={w * 0.3} ry={h * 0.35} fill="white" />
+      </g>
+    </mask>
+  </defs>
+  <g mask={`url(#${mascara})`}>
+    <image
+      class="kb"
+      href={src}
+      x={img.x}
+      y={img.y}
+      width={img.w}
+      height={img.h}
+      preserveAspectRatio={`${foco} slice`}
+    />
+  </g>
+</svg>
+
+<style>
+  .foto {
+    position: absolute;
+    overflow: visible;
+  }
+
+  /* Ruhezustand: zurück auf null erst, wenn die Folie schon ausgeblendet ist */
+  .mancha {
+    transform: scale(0);
+    transform-box: fill-box;
+    transform-origin: center;
+    transition: transform 0s linear 0.9s;
+  }
+  :global(.activa) .mancha {
+    transform: scale(1);
+    transition: transform 1.8s var(--ease-out) var(--retraso);
+  }
+  :global(.activa) .m2 {
+    transition-delay: calc(var(--retraso) + 0.15s);
+  }
+  :global(.activa) .m3 {
+    transition-delay: calc(var(--retraso) + 0.3s);
+  }
+
+  /* Langsames Heranziehen am ganzen SVG, nicht am Bild: ein skaliertes
+     <image> unter der Maske zeichnet in Chrome Haarlinien am Rahmenrand. */
+  .foto {
+    transform-origin: center;
+    transition: transform 0s linear 0.9s;
+  }
+  :global(.activa) .foto {
+    transform: scale(1.04);
+    transition: transform 24s linear;
+  }
+  .kb {
+    transition: filter 1.2s var(--ease-out);
+  }
+
+  :global(.reduced-motion) .mancha,
+  :global(.reduced-motion) .foto {
+    transition: none !important;
+  }
+  :global(.reduced-motion .activa) .foto {
+    transform: none;
+  }
+</style>
