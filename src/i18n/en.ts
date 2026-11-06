@@ -505,8 +505,10 @@ export const en: Dict = {
     kicker: "Catalina's story",
     title: 'Luna y el secreto de la colmena',
     bubble: 'Want to know how I became a guide? It is written in a book.',
-    text: 'Catalina, the same person who planted the first pistachio trees, wrote a story about a girl who shrinks to the size of a bee. I am the one who shows her around in there.',
+    text: 'Catalina, the same person who planted the first pistachio trees, wrote a story about a girl who shrinks to the size of a bee. I am the one who shows her around in there. The book comes out in December.',
     cta: 'Enter the story',
-    badge: 'Reading sample',
+    badge: 'Out in December',
+    imgAlt: 'Luna meets Meli, a worker bee, among sunflowers and garden flowers',
   },
+
 };
