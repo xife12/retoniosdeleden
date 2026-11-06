@@ -1,7 +1,9 @@
 ---
 import type { Dict, Lang } from '../i18n';
 import BeeMeli from './BeeMeli.astro';
+import { Image } from 'astro:assets';
 import { libroActivo } from '../config';
+import teaserImg from '../assets/libro/teaser-meli.jpg';
 
 interface Props {
   t: Dict;
@@ -11,6 +13,8 @@ interface Props {
 const { t, lang } = Astro.props;
 const a = t.abejas;
 const a2 = t.libroTeaser;
+/* Solange das Buch nicht freigeschaltet ist, kündigt der Teaser es nur an (kein Link). */
+const Tag = libroActivo ? 'a' : 'div';
 
 /* Positionen der 5 Kreislauf-Stationen auf dem Ring (in %) */
 const nodes = a.cycle.map((c, i) => {
@@ -215,41 +219,28 @@ const nodes = a.cycle.map((c, i) => {
       </div>
     </div>
 
-    {/* Einladung ins Buch — ruht, solange `libroActivo` aus ist (src/config.ts) */}
-    {libroActivo && (
-    <a class="libro-teaser" href={`/${lang}/${lang === 'es' ? 'libro' : 'book'}`} data-reveal>
-      <span class="lt-book" aria-hidden="true">
-        <svg viewBox="0 0 200 150">
-          <ellipse cx="100" cy="134" rx="76" ry="10" fill="#8a7b68" opacity="0.2" filter="url(#wc-wash)" />
-          <g class="lt-glow">
-            <ellipse cx="100" cy="96" rx="58" ry="22" fill="url(#pg-sol)" opacity="0.85" filter="url(#wc-wash)" />
-          </g>
-          <path d="M24 128 L 24 66 C 56 52, 96 52, 100 62 L 100 128 Z" fill="#c1714f" filter="url(#wc-soft)" />
-          <path d="M176 128 L 176 66 C 144 52, 104 52, 100 62 L 100 128 Z" fill="#a85f40" filter="url(#wc-soft)" />
-          <g class="lt-cover">
-            <path d="M100 62 C 96 52, 56 52, 24 66 L 24 60 C 56 44, 96 44, 100 54 Z" fill="#8f4c31" filter="url(#wc-rough)" />
-            <path d="M100 54 C 104 44, 144 44, 176 60 L 176 66 C 144 52, 104 52, 100 62 Z" fill="#7d4029" filter="url(#wc-rough)" />
-          </g>
-          <g class="lt-pages" fill="#fffdf8" opacity="0.9">
-            <path d="M32 122 L 32 70 C 58 60, 92 60, 96 68 L 96 122 Z" filter="url(#wc-rough)" />
-            <path d="M168 122 L 168 70 C 142 60, 108 60, 104 68 L 104 122 Z" filter="url(#wc-rough)" />
-          </g>
-          <g class="lt-sparks" fill="#f3c87f">
-            <circle cx="76" cy="46" r="3" /><circle cx="118" cy="38" r="2.4" /><circle cx="98" cy="30" r="2" />
-          </g>
-        </svg>
+    {/* Ankündigung des Buchs. Link + Button erst, wenn `libroActivo` an ist (src/config.ts) */}
+    <Tag class="libro-teaser" href={libroActivo ? `/${lang}/${lang === 'es' ? 'libro' : 'book'}` : undefined} data-reveal>
+      <span class="lt-book">
+        <Image
+          src={teaserImg}
+          alt={a2.imgAlt}
+          widths={[360, 520, 720]}
+          sizes="(min-width: 780px) 320px, 80vw"
+          loading="lazy"
+          class="lt-img"
+        />
       </span>
 
       <span class="lt-copy">
         <span class="kicker">{a2.kicker}</span>
         <strong class="lt-title">{a2.title}</strong>
+        <span class="chip chip--miel lt-badge">{a2.badge}</span>
         <span class="bubble lt-bubble">{a2.bubble}</span>
         <span class="lt-text">{a2.text}</span>
-        <span class="btn btn--sm lt-cta">{a2.cta}</span>
-        <span class="chip chip--miel lt-badge">{a2.badge}</span>
+        {libroActivo && <span class="btn btn--sm lt-cta">{a2.cta}</span>}
       </span>
-    </a>
-    )}
+    </Tag>
   </div>
 </section>
 
@@ -758,53 +749,35 @@ const nodes = a.cycle.map((c, i) => {
   }
 
   @media (hover: hover) and (pointer: fine) {
-    .libro-teaser:hover {
+    a.libro-teaser:hover {
       transform: translateY(-4px);
       box-shadow: var(--shadow-lift);
     }
-    .libro-teaser:hover .lt-cover {
-      transform: rotateX(38deg);
-    }
-    .libro-teaser:hover .lt-glow {
-      opacity: 1;
-    }
   }
 
-  .libro-teaser:active {
+  a.libro-teaser:active {
     transform: scale(0.99);
   }
 
   .lt-book {
-    width: min(70vw, 240px);
+    width: min(80vw, 320px);
+    display: block;
+    transform: rotate(-2deg);
+    transition: transform var(--dur-2) var(--ease-out);
   }
 
-  .lt-book svg {
+  .lt-img {
+    display: block;
     width: 100%;
-    overflow: visible;
+    height: auto;
+    border-radius: var(--r-md, 1rem);
+    box-shadow: var(--shadow-lift);
   }
 
-  /* Der Buchdeckel hebt sich, das Honiglicht dringt heraus */
-  .lt-cover {
-    transform-box: fill-box;
-    transform-origin: 50% 100%;
-    transition: transform 620ms var(--ease-out);
-  }
-
-  .lt-glow {
-    opacity: 0.45;
-    transition: opacity 620ms var(--ease-out);
-  }
-
-  .lt-sparks circle {
-    animation: lt-spark 2.8s ease-in-out infinite;
-  }
-
-  .lt-sparks circle:nth-child(2) { animation-delay: 0.5s; }
-  .lt-sparks circle:nth-child(3) { animation-delay: 1s; }
-
-  @keyframes lt-spark {
-    0%, 100% { opacity: 0.2; transform: translateY(2px); }
-    50% { opacity: 1; transform: translateY(-4px); }
+  @media (hover: hover) and (pointer: fine) {
+    a.libro-teaser:hover .lt-book {
+      transform: rotate(0deg) scale(1.02);
+    }
   }
 
   .lt-copy {
@@ -842,9 +815,5 @@ const nodes = a.cycle.map((c, i) => {
 
   .lt-badge {
     margin-top: var(--sp-1);
-  }
-
-  @media (prefers-reduced-motion: reduce) {
-    .lt-sparks circle { animation: none; }
   }
 </style>

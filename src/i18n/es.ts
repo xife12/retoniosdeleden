@@ -504,10 +504,12 @@ export const es = {
     kicker: 'El cuento de Catalina',
     title: 'Luna y el secreto de la colmena',
     bubble: '¿Querés saber cómo llegué a ser guía? Está escrito en un libro.',
-    text: 'Catalina, la misma que plantó los primeros pistachos, escribió un cuento sobre una nena que se vuelve del tamaño de una abeja. Yo la acompaño ahí adentro.',
+    text: 'Catalina, la misma que plantó los primeros pistachos, escribió un cuento sobre una nena que se vuelve del tamaño de una abeja. Yo la acompaño ahí adentro. El libro sale en diciembre.',
     cta: 'Entrar al cuento',
-    badge: 'Muestra de lectura',
+    badge: 'Sale en diciembre',
+    imgAlt: 'Luna conoce a Meli, una abeja obrera, entre girasoles y flores del jardín',
   },
+
 };
 
 export type Dict = typeof es;
